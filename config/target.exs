@@ -47,9 +47,11 @@ config :vintage_net,
      %{
        type: VintageNetEthernet,
        ipv4: %{method: :dhcp}
-     }},
-    {"wlan0", %{type: VintageNetWiFi}}
+     }}
   ]
+
+# Enable the on-board wifi wizard
+config :nerves_pack, wifi_wizard: true
 
 config :mdns_lite,
   # The `host` key specifies what hostnames mdns_lite advertises.  `:hostname`
@@ -58,7 +60,7 @@ config :mdns_lite,
   # "nerves.local" for convenience. If more than one Nerves device is on the
   # network, delete "nerves" from the list.
 
-  host: [:hostname, "nerves"],
+  host: [:hostname, "xebow"],
   ttl: 120,
 
   # Advertise the following services over mDNS.

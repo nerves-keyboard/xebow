@@ -9,6 +9,7 @@ defmodule Xebow.Application do
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Xebow.Supervisor]
+
     children =
       [
         # Children for all targets
@@ -33,6 +34,7 @@ defmodule Xebow.Application do
       # Children for all targets except host
       # Starts a worker by calling: Xebow.Worker.start_link(arg)
       # {Xebow.Worker, arg},
+      Xebow.RGBMatrix
     ]
   end
 

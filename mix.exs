@@ -3,7 +3,7 @@ defmodule Xebow.MixProject do
 
   @app :xebow
   @version "0.1.0"
-  @all_targets [:rpi0]
+  @all_targets [:xebow_rpi0]
 
   def project do
     [
@@ -51,9 +51,11 @@ defmodule Xebow.MixProject do
       {:vintage_net_wizard, "~> 0.2", target: @all_targets},
       {:circuits_gpio, "~> 0.4", targets: @all_targets},
       {:circuits_spi, "~> 0.1", targets: @all_targets},
+      {:usb_gadget, github: "nerves-project/usb_gadget", ref: "master", targets: @all_targets},
 
       # Dependencies for specific targets
-      {:nerves_system_rpi0, "~> 1.10", runtime: false, targets: :rpi0}
+      {:xebow_rpi0,
+       github: "doughsay/xebow_rpi0", ref: "v1.10.2+xebow", runtime: false, targets: :xebow_rpi0}
     ]
   end
 

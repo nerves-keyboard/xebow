@@ -34,6 +34,7 @@ defmodule Xebow.Application do
       # Children for all targets except host
       # Starts a worker by calling: Xebow.Worker.start_link(arg)
       # {Xebow.Worker, arg},
+      Xebow.HIDGadget,
       Xebow.RGBMatrix
     ]
   end

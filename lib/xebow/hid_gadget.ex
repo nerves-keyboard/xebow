@@ -7,6 +7,12 @@ defmodule Xebow.HIDGadget do
 
   require Logger
 
+  # An unclaimed vendor/product ID. Consider claiming one: http://pid.codes/
+  @vendor_id "0x1209"
+  @product_id "0x0072"
+
+  @product_name "Xebow"
+
   @doc false
   def start_link(opts) do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
@@ -29,8 +35,8 @@ defmodule Xebow.HIDGadget do
       "bDeviceClass" => "0x00",
       "bDeviceSubClass" => "0x00",
       "bDeviceProtocol" => "0x00",
-      "idVendor" => "0x1209",
-      "idProduct" => "0x0072",
+      "idVendor" => @vendor_id,
+      "idProduct" => @product_id,
       "bcdDevice" => "0x0100",
       "bMaxPacketSize0" => "0x08",
       "os_desc" => %{
@@ -41,7 +47,7 @@ defmodule Xebow.HIDGadget do
       "strings" => %{
         "0x409" => %{
           "manufacturer" => "Nerves Project",
-          "product" => "Xebow",
+          "product" => @product_name,
           "serialnumber" => ""
         }
       }
@@ -76,7 +82,7 @@ defmodule Xebow.HIDGadget do
       "MaxPower" => "500",
       "strings" => %{
         "0x409" => %{
-          "configuration" => "Xebow"
+          "configuration" => @product_name
         }
       }
     }

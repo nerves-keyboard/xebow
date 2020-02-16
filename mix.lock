@@ -1,4 +1,5 @@
 %{
+  "afk": {:hex, :afk, "0.2.0", "c2e64147938485a17ef82349af0c618a955ff83592acdbe019cc6df897601037", [:mix], [], "hexpm", "c78651557a1377cd75558b893aadb43802f1cec7c3fab82c06ffc14ec0c74ff3"},
   "chameleon": {:hex, :chameleon, "2.2.0", "30665e3d83a36847dacee5ac3fa1a6ff7f388d14417aa16a7e73871b836a2d3f", [:mix], [], "hexpm", "7df4053da2da521bef95c996f0833587bb46e0f80627d40a2076a3fe2284917b"},
   "circuits_gpio": {:hex, :circuits_gpio, "0.4.4", "09823645b82d84177549c9520e822ffb87d228413527f8a3134f4f436be16efe", [:make, :mix], [{:elixir_make, "~> 0.6", [hex: :elixir_make, repo: "hexpm", optional: false]}], "hexpm", "f728786456d8ee232c3ebd74b958d6d0ee022287743f1e6b9fecbb3036c352fb"},
   "circuits_spi": {:hex, :circuits_spi, "0.1.5", "5f1901c77fb982217a956498ba0d9d0d47cc58ec47731020621b5c95eee296c0", [:make, :mix], [{:elixir_make, "~> 0.6", [hex: :elixir_make, repo: "hexpm", optional: false]}], "hexpm", "134e1ded8e0379e3314a507e80a304cf5ba54edf294e157b7e7ecedcdca30dfd"},

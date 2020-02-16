@@ -44,6 +44,7 @@ defmodule Xebow.MixProject do
       {:ring_logger, "~> 0.6"},
       {:toolshed, "~> 0.2"},
       {:chameleon, "~> 2.2"},
+      {:afk, "~> 0.1"},
 
       # Dependencies for all targets except :host
       {:nerves_runtime, "~> 0.6", targets: @all_targets, override: true},

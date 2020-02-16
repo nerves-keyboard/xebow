@@ -3,8 +3,9 @@ defmodule Xebow.RGBMatrix.Animations do
 
   def animations do
     [
+      Animations.CycleAll,
       Animations.CycleLeftToRight,
-      Animations.CycleAll
+      Animations.Pinwheel
     ]
   end
 end

@@ -12,13 +12,25 @@ defmodule Xebow.RGBMatrix.Animations.CycleAll do
   @behaviour Animation
 
   @impl true
-  @spec run(
+  @spec tick(tick :: RGBMatrix.tick()) :: map
+  def tick(tick) do
+    speed = 100
+    time = div(tick * speed, 100)
+
+    hue = mod(time, 360)
+    color = HSV.new(hue, 100, 100)
+
+    %{color: color}
+  end
+
+  @impl true
+  @spec color(
           x :: RGBMatrix.coordinate(),
           y :: RGBMatrix.coordinate(),
-          tick :: RGBMatrix.tick()
+          tick :: RGBMatrix.tick(),
+          tick_result :: map
         ) :: list(RGBMatrix.color())
-  def run(_x, _y, tick) do
-    hue = mod(tick, 360)
-    HSV.new(hue, 100, 100)
+  def color(_x, _y, _tick, %{color: color}) do
+    color
   end
 end

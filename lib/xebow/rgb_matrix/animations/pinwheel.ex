@@ -1,6 +1,6 @@
-defmodule Xebow.RGBMatrix.Animations.CycleLeftToRight do
+defmodule Xebow.RGBMatrix.Animations.Pinwheel do
   @moduledoc """
-  Cycles hue left to right.
+  Cycles hue in a pinwheel pattern.
   """
 
   alias Chameleon.HSV
@@ -11,8 +11,13 @@ defmodule Xebow.RGBMatrix.Animations.CycleLeftToRight do
 
   @behaviour Animation
 
+  @center %{
+    x: 1,
+    y: 1.5
+  }
+
   @impl true
-  @spec tick(tick :: RGBMatrix.tick()) :: map
+  @spec tick(tick :: RGBMatrix.tick()) :: nil
   def tick(tick) do
     speed = 100
     time = div(tick * speed, 100)
@@ -27,8 +32,18 @@ defmodule Xebow.RGBMatrix.Animations.CycleLeftToRight do
           tick :: RGBMatrix.tick(),
           tick_result :: map
         ) :: list(RGBMatrix.color())
-  def color(x, _y, _tick, %{time: time}) do
-    hue = mod(x * 10 - time, 360)
+  def color(x, y, _tick, %{time: time}) do
+    dx = x - @center.x
+    dy = y - @center.y
+
+    hue = mod(atan2_8(dy, dx) + time, 360)
+
     HSV.new(hue, 100, 100)
+  end
+
+  defp atan2_8(x, y) do
+    atan = :math.atan2(x, y)
+
+    trunc((atan + :math.pi()) * 255 / (2 * :math.pi()))
   end
 end

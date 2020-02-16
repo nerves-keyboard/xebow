@@ -21,8 +21,12 @@ defmodule Xebow.RGBMatrix do
 
   # Client
 
-  def start_link([], opts \\ []) do
-    GenServer.start_link(__MODULE__, [], opts)
+  def start_link([]) do
+    GenServer.start_link(__MODULE__, [], name: __MODULE__)
+  end
+
+  def set_animation(animation) do
+    GenServer.cast(__MODULE__, {:set_animation, animation})
   end
 
   # Server
@@ -46,10 +50,12 @@ defmodule Xebow.RGBMatrix do
 
   @impl true
   def handle_info(:tick, %{tick: tick} = state) do
+    tick_result = state.animation.tick(tick)
+
     colors =
       for x <- 0..(@cols - 1),
           y <- 0..(@rows - 1) do
-        state.animation.run(x, y, tick)
+        state.animation.color(x, y, tick, tick_result)
       end
 
     paint(state.spidev, colors)
@@ -67,5 +73,10 @@ defmodule Xebow.RGBMatrix do
       end) <> @eof
 
     SPI.transfer(spidev, data)
+  end
+
+  @impl true
+  def handle_cast({:set_animation, animation}, state) do
+    {:noreply, %{state | animation: animation}}
   end
 end

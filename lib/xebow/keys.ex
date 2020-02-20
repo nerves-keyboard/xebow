@@ -1,3 +1,5 @@
+require Logger
+
 defmodule Xebow.Keys do
   use GenServer
 
@@ -21,6 +23,7 @@ defmodule Xebow.Keys do
   @hid_device "/dev/hidg0"
 
   @keymap [
+    # Layer 0:
     %{
       k001: AFK.Keycode.Key.new(:"7"),
       k002: AFK.Keycode.Key.new(:"4"),
@@ -29,11 +32,41 @@ defmodule Xebow.Keys do
       k005: AFK.Keycode.Key.new(:"8"),
       k006: AFK.Keycode.Key.new(:"5"),
       k007: AFK.Keycode.Key.new(:"2"),
-      k008: AFK.Keycode.Key.new(:l),
+      k008: AFK.Keycode.Layer.new(:hold, 1),
       k009: AFK.Keycode.Key.new(:"9"),
       k010: AFK.Keycode.Key.new(:"6"),
       k011: AFK.Keycode.Key.new(:"3"),
-      k012: AFK.Keycode.Key.new(:o)
+      k012: AFK.Keycode.Layer.new(:hold, 2)
+    },
+    # Layer 1:
+    %{
+      k001: AFK.Keycode.Transparent.new(),
+      k002: AFK.Keycode.Transparent.new(),
+      k003: AFK.Keycode.Transparent.new(),
+      k004: AFK.Keycode.Transparent.new(),
+      k005: AFK.Keycode.Key.new(:mute),
+      k006: AFK.Keycode.Transparent.new(),
+      k007: AFK.Keycode.Transparent.new(),
+      k008: AFK.Keycode.None.new(),
+      k009: AFK.Keycode.Key.new(:volume_up),
+      k010: AFK.Keycode.Key.new(:volume_down),
+      k011: AFK.Keycode.Transparent.new(),
+      k012: AFK.Keycode.Transparent.new()
+    },
+    # Layer 2:
+    %{
+      k001: AFK.Keycode.Transparent.new(),
+      k002: AFK.Keycode.Transparent.new(),
+      k003: AFK.Keycode.Transparent.new(),
+      k004: AFK.Keycode.Transparent.new(),
+      k005: AFK.Keycode.Transparent.new(),
+      k006: AFK.Keycode.Transparent.new(),
+      k007: AFK.Keycode.Transparent.new(),
+      k008: AFK.Keycode.Transparent.new(),
+      k009: AFK.Keycode.Transparent.new(),
+      k010: AFK.Keycode.Transparent.new(),
+      k011: AFK.Keycode.Transparent.new(),
+      k012: AFK.Keycode.Transparent.new()
     }
   ]
 
@@ -57,12 +90,18 @@ defmodule Xebow.Keys do
 
     hid = File.open!(@hid_device, [:write])
 
+    {:ok, keyboard_state} =
+      AFK.State.start_link(
+        keymap: @keymap,
+        event_receiver: self(),
+        hid_report_mod: AFK.HIDReport.SixKeyRollover
+      )
+
     {:ok,
      %{
        pins: pins,
-       keyboard_state: AFK.State.new(@keymap),
+       keyboard_state: keyboard_state,
        hid: hid,
-       previous_hid_report: <<0, 0, 0, 0, 0, 0, 0, 0>>,
        # The above `set_interrupts` will send an initial event (in this case a
        # 'release' event).
        # We need to keep track of which ones we haven't seen yet so we can
@@ -94,21 +133,24 @@ defmodule Xebow.Keys do
     handle_gpio_interrupt({pin_number, value}, state)
   end
 
+  def handle_info({:hid_report, hid_report}, state) do
+    IO.binwrite(state.hid, hid_report)
+    {:noreply, state}
+  end
+
   defp handle_gpio_interrupt({pin_number, value}, state) do
     key_id = @gpio_pins[pin_number]
 
-    new_keyboard_state =
-      case value do
-        0 -> AFK.State.press_key(state.keyboard_state, key_id)
-        1 -> AFK.State.release_key(state.keyboard_state, key_id)
-      end
+    case value do
+      0 ->
+        Logger.debug("key pressed #{key_id}")
+        AFK.State.press_key(state.keyboard_state, key_id)
 
-    hid_report = AFK.HIDReport.SixKeyRollover.hid_report(new_keyboard_state)
-
-    if hid_report != state.previous_hid_report do
-      IO.binwrite(state.hid, hid_report)
+      1 ->
+        Logger.debug("key released #{key_id}")
+        AFK.State.release_key(state.keyboard_state, key_id)
     end
 
-    {:noreply, %{state | keyboard_state: new_keyboard_state, previous_hid_report: hid_report}}
+    {:noreply, state}
   end
 end

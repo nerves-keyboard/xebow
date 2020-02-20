@@ -44,7 +44,7 @@ defmodule Xebow.MixProject do
       {:ring_logger, "~> 0.6"},
       {:toolshed, "~> 0.2"},
       {:chameleon, "~> 2.2"},
-      {:afk, "~> 0.1"},
+      {:afk, github: "doughsay/afk"},
 
       # Dependencies for all targets except :host
       {:nerves_runtime, "~> 0.6", targets: @all_targets, override: true},
@@ -56,7 +56,7 @@ defmodule Xebow.MixProject do
 
       # Dependencies for specific targets
       {:xebow_rpi0,
-       github: "doughsay/xebow_rpi0", ref: "v1.10.2+xebow", runtime: false, targets: :xebow_rpi0}
+       github: "doughsay/xebow_rpi0", ref: "v1.10.2+xebow.2", runtime: false, targets: :xebow_rpi0}
     ]
   end
 

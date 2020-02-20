@@ -41,7 +41,9 @@ config :nerves_firmware_ssh,
 # See https://github.com/nerves-networking/vintage_net for more information
 config :vintage_net,
   regulatory_domain: "US",
-  config: []
+  config: [
+    {"bond0", %{type: VintageNetDirect}}
+  ]
 
 # Enable the on-board wifi wizard
 config :nerves_pack, wifi_wizard: true

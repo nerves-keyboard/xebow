@@ -1,17 +1,11 @@
 defmodule Xebow.HIDGadget do
   @moduledoc """
-  Set up the HID gadget device with usb_gadget
+  Set up the gadget devices with usb_gadget
   """
 
   use GenServer, restart: :temporary
 
   require Logger
-
-  # An unclaimed vendor/product ID. Consider claiming one: http://pid.codes/
-  @vendor_id "0x1209"
-  @product_id "0x0072"
-
-  @product_name "Xebow"
 
   @doc false
   def start_link(opts) do
@@ -19,8 +13,18 @@ defmodule Xebow.HIDGadget do
   end
 
   def init(_opts) do
-    case create_hid_device("hidg") do
+    # Mount configfs if it's not already mounted
+    # :os.cmd('mount -t configfs none /sys/kernel/config')
+
+    # Set up gadget devices using configfs
+    case create_rndis_ecm_hid("hidg") do
       :ok ->
+        # Make sure we clear out any existing gadget configuration.
+        # :os.cmd('rmmod g_cdc')
+        USBGadget.disable_device("hidg")
+
+        USBGadget.enable_device("hidg")
+        setup_bond0()
         {:ok, :ok}
 
       error ->
@@ -29,16 +33,23 @@ defmodule Xebow.HIDGadget do
     end
   end
 
-  defp create_hid_device(name) do
+  # def handle_call(:status, _from, state) do
+  #   {:reply, state, state}
+  # end
+
+  # def status do
+  #   GenServer.call(__MODULE__, :status)
+  # end
+
+  defp create_rndis_ecm_hid(name) do
     device_settings = %{
       "bcdUSB" => "0x0200",
-      "bDeviceClass" => "0x00",
-      "bDeviceSubClass" => "0x00",
-      "bDeviceProtocol" => "0x00",
-      "idVendor" => @vendor_id,
-      "idProduct" => @product_id,
+      "bDeviceClass" => "0xEF",
+      "bDeviceSubClass" => "0x02",
+      "bDeviceProtocol" => "0x01",
+      "idVendor" => "0x1209",
+      "idProduct" => "0x0071",
       "bcdDevice" => "0x0100",
-      "bMaxPacketSize0" => "0x08",
       "os_desc" => %{
         "use" => "1",
         "b_vendor_code" => "0xcd",
@@ -47,8 +58,17 @@ defmodule Xebow.HIDGadget do
       "strings" => %{
         "0x409" => %{
           "manufacturer" => "Nerves Project",
-          "product" => @product_name,
+          "product" => "Ethernet + HID Gadget",
           "serialnumber" => ""
+        }
+      }
+    }
+
+    rndis_settings = %{
+      "os_desc" => %{
+        "interface.rndis" => %{
+          "compatible_id" => "RNDIS",
+          "sub_compatible_id" => "5162001"
         }
       }
     }
@@ -82,26 +102,44 @@ defmodule Xebow.HIDGadget do
       "MaxPower" => "500",
       "strings" => %{
         "0x409" => %{
-          "configuration" => @product_name
+          "configuration" => "RNDIS and ECM Ethernet with HID Keyboard"
         }
       }
     }
 
-    function_list = ["hid.usb0"]
+    function_list = ["rndis.usb0", "ecm.usb1", "hid.usb2"]
 
     with {:create_device, :ok} <-
            {:create_device, USBGadget.create_device(name, device_settings)},
+         {:create_rndis, :ok} <-
+           {:create_rndis, USBGadget.create_function(name, "rndis.usb0", rndis_settings)},
+         {:create_ecm, :ok} <- {:create_ecm, USBGadget.create_function(name, "ecm.usb1", %{})},
          {:create_hid, :ok} <-
-           {:create_hid, USBGadget.create_function(name, "hid.usb0", hid_settings)},
+           {:create_hid, USBGadget.create_function(name, "hid.usb2", hid_settings)},
          {:create_config, :ok} <-
            {:create_config, USBGadget.create_config(name, "c.1", config1_settings)},
          {:link_functions, :ok} <-
            {:link_functions, USBGadget.link_functions(name, "c.1", function_list)},
-         {:link_os_desc, :ok} <- {:link_os_desc, USBGadget.link_os_desc(name, "c.1")},
-         {:enable_device, :ok} <- {:enable_device, USBGadget.enable_device("hidg")} do
+         {:link_os_desc, :ok} <- {:link_os_desc, USBGadget.link_os_desc(name, "c.1")} do
       :ok
     else
       {failed_step, {:error, reason}} -> {:error, {failed_step, reason}}
     end
+  end
+
+  defp setup_bond0 do
+    # Set up the bond0 interface across usb0 and usb1.
+    # In the rndis_ecm_acm pre-defined device being used here, usb0 is the
+    # RNDIS (Windows-compatible) device and usb1 is the ECM
+    # (non-Windows-compatible) device.
+    # Since Linux supports both with ECM being more reliable, we set usb1 (ECM)
+    # as the primary, meaning that it will be used if both are available.
+    :os.cmd('ip link set bond0 down')
+    File.write("/sys/class/net/bond0/bonding/mode", "active-backup")
+    File.write("/sys/class/net/bond0/bonding/miimon", "100")
+    File.write("/sys/class/net/bond0/bonding/slaves", "+usb0")
+    File.write("/sys/class/net/bond0/bonding/slaves", "+usb1")
+    File.write("/sys/class/net/bond0/bonding/primary", "usb1")
+    :os.cmd('ip link set bond0 up')
   end
 end

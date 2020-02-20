@@ -4,6 +4,8 @@ defmodule Xebow.RGBMatrix do
   alias Circuits.SPI
   alias Xebow.RGBMatrix.Animations
 
+  import Xebow.Utils, only: [mod: 2]
+
   @type coordinate :: non_neg_integer
   @type tick :: non_neg_integer
   @type color :: any
@@ -27,6 +29,18 @@ defmodule Xebow.RGBMatrix do
 
   def set_animation(animation) do
     GenServer.cast(__MODULE__, {:set_animation, animation})
+  end
+
+  def flash(color) do
+    GenServer.cast(__MODULE__, {:flash, color})
+  end
+
+  def next_animation do
+    GenServer.cast(__MODULE__, :next_animation)
+  end
+
+  def previous_animation do
+    GenServer.cast(__MODULE__, :previous_animation)
   end
 
   # Server
@@ -75,8 +89,42 @@ defmodule Xebow.RGBMatrix do
     SPI.transfer(spidev, data)
   end
 
+  defp paint_solid(spidev, color) do
+    color = Chameleon.Keyword.new(color)
+    colors = for _ <- 1..12, do: color
+    paint(spidev, colors)
+  end
+
   @impl true
   def handle_cast({:set_animation, animation}, state) do
+    {:noreply, %{state | animation: animation}}
+  end
+
+  def handle_cast({:flash, color}, state) do
+    paint_solid(state.spidev, color)
+
+    Process.sleep(250)
+
+    {:noreply, state}
+  end
+
+  def handle_cast(:next_animation, state) do
+    animations = Animations.animations()
+    num = Enum.count(animations)
+    current = Enum.find_index(animations, &(&1 == state.animation))
+    next = mod(current + 1, num)
+    animation = Enum.at(animations, next)
+
+    {:noreply, %{state | animation: animation}}
+  end
+
+  def handle_cast(:previous_animation, state) do
+    animations = Animations.animations()
+    num = Enum.count(animations)
+    current = Enum.find_index(animations, &(&1 == state.animation))
+    previous = mod(current - 1, num)
+    animation = Enum.at(animations, previous)
+
     {:noreply, %{state | animation: animation}}
   end
 end

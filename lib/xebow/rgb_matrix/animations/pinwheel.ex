@@ -44,6 +44,6 @@ defmodule Xebow.RGBMatrix.Animations.Pinwheel do
   defp atan2_8(x, y) do
     atan = :math.atan2(x, y)
 
-    trunc((atan + :math.pi()) * 255 / (2 * :math.pi()))
+    trunc((atan + :math.pi()) * 359 / (2 * :math.pi()))
   end
 end

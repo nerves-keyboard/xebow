@@ -55,16 +55,16 @@ defmodule Xebow.Keys do
     },
     # Layer 2:
     %{
-      k001: AFK.Keycode.Transparent.new(),
-      k002: AFK.Keycode.Transparent.new(),
+      k001: AFK.Keycode.MFA.new({__MODULE__, :flash_red, 0}),
+      k002: AFK.Keycode.MFA.new({__MODULE__, :previous_animation, 0}),
       k003: AFK.Keycode.Transparent.new(),
       k004: AFK.Keycode.Transparent.new(),
-      k005: AFK.Keycode.Transparent.new(),
+      k005: AFK.Keycode.MFA.new({__MODULE__, :start_wifi_wizard, 0}),
       k006: AFK.Keycode.Transparent.new(),
       k007: AFK.Keycode.Transparent.new(),
       k008: AFK.Keycode.Transparent.new(),
-      k009: AFK.Keycode.Transparent.new(),
-      k010: AFK.Keycode.Transparent.new(),
+      k009: AFK.Keycode.MFA.new({__MODULE__, :flash_green, 0}),
+      k010: AFK.Keycode.MFA.new({__MODULE__, :next_animation, 0}),
       k011: AFK.Keycode.Transparent.new(),
       k012: AFK.Keycode.Transparent.new()
     }
@@ -152,5 +152,30 @@ defmodule Xebow.Keys do
     end
 
     {:noreply, state}
+  end
+
+  # Custom Key Functions
+
+  def flash_red do
+    Xebow.RGBMatrix.flash("red")
+  end
+
+  def flash_green do
+    Xebow.RGBMatrix.flash("green")
+  end
+
+  def next_animation do
+    Xebow.RGBMatrix.next_animation()
+  end
+
+  def previous_animation do
+    Xebow.RGBMatrix.previous_animation()
+  end
+
+  def start_wifi_wizard do
+    case VintageNetWizard.run_wizard() do
+      :ok -> Xebow.RGBMatrix.flash("green")
+      {:error, _reason} -> Xebow.RGBMatrix.flash("red")
+    end
   end
 end

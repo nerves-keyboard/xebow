@@ -23,7 +23,7 @@ If your SSH public key is not in your home directory's .ssh/ directory with one 
 
 ## Building the Firmware
 
-If you have not used nerves to build firmware before, you may need to install several dependencies.  See [https://hexdocs.pm/nerves/installation.html](https://hexdocs.pm/nerves/installation.html) if this is your first time using nerves.
+If you have not used nerves to build firmware before, you may need to install several dependencies.  See the [installation guide](https://hexdocs.pm/nerves/installation.html) if this is your first time using nerves.
 
 The keybow uses a Raspberry Pi Zero WH, so the target would be `rpi0`.  However, to better support all the keybow features that xebow uses, a custom target has been setup called `xebow_rpi0` that you will need to use instead.  To build and burn the firmware:
 
@@ -67,6 +67,6 @@ The `l-1` and `l-2` keys activate different "layers" of the keypad, which allows
 - `l1` + `6`: volume down
 - `l1` + `8`: mute
 - `l2` + `7`: flash keypad red
-- `l2` + `9`: flash green
+- `l2` + `9`: flash keypad green
 - `l2` + `4`: previous animation
 - `l2` + `6`: next animation

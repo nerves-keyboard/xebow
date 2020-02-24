@@ -59,7 +59,7 @@ defmodule Xebow.Keys do
       k002: AFK.Keycode.MFA.new({__MODULE__, :previous_animation, []}),
       k003: AFK.Keycode.Transparent.new(),
       k004: AFK.Keycode.Transparent.new(),
-      k005: AFK.Keycode.MFA.new({__MODULE__, :start_wifi_wizard, []}),
+      k005: AFK.Keycode.Transparent.new(),
       k006: AFK.Keycode.Transparent.new(),
       k007: AFK.Keycode.Transparent.new(),
       k008: AFK.Keycode.Transparent.new(),

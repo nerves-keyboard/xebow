@@ -45,9 +45,6 @@ config :vintage_net,
     {"bond0", %{type: VintageNetDirect}}
   ]
 
-# Enable the on-board wifi wizard
-config :nerves_pack, wifi_wizard: true
-
 config :mdns_lite,
   # The `host` key specifies what hostnames mdns_lite advertises.  `:hostname`
   # advertises the device's hostname.local. For the official Nerves systems, this

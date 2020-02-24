@@ -59,7 +59,7 @@ The xebow firmware sets up the keybow as a 10-key numpad.  Turn the keypad so th
 +-----+-----+-----+
 ```
 
-The `l-1` and `l-2` keys activate different "layers" of the keypad, which allows mapping additional commands to each key.  For example, holding `l-2` and hitting `1` will trigger a command to flash the keypad red.
+The `l-1` and `l-2` keys activate different "layers" of the keypad, which allows mapping additional commands to each key.  For example, holding `l-2` and hitting `7` will trigger a command to flash the keypad red.
 
 ## Keyboard Shortcuts
 

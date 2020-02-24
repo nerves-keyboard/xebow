@@ -55,16 +55,16 @@ defmodule Xebow.Keys do
     },
     # Layer 2:
     %{
-      k001: AFK.Keycode.MFA.new({__MODULE__, :flash_red, 0}),
-      k002: AFK.Keycode.MFA.new({__MODULE__, :previous_animation, 0}),
+      k001: AFK.Keycode.MFA.new({__MODULE__, :flash_red, []}),
+      k002: AFK.Keycode.MFA.new({__MODULE__, :previous_animation, []}),
       k003: AFK.Keycode.Transparent.new(),
       k004: AFK.Keycode.Transparent.new(),
-      k005: AFK.Keycode.MFA.new({__MODULE__, :start_wifi_wizard, 0}),
+      k005: AFK.Keycode.MFA.new({__MODULE__, :start_wifi_wizard, []}),
       k006: AFK.Keycode.Transparent.new(),
       k007: AFK.Keycode.Transparent.new(),
       k008: AFK.Keycode.Transparent.new(),
-      k009: AFK.Keycode.MFA.new({__MODULE__, :flash_green, 0}),
-      k010: AFK.Keycode.MFA.new({__MODULE__, :next_animation, 0}),
+      k009: AFK.Keycode.MFA.new({__MODULE__, :flash_green, []}),
+      k010: AFK.Keycode.MFA.new({__MODULE__, :next_animation, []}),
       k011: AFK.Keycode.Transparent.new(),
       k012: AFK.Keycode.Transparent.new()
     }

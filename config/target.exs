@@ -20,6 +20,7 @@ config :nerves_runtime, :kernel, use_system_registry: false
 
 keys =
   [
+    System.get_env("NERVES_SSH_PUB_KEY", ""),
     Path.join([System.user_home!(), ".ssh", "id_rsa.pub"]),
     Path.join([System.user_home!(), ".ssh", "id_ecdsa.pub"]),
     Path.join([System.user_home!(), ".ssh", "id_ed25519.pub"])
@@ -28,10 +29,13 @@ keys =
 
 if keys == [],
   do:
-    Mix.raise("""
-    No SSH public keys found in ~/.ssh. An ssh authorized key is needed to
-    log into the Nerves device and update firmware on it using ssh.
-    See your project's config.exs for this error message.
+    IO.write(:stderr, """
+    Warning: No SSH public key found. You will not be able to remotely
+    connect to the device to access the iex shell or updating firmware.
+
+    If you have an SSH public key, you can set NERVES_SSH_PUB_KEY to
+    the path of the key. Otherwise, you can still flash the firmware
+    manually.
     """)
 
 config :nerves_firmware_ssh,

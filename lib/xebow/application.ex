@@ -35,8 +35,8 @@ defmodule Xebow.Application do
       # Starts a worker by calling: Xebow.Worker.start_link(arg)
       # {Xebow.Worker, arg},
       Xebow.HIDGadget,
-      Xebow.RGBMatrix,
-      Xebow.Keys
+      Xebow.Matrix
+      # Xebow.Keys
     ]
   end
 

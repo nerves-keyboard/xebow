@@ -4,33 +4,37 @@ defmodule Xebow.RGBMatrix.Animations.CycleAll do
   """
 
   alias Chameleon.HSV
-  alias Xebow.RGBMatrix
-  alias Xebow.RGBMatrix.Animation
+
+  # alias Xebow.RGBMatrix
+  # alias Xebow.RGBMatrix.Animation
 
   import Xebow.Utils, only: [mod: 2]
 
-  @behaviour Animation
+  @delay_ms 17
 
-  @impl true
-  @spec tick(tick :: RGBMatrix.tick()) :: map
-  def tick(tick) do
-    speed = 100
+  # @behaviour Animation
+
+  # @impl true
+  def init do
+    %{
+      tick: 0,
+      speed: 100
+    }
+  end
+
+  # @impl true
+  def run(pixels, state) do
+    %{tick: tick, speed: speed} = state
     time = div(tick * speed, 100)
 
     hue = mod(time, 360)
     color = HSV.new(hue, 100, 100)
 
-    %{color: color}
-  end
+    colors =
+      for {_x, _y} <- pixels do
+        color
+      end
 
-  @impl true
-  @spec color(
-          x :: RGBMatrix.coordinate(),
-          y :: RGBMatrix.coordinate(),
-          tick :: RGBMatrix.tick(),
-          tick_result :: map
-        ) :: list(RGBMatrix.color())
-  def color(_x, _y, _tick, %{color: color}) do
-    color
+    {colors, @delay_ms, %{state | tick: tick + 1}}
   end
 end

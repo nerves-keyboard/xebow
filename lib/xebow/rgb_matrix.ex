@@ -15,20 +15,27 @@ defmodule Xebow.RGBMatrix do
   @sof <<0, 0, 0, 0>>
   @eof <<255, 255, 255, 255>>
 
-  @rows 4
-  @cols 3
-
-  # approximates ~60 FPS
-  @delay_ms 17
+  # pixels on the xebow start in upper left corner and count down instead of
+  # across
+  @pixels [
+    {0, 0},
+    {0, 1},
+    {0, 2},
+    {0, 3},
+    {1, 0},
+    {1, 1},
+    {1, 2},
+    {1, 3},
+    {2, 0},
+    {2, 1},
+    {2, 2},
+    {2, 3}
+  ]
 
   # Client
 
   def start_link([]) do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
-  end
-
-  def set_animation(animation) do
-    GenServer.cast(__MODULE__, {:set_animation, animation})
   end
 
   def flash(color) do
@@ -52,31 +59,30 @@ defmodule Xebow.RGBMatrix do
         speed_hz: @spi_speed_hz
       )
 
-    Process.send_after(self(), :tick, @delay_ms)
+    Process.send_after(self(), :run, 0)
 
-    {:ok,
-     %{
-       animation: Animations.animations() |> hd(),
-       spidev: spidev,
-       tick: 0
-     }}
+    initial_animation = Animations.animations() |> hd()
+
+    state = set_animation(%{spidev: spidev}, initial_animation)
+
+    {:ok, state}
+  end
+
+  defp set_animation(state, animation) do
+    state
+    |> Map.put(:animation, animation)
+    |> Map.put(:animation_state, animation.init())
   end
 
   @impl true
-  def handle_info(:tick, %{tick: tick} = state) do
-    tick_result = state.animation.tick(tick)
-
-    colors =
-      for x <- 0..(@cols - 1),
-          y <- 0..(@rows - 1) do
-        state.animation.color(x, y, tick, tick_result)
-      end
+  def handle_info(:run, state) do
+    {colors, delay, new_animation_state} = state.animation.run(@pixels, state.animation_state)
 
     paint(state.spidev, colors)
 
-    Process.send_after(self(), :tick, @delay_ms)
+    Process.send_after(self(), :run, delay)
 
-    {:noreply, %{state | tick: tick + 1}}
+    {:noreply, %{state | animation_state: new_animation_state}}
   end
 
   defp paint(spidev, colors) do
@@ -96,10 +102,6 @@ defmodule Xebow.RGBMatrix do
   end
 
   @impl true
-  def handle_cast({:set_animation, animation}, state) do
-    {:noreply, %{state | animation: animation}}
-  end
-
   def handle_cast({:flash, color}, state) do
     paint_solid(state.spidev, color)
 
@@ -115,7 +117,7 @@ defmodule Xebow.RGBMatrix do
     next = mod(current + 1, num)
     animation = Enum.at(animations, next)
 
-    {:noreply, %{state | animation: animation}}
+    {:noreply, set_animation(state, animation)}
   end
 
   def handle_cast(:previous_animation, state) do
@@ -125,6 +127,6 @@ defmodule Xebow.RGBMatrix do
     previous = mod(current - 1, num)
     animation = Enum.at(animations, previous)
 
-    {:noreply, %{state | animation: animation}}
+    {:noreply, set_animation(state, animation)}
   end
 end

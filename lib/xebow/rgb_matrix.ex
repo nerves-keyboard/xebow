@@ -59,9 +59,9 @@ defmodule Xebow.RGBMatrix do
         speed_hz: @spi_speed_hz
       )
 
-    Process.send_after(self(), :run, 0)
+    send(self(), :run)
 
-    initial_animation = Animations.animations() |> hd()
+    [initial_animation | _] = Animations.animations()
 
     state = set_animation(%{spidev: spidev}, initial_animation)
 

@@ -30,10 +30,7 @@ defmodule Xebow.RGBMatrix.Animations.CycleAll do
     hue = mod(time, 360)
     color = HSV.new(hue, 100, 100)
 
-    colors =
-      for {_x, _y} <- pixels do
-        color
-      end
+colors = Enum.map(pixels, fn {_x, _y} -> color end)
 
     {colors, @delay_ms, %{state | tick: tick + 1}}
   end

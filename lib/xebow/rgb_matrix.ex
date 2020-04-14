@@ -61,7 +61,7 @@ defmodule Xebow.RGBMatrix do
 
     send(self(), :run)
 
-    [initial_animation | _] = Animations.animations()
+    [initial_animation | _] = Animations.list()
 
     state = set_animation(%{spidev: spidev}, initial_animation)
 
@@ -111,7 +111,7 @@ defmodule Xebow.RGBMatrix do
   end
 
   def handle_cast(:next_animation, state) do
-    animations = Animations.animations()
+    animations = Animations.list()
     num = Enum.count(animations)
     current = Enum.find_index(animations, &(&1 == state.animation))
     next = mod(current + 1, num)
@@ -121,7 +121,7 @@ defmodule Xebow.RGBMatrix do
   end
 
   def handle_cast(:previous_animation, state) do
-    animations = Animations.animations()
+    animations = Animations.list()
     num = Enum.count(animations)
     current = Enum.find_index(animations, &(&1 == state.animation))
     previous = mod(current - 1, num)

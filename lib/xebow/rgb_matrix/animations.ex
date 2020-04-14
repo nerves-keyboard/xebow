@@ -1,7 +1,7 @@
 defmodule Xebow.RGBMatrix.Animations do
   alias Xebow.RGBMatrix.Animations
 
-  def animations do
+  def list do
     [
       Animations.CycleAll,
       Animations.CycleLeftToRight,

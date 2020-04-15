@@ -5,17 +5,16 @@ defmodule Xebow.RGBMatrix.Animations.Pinwheel do
 
   alias Chameleon.HSV
 
-  # alias Xebow.RGBMatrix
-  # alias Xebow.RGBMatrix.Animation
+  alias Xebow.RGBMatrix.Animation
 
   import Xebow.Utils, only: [mod: 2]
 
+  @behaviour Animation
+
   @delay_ms 17
 
-  # @behaviour Animation
-
-  # @impl true
-  def init do
+  @impl true
+  def init_state do
     %{
       tick: 0,
       speed: 100,
@@ -26,8 +25,8 @@ defmodule Xebow.RGBMatrix.Animations.Pinwheel do
     }
   end
 
-  # @impl true
-  def run(pixels, state) do
+  @impl true
+  def next_state(pixels, state) do
     %{tick: tick, speed: speed} = state
     time = div(tick * speed, 100)
 

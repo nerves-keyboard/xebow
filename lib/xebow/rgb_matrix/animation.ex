@@ -1,11 +1,9 @@
 defmodule Xebow.RGBMatrix.Animation do
   alias Xebow.RGBMatrix
 
-  @callback tick(tick :: RGBMatrix.tick()) :: any
-  @callback color(
-              x :: RGBMatrix.coordinate(),
-              y :: RGBMatrix.coordinate(),
-              tick :: RGBMatrix.tick(),
-              tick_result :: any
-            ) :: list(RGBMatrix.color())
+  @callback init_state :: any
+  @callback next_state(
+              pixels :: RGBMatrix.pixels(),
+              state :: any
+            ) :: {RGBMatrix.colors(), non_neg_integer, any}
 end

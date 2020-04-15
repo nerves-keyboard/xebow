@@ -6,9 +6,15 @@ defmodule Xebow.RGBMatrix do
 
   import Xebow.Utils, only: [mod: 2]
 
-  @type coordinate :: non_neg_integer
-  @type tick :: non_neg_integer
-  @type color :: any
+  defmodule State do
+    @fields [:spidev, :animation, :animation_state]
+    @enforce_keys @fields
+
+    defstruct @fields
+  end
+
+  @type pixels :: list({non_neg_integer, non_neg_integer})
+  @type colors :: list(any)
 
   @spi_device "spidev0.0"
   @spi_speed_hz 4_000_000
@@ -59,28 +65,34 @@ defmodule Xebow.RGBMatrix do
         speed_hz: @spi_speed_hz
       )
 
-    send(self(), :run)
+    send(self(), :get_next_state)
 
     [initial_animation | _] = Animations.list()
 
-    state = set_animation(%{spidev: spidev}, initial_animation)
-
-    {:ok, state}
+    {:ok,
+     %State{
+       spidev: spidev,
+       animation: initial_animation,
+       animation_state: initial_animation.init_state()
+     }}
   end
 
   defp set_animation(state, animation) do
-    state
-    |> Map.put(:animation, animation)
-    |> Map.put(:animation_state, animation.init())
+    %{
+      state
+      | animation: animation,
+        animation_state: animation.init_state()
+    }
   end
 
   @impl true
-  def handle_info(:run, state) do
-    {colors, delay, new_animation_state} = state.animation.run(@pixels, state.animation_state)
+  def handle_info(:get_next_state, state) do
+    {colors, delay, new_animation_state} =
+      state.animation.next_state(@pixels, state.animation_state)
 
     paint(state.spidev, colors)
 
-    Process.send_after(self(), :run, delay)
+    Process.send_after(self(), :get_next_state, delay)
 
     {:noreply, %{state | animation_state: new_animation_state}}
   end

@@ -4,31 +4,34 @@ defmodule Xebow.RGBMatrix.Animations.CycleLeftToRight do
   """
 
   alias Chameleon.HSV
-  alias Xebow.RGBMatrix
+
   alias Xebow.RGBMatrix.Animation
 
   import Xebow.Utils, only: [mod: 2]
 
   @behaviour Animation
 
-  @impl true
-  @spec tick(tick :: RGBMatrix.tick()) :: map
-  def tick(tick) do
-    speed = 100
-    time = div(tick * speed, 100)
+  @delay_ms 17
 
-    %{time: time}
+  @impl true
+  def init_state do
+    %{
+      tick: 0,
+      speed: 100
+    }
   end
 
   @impl true
-  @spec color(
-          x :: RGBMatrix.coordinate(),
-          y :: RGBMatrix.coordinate(),
-          tick :: RGBMatrix.tick(),
-          tick_result :: map
-        ) :: list(RGBMatrix.color())
-  def color(x, _y, _tick, %{time: time}) do
-    hue = mod(x * 10 - time, 360)
-    HSV.new(hue, 100, 100)
+  def next_state(pixels, state) do
+    %{tick: tick, speed: speed} = state
+    time = div(tick * speed, 100)
+
+    colors =
+      for {x, _y} <- pixels do
+        hue = mod(x * 10 - time, 360)
+        HSV.new(hue, 100, 100)
+      end
+
+    {colors, @delay_ms, %{state | tick: tick + 1}}
   end
 end

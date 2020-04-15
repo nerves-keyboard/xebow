@@ -12,7 +12,7 @@ volume.
 
 ## Checking out the Project
 
-    $ git clone git@github.com:doughsay/xebow.git
+    $ git clone git@github.com:ElixirSeattle/xebow.git
     $ cd xebow
 
 ## SSH Access (optional)

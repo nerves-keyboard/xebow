@@ -55,8 +55,11 @@ defmodule Xebow.MixProject do
       {:usb_gadget, github: "nerves-project/usb_gadget", ref: "master", targets: @all_targets},
 
       # Dependencies for specific targets
-      {:xebow_rpi0,
-       github: "doughsay/xebow_rpi0", ref: "v1.10.2+xebow.2", runtime: false, targets: :kebow}
+      {:nerves_system_kebow,
+       github: "ElixirSeattle/nerves_system_kebow",
+       ref: "v1.11.0+kebow.1",
+       runtime: false,
+       targets: :kebow}
     ]
   end
 

@@ -3,7 +3,7 @@ defmodule Xebow.MixProject do
 
   @app :xebow
   @version "0.1.0"
-  @all_targets [:xebow_rpi0]
+  @all_targets [:keybow]
 
   def project do
     [
@@ -56,7 +56,7 @@ defmodule Xebow.MixProject do
 
       # Dependencies for specific targets
       {:xebow_rpi0,
-       github: "doughsay/xebow_rpi0", ref: "v1.10.2+xebow.2", runtime: false, targets: :xebow_rpi0}
+       github: "doughsay/xebow_rpi0", ref: "v1.10.2+xebow.2", runtime: false, targets: :keybow}
     ]
   end
 

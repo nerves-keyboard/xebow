@@ -11,13 +11,12 @@ defmodule Xebow.RGBMatrix.Animations.CycleLeftToRight do
 
   @behaviour Animation
 
-  @delay_ms 17
-
   @impl true
   def init_state do
     %{
       tick: 0,
-      speed: 100
+      speed: 100,
+      delay_ms: 17
     }
   end
 
@@ -32,6 +31,6 @@ defmodule Xebow.RGBMatrix.Animations.CycleLeftToRight do
         HSV.new(hue, 100, 100)
       end
 
-    {colors, @delay_ms, %{state | tick: tick + 1}}
+    {colors, %{state | tick: tick + 1}}
   end
 end

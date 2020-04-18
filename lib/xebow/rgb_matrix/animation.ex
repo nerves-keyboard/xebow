@@ -5,5 +5,5 @@ defmodule Xebow.RGBMatrix.Animation do
   @callback next_state(
               pixels :: RGBMatrix.pixels(),
               state :: any
-            ) :: {RGBMatrix.colors(), non_neg_integer, any}
+            ) :: {RGBMatrix.colors(), any}
 end

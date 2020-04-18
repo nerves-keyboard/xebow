@@ -11,13 +11,12 @@ defmodule Xebow.RGBMatrix.Animations.CycleAll do
 
   @behaviour Animation
 
-  @delay_ms 17
-
   @impl true
   def init_state do
     %{
       tick: 0,
-      speed: 100
+      speed: 100,
+      delay_ms: 17
     }
   end
 
@@ -31,6 +30,6 @@ defmodule Xebow.RGBMatrix.Animations.CycleAll do
 
     colors = Enum.map(pixels, fn {_x, _y} -> color end)
 
-    {colors, @delay_ms, %{state | tick: tick + 1}}
+    {colors, %{state | tick: tick + 1}}
   end
 end

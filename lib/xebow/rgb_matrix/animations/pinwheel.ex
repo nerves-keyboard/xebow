@@ -11,13 +11,12 @@ defmodule Xebow.RGBMatrix.Animations.Pinwheel do
 
   @behaviour Animation
 
-  @delay_ms 17
-
   @impl true
   def init_state do
     %{
       tick: 0,
       speed: 100,
+      delay_ms: 17,
       center: %{
         x: 1,
         y: 1.5
@@ -40,7 +39,7 @@ defmodule Xebow.RGBMatrix.Animations.Pinwheel do
         HSV.new(hue, 100, 100)
       end
 
-    {colors, @delay_ms, %{state | tick: tick + 1}}
+    {colors, %{state | tick: tick + 1}}
   end
 
   defp atan2_8(x, y) do

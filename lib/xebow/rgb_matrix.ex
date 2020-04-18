@@ -87,12 +87,11 @@ defmodule Xebow.RGBMatrix do
 
   @impl true
   def handle_info(:get_next_state, state) do
-    {colors, delay, new_animation_state} =
-      state.animation.next_state(@pixels, state.animation_state)
+    {colors, new_animation_state} = state.animation.next_state(@pixels, state.animation_state)
 
     paint(state.spidev, colors)
 
-    Process.send_after(self(), :get_next_state, delay)
+    Process.send_after(self(), :get_next_state, new_animation_state.delay_ms)
 
     {:noreply, %{state | animation_state: new_animation_state}}
   end

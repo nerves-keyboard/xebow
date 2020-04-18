@@ -9,12 +9,7 @@ defmodule Xebow.RGBMatrix.Animation.CycleLeftToRight do
 
   import Xebow.Utils, only: [mod: 2]
 
-  @behaviour Animation
-
-  @impl true
-  def init_state(pixels) do
-    Animation.init_state_from_defaults(__MODULE__, pixels)
-  end
+  use Animation
 
   @impl true
   def next_state(animation) do
@@ -28,6 +23,6 @@ defmodule Xebow.RGBMatrix.Animation.CycleLeftToRight do
       end
 
     %Animation{animation | pixel_colors: pixel_colors}
-    |> Animation.do_tick()
+    |> do_tick()
   end
 end

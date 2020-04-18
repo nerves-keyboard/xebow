@@ -9,17 +9,12 @@ defmodule Xebow.RGBMatrix.Animation.Pinwheel do
 
   import Xebow.Utils, only: [mod: 2]
 
-  @behaviour Animation
+  use Animation
 
   @center %{
     x: 1,
     y: 1.5
   }
-
-  @impl true
-  def init_state(pixels) do
-    Animation.init_state_from_defaults(__MODULE__, pixels)
-  end
 
   @impl true
   def next_state(animation) do
@@ -37,7 +32,7 @@ defmodule Xebow.RGBMatrix.Animation.Pinwheel do
       end
 
     %Animation{animation | pixel_colors: pixel_colors}
-    |> Animation.do_tick()
+    |> do_tick()
   end
 
   defp atan2_8(x, y) do

@@ -1,6 +1,6 @@
-defmodule Xebow.RGBMatrix.Animations.CycleAll do
+defmodule Xebow.RGBMatrix.Animation.CycleLeftToRight do
   @moduledoc """
-  Cycles hue of all keys.
+  Cycles hue left to right.
   """
 
   alias Chameleon.HSV
@@ -27,10 +27,11 @@ defmodule Xebow.RGBMatrix.Animations.CycleAll do
     %Animation{tick: tick, speed: speed, pixels: pixels} = animation
     time = div(tick * speed, 100)
 
-    hue = mod(time, 360)
-    color = HSV.new(hue, 100, 100)
-
-    pixel_colors = Enum.map(pixels, fn {_x, _y} -> color end)
+    pixel_colors =
+      for {x, _y} <- pixels do
+        hue = mod(x * 10 - time, 360)
+        HSV.new(hue, 100, 100)
+      end
 
     %Animation{animation | pixel_colors: pixel_colors}
     |> Animation.do_tick()

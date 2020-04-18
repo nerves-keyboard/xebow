@@ -2,12 +2,12 @@ defmodule Xebow.RGBMatrix do
   use GenServer
 
   alias Circuits.SPI
-  alias Xebow.RGBMatrix.Animations
+  alias Xebow.RGBMatrix.Animation
 
   import Xebow.Utils, only: [mod: 2]
 
   defmodule State do
-    @fields [:spidev, :animation, :animation_state]
+    @fields [:spidev, :animation_type, :animation_state]
     @enforce_keys @fields
 
     defstruct @fields
@@ -67,27 +67,27 @@ defmodule Xebow.RGBMatrix do
 
     send(self(), :get_next_state)
 
-    [initial_animation | _] = Animations.list()
+    [initial_animation_type | _] = Animation.types()
 
     {:ok,
      %State{
        spidev: spidev,
-       animation: initial_animation,
-       animation_state: initial_animation.init_state(@pixels)
+       animation_type: initial_animation_type,
+       animation_state: initial_animation_type.init_state(@pixels)
      }}
   end
 
-  defp set_animation(state, animation) do
+  defp set_animation(state, animation_type) do
     %{
       state
-      | animation: animation,
-        animation_state: animation.init_state(@pixels)
+      | animation_type: animation_type,
+        animation_state: animation_type.init_state(@pixels)
     }
   end
 
   @impl true
   def handle_info(:get_next_state, state) do
-    new_animation_state = state.animation.next_state(state.animation_state)
+    new_animation_state = state.animation_type.next_state(state.animation_state)
 
     paint(state.spidev, new_animation_state.pixel_colors)
 
@@ -122,22 +122,22 @@ defmodule Xebow.RGBMatrix do
   end
 
   def handle_cast(:next_animation, state) do
-    animations = Animations.list()
-    num = Enum.count(animations)
-    current = Enum.find_index(animations, &(&1 == state.animation))
+    animation_types = Animation.types()
+    num = Enum.count(animation_types)
+    current = Enum.find_index(animation_types, &(&1 == state.animation_type))
     next = mod(current + 1, num)
-    animation = Enum.at(animations, next)
+    animation_type = Enum.at(animation_types, next)
 
-    {:noreply, set_animation(state, animation)}
+    {:noreply, set_animation(state, animation_type)}
   end
 
   def handle_cast(:previous_animation, state) do
-    animations = Animations.list()
-    num = Enum.count(animations)
-    current = Enum.find_index(animations, &(&1 == state.animation))
+    animation_types = Animation.types()
+    num = Enum.count(animation_types)
+    current = Enum.find_index(animation_types, &(&1 == state.animation_type))
     previous = mod(current - 1, num)
-    animation = Enum.at(animations, previous)
+    animation_type = Enum.at(animation_types, previous)
 
-    {:noreply, set_animation(state, animation)}
+    {:noreply, set_animation(state, animation_type)}
   end
 end

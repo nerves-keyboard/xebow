@@ -1,4 +1,4 @@
-defmodule Xebow.RGBMatrix.Animations.Pinwheel do
+defmodule Xebow.RGBMatrix.Animation.Pinwheel do
   @moduledoc """
   Cycles hue in a pinwheel pattern.
   """

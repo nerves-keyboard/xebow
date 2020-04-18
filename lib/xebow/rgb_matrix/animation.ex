@@ -14,6 +14,18 @@ defmodule Xebow.RGBMatrix.Animation do
   defstruct [:tick, :speed, :delay_ms, :pixels, :pixel_colors]
 
   @doc """
+  Returns a list of the available types of animations.
+  """
+  @spec types :: list(module)
+  def types do
+    [
+      __MODULE__.CycleAll,
+      __MODULE__.CycleLeftToRight,
+      __MODULE__.Pinwheel
+    ]
+  end
+
+  @doc """
   Increment the animation state to the next tick.
   This function is intended to be used by implementations of an `Animation`.
   """

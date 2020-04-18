@@ -11,16 +11,17 @@ defmodule Xebow.RGBMatrix.Animations.Pinwheel do
 
   @behaviour Animation
 
+  @center %{
+    x: 1,
+    y: 1.5
+  }
+
   @impl true
   def init_state do
     %{
       tick: 0,
       speed: 100,
-      delay_ms: 17,
-      center: %{
-        x: 1,
-        y: 1.5
-      }
+      delay_ms: 17
     }
   end
 
@@ -31,8 +32,8 @@ defmodule Xebow.RGBMatrix.Animations.Pinwheel do
 
     colors =
       for {x, y} <- pixels do
-        dx = x - state.center.x
-        dy = y - state.center.y
+        dx = x - @center.x
+        dy = y - @center.y
 
         hue = mod(atan2_8(dy, dx) + time, 360)
 

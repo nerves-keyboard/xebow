@@ -57,6 +57,27 @@ defmodule Xebow.RGBMatrix.Animation do
   end
 
   @doc """
+  Initialize an `Animation` struct with default values.
+  Defaults can be overridden by passing the corresponding keyword as `opts`.
+  This function is intended to be used by implementations of an `Animation`.
+  """
+  @spec init_state_from_defaults(
+          animation_type :: type,
+          pixels :: list(RGBMatrix.pixel()),
+          opts :: list(keyword)
+        ) :: t
+  def init_state_from_defaults(animation_type, pixels, opts \\ []) do
+    %__MODULE__{
+      type: animation_type,
+      tick: opts[:tick] || 0,
+      speed: opts[:speed] || 100,
+      delay_ms: opts[:delay_ms] || 17,
+      pixels: pixels,
+      pixel_colors: opts[:pixel_colors] || init_pixel_colors(pixels)
+    }
+  end
+
+  @doc """
   Initialize a list of default pixel colors.
   The default sets all pixels to be turned off ("black").
   """

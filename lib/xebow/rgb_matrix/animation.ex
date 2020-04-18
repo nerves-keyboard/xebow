@@ -2,18 +2,16 @@ defmodule Xebow.RGBMatrix.Animation do
   alias Xebow.RGBMatrix
 
   @callback init_state(pixels :: list(RGBMatrix.pixel())) :: t
-  @callback next_state(
-              pixels :: list(RGBMatrix.pixel()),
-              animation :: t
-            ) :: t
+  @callback next_state(animation :: t) :: t
 
   @type t :: %__MODULE__{
           tick: non_neg_integer,
           speed: non_neg_integer,
           delay_ms: non_neg_integer,
+          pixels: list(RGBMatrix.pixel()),
           pixel_colors: list(RGBMatrix.pixel_color())
         }
-  defstruct [:tick, :speed, :delay_ms, :pixel_colors]
+  defstruct [:tick, :speed, :delay_ms, :pixels, :pixel_colors]
 
   @doc """
   Increment the animation state to the next tick.

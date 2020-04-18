@@ -17,13 +17,14 @@ defmodule Xebow.RGBMatrix.Animations.CycleAll do
       tick: 0,
       speed: 100,
       delay_ms: 17,
+      pixels: pixels,
       pixel_colors: Animation.init_pixel_colors(pixels)
     }
   end
 
   @impl true
-  def next_state(pixels, animation) do
-    %Animation{tick: tick, speed: speed} = animation
+  def next_state(animation) do
+    %Animation{tick: tick, speed: speed, pixels: pixels} = animation
     time = div(tick * speed, 100)
 
     hue = mod(time, 360)

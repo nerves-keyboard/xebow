@@ -87,7 +87,7 @@ defmodule Xebow.RGBMatrix do
 
   @impl true
   def handle_info(:get_next_state, state) do
-    new_animation_state = state.animation.next_state(@pixels, state.animation_state)
+    new_animation_state = state.animation.next_state(state.animation_state)
 
     paint(state.spidev, new_animation_state.pixel_colors)
 

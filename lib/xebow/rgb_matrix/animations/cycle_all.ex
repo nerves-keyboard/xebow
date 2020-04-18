@@ -30,6 +30,8 @@ defmodule Xebow.RGBMatrix.Animations.CycleAll do
 
     colors = Enum.map(pixels, fn {_x, _y} -> color end)
 
-    {colors, %{state | tick: tick + 1}}
+    animation_next_state = Animation.do_tick(state)
+
+    {colors, animation_next_state}
   end
 end

@@ -40,7 +40,9 @@ defmodule Xebow.RGBMatrix.Animations.Pinwheel do
         HSV.new(hue, 100, 100)
       end
 
-    {colors, %{state | tick: tick + 1}}
+    animation_next_state = Animation.do_tick(state)
+
+    {colors, animation_next_state}
   end
 
   defp atan2_8(x, y) do

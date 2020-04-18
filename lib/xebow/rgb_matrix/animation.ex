@@ -5,24 +5,46 @@ defmodule Xebow.RGBMatrix.Animation do
   @callback next_state(animation :: t) :: t
 
   @type t :: %__MODULE__{
+          type: type,
           tick: non_neg_integer,
           speed: non_neg_integer,
           delay_ms: non_neg_integer,
           pixels: list(RGBMatrix.pixel()),
           pixel_colors: list(RGBMatrix.pixel_color())
         }
-  defstruct [:tick, :speed, :delay_ms, :pixels, :pixel_colors]
+  defstruct [:type, :tick, :speed, :delay_ms, :pixels, :pixel_colors]
+
+  @type type ::
+          __MODULE__.CycleAll
+          | __MODULE__.CycleLeftToRight
+          | __MODULE__.Pinwheel
 
   @doc """
   Returns a list of the available types of animations.
   """
-  @spec types :: list(module)
+  @spec types :: list(type)
   def types do
     [
       __MODULE__.CycleAll,
       __MODULE__.CycleLeftToRight,
       __MODULE__.Pinwheel
     ]
+  end
+
+  @doc """
+  Returns an animation set to its initial state.
+  """
+  @spec init_state(animation_type :: type, pixels :: list(RGBMatrix.pixel())) :: t
+  def init_state(animation_type, pixels) do
+    animation_type.init_state(pixels)
+  end
+
+  @doc """
+  Returns the next state of an animation based on its current state.
+  """
+  @spec next_state(animation :: t) :: t
+  def next_state(animation) do
+    animation.type.next_state(animation)
   end
 
   @doc """

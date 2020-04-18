@@ -19,6 +19,7 @@ defmodule Xebow.RGBMatrix.Animation.Pinwheel do
   @impl true
   def init_state(pixels) do
     %Animation{
+      type: __MODULE__,
       tick: 0,
       speed: 100,
       delay_ms: 17,

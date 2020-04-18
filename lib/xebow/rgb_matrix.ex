@@ -7,7 +7,7 @@ defmodule Xebow.RGBMatrix do
   import Xebow.Utils, only: [mod: 2]
 
   defmodule State do
-    defstruct [:spidev, :animation_type, :animation_state]
+    defstruct [:spidev, :animation]
   end
 
   @type pixel :: {non_neg_integer, non_neg_integer}
@@ -74,22 +74,18 @@ defmodule Xebow.RGBMatrix do
   end
 
   defp set_animation(state, animation_type) do
-    %State{
-      state
-      | animation_type: animation_type,
-        animation_state: animation_type.init_state(@pixels)
-    }
+    %State{state | animation: Animation.init_state(animation_type, @pixels)}
   end
 
   @impl true
   def handle_info(:get_next_state, state) do
-    new_animation_state = state.animation_type.next_state(state.animation_state)
+    new_animation_state = Animation.next_state(state.animation)
 
     paint(state.spidev, new_animation_state.pixel_colors)
 
     Process.send_after(self(), :get_next_state, new_animation_state.delay_ms)
 
-    {:noreply, %State{state | animation_state: new_animation_state}}
+    {:noreply, %State{state | animation: new_animation_state}}
   end
 
   defp paint(spidev, colors) do
@@ -120,7 +116,7 @@ defmodule Xebow.RGBMatrix do
   def handle_cast(:next_animation, state) do
     animation_types = Animation.types()
     num = Enum.count(animation_types)
-    current = Enum.find_index(animation_types, &(&1 == state.animation_type))
+    current = Enum.find_index(animation_types, &(&1 == state.animation.type))
     next = mod(current + 1, num)
     animation_type = Enum.at(animation_types, next)
 
@@ -130,7 +126,7 @@ defmodule Xebow.RGBMatrix do
   def handle_cast(:previous_animation, state) do
     animation_types = Animation.types()
     num = Enum.count(animation_types)
-    current = Enum.find_index(animation_types, &(&1 == state.animation_type))
+    current = Enum.find_index(animation_types, &(&1 == state.animation.type))
     previous = mod(current - 1, num)
     animation_type = Enum.at(animation_types, previous)
 

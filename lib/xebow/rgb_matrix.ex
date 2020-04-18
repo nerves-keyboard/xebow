@@ -109,7 +109,7 @@ defmodule Xebow.RGBMatrix do
 
   defp paint_solid(spidev, color) do
     color = Chameleon.Keyword.new(color)
-    colors = for _ <- 1..12, do: color
+    colors = Enum.map(@pixels, fn _ -> color end)
     paint(spidev, colors)
   end
 

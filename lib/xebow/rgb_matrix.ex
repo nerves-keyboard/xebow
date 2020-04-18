@@ -13,8 +13,8 @@ defmodule Xebow.RGBMatrix do
     defstruct @fields
   end
 
-  @type pixels :: list({non_neg_integer, non_neg_integer})
-  @type colors :: list(any)
+  @type pixel :: {non_neg_integer, non_neg_integer}
+  @type pixel_color :: Chameleon.HSV.t()
 
   @spi_device "spidev0.0"
   @spi_speed_hz 4_000_000
@@ -73,7 +73,7 @@ defmodule Xebow.RGBMatrix do
      %State{
        spidev: spidev,
        animation: initial_animation,
-       animation_state: initial_animation.init_state()
+       animation_state: initial_animation.init_state(@pixels)
      }}
   end
 
@@ -81,15 +81,15 @@ defmodule Xebow.RGBMatrix do
     %{
       state
       | animation: animation,
-        animation_state: animation.init_state()
+        animation_state: animation.init_state(@pixels)
     }
   end
 
   @impl true
   def handle_info(:get_next_state, state) do
-    {colors, new_animation_state} = state.animation.next_state(@pixels, state.animation_state)
+    new_animation_state = state.animation.next_state(@pixels, state.animation_state)
 
-    paint(state.spidev, colors)
+    paint(state.spidev, new_animation_state.pixel_colors)
 
     Process.send_after(self(), :get_next_state, new_animation_state.delay_ms)
 

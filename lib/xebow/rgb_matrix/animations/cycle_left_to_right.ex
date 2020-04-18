@@ -13,7 +13,7 @@ defmodule Xebow.RGBMatrix.Animations.CycleLeftToRight do
 
   @impl true
   def init_state(pixels) do
-    %{
+    %Animation{
       tick: 0,
       speed: 100,
       delay_ms: 17,
@@ -22,8 +22,8 @@ defmodule Xebow.RGBMatrix.Animations.CycleLeftToRight do
   end
 
   @impl true
-  def next_state(pixels, state) do
-    %{tick: tick, speed: speed} = state
+  def next_state(pixels, animation) do
+    %Animation{tick: tick, speed: speed} = animation
     time = div(tick * speed, 100)
 
     pixel_colors =
@@ -32,7 +32,7 @@ defmodule Xebow.RGBMatrix.Animations.CycleLeftToRight do
         HSV.new(hue, 100, 100)
       end
 
-    %{state | pixel_colors: pixel_colors}
+    %Animation{animation | pixel_colors: pixel_colors}
     |> Animation.do_tick()
   end
 end

@@ -1,4 +1,4 @@
-defmodule Xebow.RGBMatrix.Animation do
+defmodule Xebow.Animation do
   alias Xebow.RGBMatrix
 
   @callback init_state(pixels :: list(RGBMatrix.pixel())) :: t
@@ -17,7 +17,7 @@ defmodule Xebow.RGBMatrix.Animation do
   # Helpers for implementing animations.
   defmacro __using__(_) do
     quote do
-      alias Xebow.RGBMatrix.Animation
+      alias Xebow.Animation
 
       @behaviour Animation
 

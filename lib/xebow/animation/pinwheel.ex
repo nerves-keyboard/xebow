@@ -1,11 +1,11 @@
-defmodule Xebow.RGBMatrix.Animation.Pinwheel do
+defmodule Xebow.Animation.Pinwheel do
   @moduledoc """
   Cycles hue in a pinwheel pattern.
   """
 
   alias Chameleon.HSV
 
-  alias Xebow.RGBMatrix.Animation
+  alias Xebow.Animation
 
   import Xebow.Utils, only: [mod: 2]
 

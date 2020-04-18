@@ -2,7 +2,7 @@ defmodule Xebow.RGBMatrix do
   use GenServer
 
   alias Circuits.SPI
-  alias Xebow.RGBMatrix.Animation
+  alias Xebow.Animation
 
   import Xebow.Utils, only: [mod: 2]
 

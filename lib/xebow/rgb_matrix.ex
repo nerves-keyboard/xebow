@@ -7,10 +7,7 @@ defmodule Xebow.RGBMatrix do
   import Xebow.Utils, only: [mod: 2]
 
   defmodule State do
-    @fields [:spidev, :animation_type, :animation_state]
-    @enforce_keys @fields
-
-    defstruct @fields
+    defstruct [:spidev, :animation_type, :animation_state]
   end
 
   @type pixel :: {non_neg_integer, non_neg_integer}
@@ -69,16 +66,15 @@ defmodule Xebow.RGBMatrix do
 
     [initial_animation_type | _] = Animation.types()
 
-    {:ok,
-     %State{
-       spidev: spidev,
-       animation_type: initial_animation_type,
-       animation_state: initial_animation_type.init_state(@pixels)
-     }}
+    state =
+      %State{spidev: spidev}
+      |> set_animation(initial_animation_type)
+
+    {:ok, state}
   end
 
   defp set_animation(state, animation_type) do
-    %{
+    %State{
       state
       | animation_type: animation_type,
         animation_state: animation_type.init_state(@pixels)
@@ -93,7 +89,7 @@ defmodule Xebow.RGBMatrix do
 
     Process.send_after(self(), :get_next_state, new_animation_state.delay_ms)
 
-    {:noreply, %{state | animation_state: new_animation_state}}
+    {:noreply, %State{state | animation_state: new_animation_state}}
   end
 
   defp paint(spidev, colors) do

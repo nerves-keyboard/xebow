@@ -9,8 +9,8 @@ defmodule Xebow.MixProject do
     [
       app: @app,
       version: @version,
-      elixir: "~> 1.9",
-      archives: [nerves_bootstrap: "~> 1.7"],
+      elixir: "~> 1.10",
+      archives: [nerves_bootstrap: "~> 1.8"],
       start_permanent: Mix.env() == :prod,
       build_embedded: true,
       aliases: [loadconfig: [&bootstrap/1]],
@@ -39,16 +39,16 @@ defmodule Xebow.MixProject do
   defp deps do
     [
       # Dependencies for all targets
-      {:nerves, "~> 1.5.0", runtime: false},
+      {:nerves, "~> 1.6.1", runtime: false},
       {:shoehorn, "~> 0.6"},
-      {:ring_logger, "~> 0.6"},
+      {:ring_logger, "~> 0.8"},
       {:toolshed, "~> 0.2"},
       {:chameleon, "~> 2.2"},
       {:afk, "~> 0.3"},
 
       # Dependencies for all targets except :host
-      {:nerves_runtime, "~> 0.6", targets: @all_targets, override: true},
-      {:nerves_pack, "~> 0.2", targets: @all_targets},
+      {:nerves_runtime, "~> 0.11", targets: @all_targets, override: true},
+      {:nerves_pack, "~> 0.3", targets: @all_targets},
       {:vintage_net_wizard, "~> 0.2", target: @all_targets},
       {:circuits_gpio, "~> 0.4", targets: @all_targets},
       {:circuits_spi, "~> 0.1", targets: @all_targets},

@@ -1,0 +1,17 @@
+on:
+  - push
+
+jobs:
+  code_formatting:
+    name: Code Formatting
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Set up Elixir
+        uses: actions/setup-elixir@v1
+        with:
+          otp-version: 22.3
+          elixir-version: 1.10.2
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Check code formatting
+        run: mix format --check-formatted

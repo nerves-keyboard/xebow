@@ -15,6 +15,7 @@ defmodule Xebow.MixProject do
       build_embedded: true,
       aliases: aliases(),
       deps: deps(),
+      docs: [extras: ["README.md"]],
       releases: [{@app, release()}],
       preferred_cli_target: [run: :host, test: :host, dialyzer: :kebow],
       dialyzer: [
@@ -44,6 +45,7 @@ defmodule Xebow.MixProject do
   defp aliases do
     [
       dialyzer: "do cmd mkdir -p _build/#{Mix.target()}_#{Mix.env()}/plt, dialyzer",
+      "docs.show": "do docs, cmd xdg-open doc/index.html",
       loadconfig: [&bootstrap/1]
     ]
   end
@@ -59,6 +61,7 @@ defmodule Xebow.MixProject do
       {:chameleon, "~> 2.2"},
       {:afk, "~> 0.3"},
       {:dialyxir, "~> 1.0.0", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.21.3", only: :dev, runtime: false},
 
       # Dependencies for all targets except :host
       {:nerves_runtime, "~> 0.11", targets: @all_targets, override: true},

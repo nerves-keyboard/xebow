@@ -13,10 +13,16 @@ defmodule Xebow.MixProject do
       archives: [nerves_bootstrap: "~> 1.8"],
       start_permanent: Mix.env() == :prod,
       build_embedded: true,
-      aliases: [loadconfig: [&bootstrap/1]],
+      aliases: aliases(),
       deps: deps(),
       releases: [{@app, release()}],
-      preferred_cli_target: [run: :host, test: :host]
+      preferred_cli_target: [run: :host, test: :host, dialyzer: :kebow],
+      dialyzer: [
+        ignore_warnings: "dialyzer.ignore.exs",
+        list_unused_filters: true,
+        plt_add_apps: [:mix],
+        plt_file: {:no_warn, "_build/#{Mix.target()}_#{Mix.env()}/plt/dialyxir.plt"}
+      ]
     ]
   end
 
@@ -35,6 +41,13 @@ defmodule Xebow.MixProject do
     ]
   end
 
+  defp aliases do
+    [
+      dialyzer: "do cmd mkdir -p _build/#{Mix.target()}_#{Mix.env()}/plt, dialyzer",
+      loadconfig: [&bootstrap/1]
+    ]
+  end
+
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
@@ -45,6 +58,7 @@ defmodule Xebow.MixProject do
       {:toolshed, "~> 0.2"},
       {:chameleon, "~> 2.2"},
       {:afk, "~> 0.3"},
+      {:dialyxir, "~> 1.0.0", only: :dev, runtime: false},
 
       # Dependencies for all targets except :host
       {:nerves_runtime, "~> 0.11", targets: @all_targets, override: true},

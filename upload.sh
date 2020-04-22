@@ -49,7 +49,7 @@ help() {
 }
 
 [ -n "$DESTINATION" ] || DESTINATION=xebow.local
-[ -n "$MIX_TARGET" ] || MIX_TARGET=kebow
+[ -n "$MIX_TARGET" ] || MIX_TARGET=keybow
 [ -n "$MIX_ENV" ] || MIX_ENV=dev
 if [ -z "$FILENAME" ]; then
     FIRMWARE_PATH="./_build/${MIX_TARGET}_${MIX_ENV}/nerves/images"

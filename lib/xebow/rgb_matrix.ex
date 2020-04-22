@@ -10,8 +10,17 @@ defmodule Xebow.RGBMatrix do
     defstruct [:spidev, :animation]
   end
 
+  @type any_color_model ::
+          Chameleon.Color.RGB.t()
+          | Chameleon.Color.CMYK.t()
+          | Chameleon.Color.Hex.t()
+          | Chameleon.Color.HSL.t()
+          | Chameleon.Color.HSV.t()
+          | Chameleon.Color.Keyword.t()
+          | Chameleon.Color.Pantone.t()
+
   @type pixel :: {non_neg_integer, non_neg_integer}
-  @type pixel_color :: Chameleon.HSV.t()
+  @type pixel_color :: any_color_model
 
   @spi_device "spidev0.0"
   @spi_speed_hz 4_000_000

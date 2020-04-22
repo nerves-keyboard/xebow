@@ -3,7 +3,7 @@ defmodule Xebow.MixProject do
 
   @app :xebow
   @version "0.1.0"
-  @all_targets [:kebow]
+  @all_targets [:keybow]
 
   def project do
     [
@@ -17,7 +17,7 @@ defmodule Xebow.MixProject do
       deps: deps(),
       docs: [extras: ["README.md"]],
       releases: [{@app, release()}],
-      preferred_cli_target: [run: :host, test: :host, dialyzer: :kebow],
+      preferred_cli_target: [run: :host, test: :host, dialyzer: :keybow],
       dialyzer: [
         ignore_warnings: "dialyzer.ignore.exs",
         list_unused_filters: true,
@@ -72,11 +72,11 @@ defmodule Xebow.MixProject do
       {:usb_gadget, github: "nerves-project/usb_gadget", ref: "master", targets: @all_targets},
 
       # Dependencies for specific targets
-      {:nerves_system_kebow,
-       github: "ElixirSeattle/nerves_system_kebow",
-       ref: "v1.11.0+kebow.1",
+      {:nerves_system_keybow,
+       github: "ElixirSeattle/nerves_system_keybow",
+       ref: "v1.11.0+keybow.2",
        runtime: false,
-       targets: :kebow}
+       targets: :keybow}
     ]
   end
 

@@ -39,10 +39,10 @@ using nerves.
 
 The keybow uses a Raspberry Pi Zero WH, so the target would be `rpi0`. However,
 to better support all the keybow features that xebow uses, a custom target has
-been setup called `kebow` that you will need to use instead. To build and burn
+been setup called `keybow` that you will need to use instead. To build and burn
 the firmware:
 
-    $ export MIX_TARGET=kebow
+    $ export MIX_TARGET=keybow
     $ mix deps.get
     $ mix firmware
 
@@ -60,7 +60,7 @@ another device.**
 
 ## Booting the Keybow
 
-Remove the MicroSD card and insert it into the keybow. Plug the kebow into the
+Remove the MicroSD card and insert it into the keybow. Plug the keybow into the
 computer and wait for it to boot. Once booted, the keypad should begin cycling
 all keys through a rainbow of colors.
 

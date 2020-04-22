@@ -20,7 +20,7 @@ jobs:
     name: Type Check
     runs-on: ubuntu-18.04
     env:
-      MIX_TARGET: kebow
+      MIX_TARGET: keybow
     steps:
       - name: Set up Elixir
         uses: actions/setup-elixir@v1

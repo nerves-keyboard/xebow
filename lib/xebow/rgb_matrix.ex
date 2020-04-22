@@ -2,19 +2,25 @@ defmodule Xebow.RGBMatrix do
   use GenServer
 
   alias Circuits.SPI
-  alias Xebow.RGBMatrix.Animations
+  alias Xebow.Animation
 
   import Xebow.Utils, only: [mod: 2]
 
   defmodule State do
-    @fields [:spidev, :animation, :animation_state]
-    @enforce_keys @fields
-
-    defstruct @fields
+    defstruct [:spidev, :animation]
   end
 
-  @type pixels :: list({non_neg_integer, non_neg_integer})
-  @type colors :: list(any)
+  @type any_color_model ::
+          Chameleon.Color.RGB.t()
+          | Chameleon.Color.CMYK.t()
+          | Chameleon.Color.Hex.t()
+          | Chameleon.Color.HSL.t()
+          | Chameleon.Color.HSV.t()
+          | Chameleon.Color.Keyword.t()
+          | Chameleon.Color.Pantone.t()
+
+  @type pixel :: {non_neg_integer, non_neg_integer}
+  @type pixel_color :: any_color_model
 
   @spi_device "spidev0.0"
   @spi_speed_hz 4_000_000
@@ -67,34 +73,28 @@ defmodule Xebow.RGBMatrix do
 
     send(self(), :get_next_state)
 
-    [initial_animation | _] = Animations.list()
+    [initial_animation_type | _] = Animation.types()
 
-    {:ok,
-     %State{
-       spidev: spidev,
-       animation: initial_animation,
-       animation_state: initial_animation.init_state()
-     }}
+    state =
+      %State{spidev: spidev}
+      |> set_animation(initial_animation_type)
+
+    {:ok, state}
   end
 
-  defp set_animation(state, animation) do
-    %{
-      state
-      | animation: animation,
-        animation_state: animation.init_state()
-    }
+  defp set_animation(state, animation_type) do
+    %State{state | animation: Animation.init_state(animation_type, @pixels)}
   end
 
   @impl true
   def handle_info(:get_next_state, state) do
-    {colors, delay, new_animation_state} =
-      state.animation.next_state(@pixels, state.animation_state)
+    new_animation_state = Animation.next_state(state.animation)
 
-    paint(state.spidev, colors)
+    paint(state.spidev, new_animation_state.pixel_colors)
 
-    Process.send_after(self(), :get_next_state, delay)
+    Process.send_after(self(), :get_next_state, new_animation_state.delay_ms)
 
-    {:noreply, %{state | animation_state: new_animation_state}}
+    {:noreply, %State{state | animation: new_animation_state}}
   end
 
   defp paint(spidev, colors) do
@@ -123,22 +123,22 @@ defmodule Xebow.RGBMatrix do
   end
 
   def handle_cast(:next_animation, state) do
-    animations = Animations.list()
-    num = Enum.count(animations)
-    current = Enum.find_index(animations, &(&1 == state.animation))
+    animation_types = Animation.types()
+    num = Enum.count(animation_types)
+    current = Enum.find_index(animation_types, &(&1 == state.animation.type))
     next = mod(current + 1, num)
-    animation = Enum.at(animations, next)
+    animation_type = Enum.at(animation_types, next)
 
-    {:noreply, set_animation(state, animation)}
+    {:noreply, set_animation(state, animation_type)}
   end
 
   def handle_cast(:previous_animation, state) do
-    animations = Animations.list()
-    num = Enum.count(animations)
-    current = Enum.find_index(animations, &(&1 == state.animation))
+    animation_types = Animation.types()
+    num = Enum.count(animation_types)
+    current = Enum.find_index(animation_types, &(&1 == state.animation.type))
     previous = mod(current - 1, num)
-    animation = Enum.at(animations, previous)
+    animation_type = Enum.at(animation_types, previous)
 
-    {:noreply, set_animation(state, animation)}
+    {:noreply, set_animation(state, animation_type)}
   end
 end

@@ -58,10 +58,7 @@ defmodule Xebow.MixProject do
       {:shoehorn, "~> 0.6"},
       {:ring_logger, "~> 0.8"},
       {:toolshed, "~> 0.2"},
-      # {:chameleon, "~> 2.2"},
-      # Open upstream PR:
-      # https://github.com/supersimple/chameleon/pull/18
-      {:chameleon, github: "amclain/chameleon", ref: "update-spec-for-new"},
+      {:chameleon, github: "supersimple/chameleon", ref: "19a8b0a"},
       {:afk, "~> 0.3"},
       {:dialyxir, "~> 1.0.0", only: :dev, runtime: false},
       {:ex_doc, "~> 0.21.3", only: :dev, runtime: false},

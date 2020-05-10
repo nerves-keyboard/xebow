@@ -1,6 +1,6 @@
 %{
   "afk": {:hex, :afk, "0.3.0", "87ca8a98bdb6f5da3fdf96fc091c67655b15d593df38fb191d6324b05488172f", [:mix], [], "hexpm", "f7a1609a6a45221fcf11d5c531046d632e11368a4674c13ee7453e3fb0cc67a8"},
-  "chameleon": {:git, "https://github.com/supersimple/chameleon.git", "19a8b0a8c0d818c336748972221f29249b14d6e3", [ref: "19a8b0a"]},
+  "chameleon": {:hex, :chameleon, "2.2.1", "7b3d745ee1abfea26c0160590cabe3d102e7e020bba0c405176b3464c90f42a8", [:mix], [], "hexpm", "2643ececff1824793d607551418c8f79bee01395c13cf14530b27acb2903c6e5"},
   "circuits_gpio": {:hex, :circuits_gpio, "0.4.5", "4d5b0f707c425fc56f03086232259f65482a3d1f1cf15335253636d0bb846446", [:make, :mix], [{:elixir_make, "~> 0.6", [hex: :elixir_make, repo: "hexpm", optional: false]}], "hexpm", "b42d28d60a6cfdfb6b21b66ab0b8c5de0ea5a32b390b61d2fe86a2ad8edb90ad"},
   "circuits_spi": {:hex, :circuits_spi, "0.1.5", "5f1901c77fb982217a956498ba0d9d0d47cc58ec47731020621b5c95eee296c0", [:make, :mix], [{:elixir_make, "~> 0.6", [hex: :elixir_make, repo: "hexpm", optional: false]}], "hexpm", "134e1ded8e0379e3314a507e80a304cf5ba54edf294e157b7e7ecedcdca30dfd"},
   "cowboy": {:hex, :cowboy, "2.7.0", "91ed100138a764355f43316b1d23d7ff6bdb0de4ea618cb5d8677c93a7a2f115", [:rebar3], [{:cowlib, "~> 2.8.0", [hex: :cowlib, repo: "hexpm", optional: false]}, {:ranch, "~> 1.7.1", [hex: :ranch, repo: "hexpm", optional: false]}], "hexpm", "04fd8c6a39edc6aaa9c26123009200fc61f92a3a94f3178c527b70b767c6e605"},

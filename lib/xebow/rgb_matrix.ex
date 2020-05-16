@@ -50,8 +50,8 @@ defmodule Xebow.RGBMatrix do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
-  def flash(color) do
-    GenServer.cast(__MODULE__, {:flash, color})
+  def flash(color, sleep_ms \\ 250) do
+    GenServer.cast(__MODULE__, {:flash, color, sleep_ms})
   end
 
   def next_animation do
@@ -114,10 +114,10 @@ defmodule Xebow.RGBMatrix do
   end
 
   @impl true
-  def handle_cast({:flash, color}, state) do
+  def handle_cast({:flash, color, sleep_ms}, state) do
     paint_solid(state.spidev, color)
 
-    Process.sleep(250)
+    Process.sleep(sleep_ms)
 
     {:noreply, state}
   end

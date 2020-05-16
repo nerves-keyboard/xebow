@@ -30,6 +30,10 @@ setting the `NERVES_SSH_PUB_KEY` environment variable:
 - id_ecdsa.pub
 - id_ed25519.pub
 
+In order to upload firmware using SSH you need to generate the upload script using
+`mix firmware.gen.script`. When using the upload script, you need to target the
+Xebow device, eg: `./upload.sh xebow.local`.
+
 ## Building the Firmware
 
 If you have not used nerves to build firmware before, you may need to install

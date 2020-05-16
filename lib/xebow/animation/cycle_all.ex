@@ -5,23 +5,23 @@ defmodule Xebow.Animation.CycleAll do
 
   alias Chameleon.HSV
 
-  alias Xebow.Animation
+  alias Xebow.{Animation, AnimationFrame}
 
   import Xebow.Utils, only: [mod: 2]
 
   use Animation
 
-  @impl true
-  def next_state(animation) do
-    %Animation{tick: tick, speed: speed, pixels: pixels} = animation
+  @impl Animation
+  def next_frame(animation) do
+    %Animation{tick: tick, speed: speed} = animation
     time = div(tick * speed, 100)
 
     hue = mod(time, 360)
     color = HSV.new(hue, 100, 100)
 
+    pixels = Xebow.Utils.pixels()
     pixel_colors = Enum.map(pixels, fn {_x, _y} -> color end)
 
-    %Animation{animation | pixel_colors: pixel_colors}
-    |> do_tick()
+    AnimationFrame.new(pixels, pixel_colors)
   end
 end

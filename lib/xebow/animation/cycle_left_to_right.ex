@@ -5,16 +5,18 @@ defmodule Xebow.Animation.CycleLeftToRight do
 
   alias Chameleon.HSV
 
-  alias Xebow.Animation
+  alias Xebow.{Animation, AnimationFrame}
 
   import Xebow.Utils, only: [mod: 2]
 
   use Animation
 
-  @impl true
-  def next_state(animation) do
-    %Animation{tick: tick, speed: speed, pixels: pixels} = animation
+  @impl Animation
+  def next_frame(animation) do
+    %Animation{tick: tick, speed: speed} = animation
     time = div(tick * speed, 100)
+
+    pixels = Xebow.Utils.pixels()
 
     pixel_colors =
       for {x, _y} <- pixels do
@@ -22,7 +24,6 @@ defmodule Xebow.Animation.CycleLeftToRight do
         HSV.new(hue, 100, 100)
       end
 
-    %Animation{animation | pixel_colors: pixel_colors}
-    |> do_tick()
+    AnimationFrame.new(pixels, pixel_colors)
   end
 end

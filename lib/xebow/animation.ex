@@ -22,11 +22,12 @@ defmodule Xebow.Animation do
           type: type,
           tick: non_neg_integer,
           speed: non_neg_integer,
+          loop: non_neg_integer | -1,
           delay_ms: non_neg_integer,
           frames: list(AnimationFrame.t()),
           next_frame: AnimationFrame.t()
         }
-  defstruct [:type, :tick, :speed, :delay_ms, :next_frame, :frames]
+  defstruct [:type, :tick, :speed, :delay_ms, :loop, :next_frame, :frames]
 
   # Helpers for implementing animations.
   defmacro __using__(_) do
@@ -55,6 +56,7 @@ defmodule Xebow.Animation do
           tick: opts[:tick] || 0,
           speed: opts[:speed] || 100,
           delay_ms: opts[:delay_ms] || 17,
+          loop: opts[:loop] || -1,
           next_frame: init_frame,
           frames: [init_frame]
         }
@@ -75,8 +77,7 @@ defmodule Xebow.Animation do
           __MODULE__.CycleAll
           | __MODULE__.CycleLeftToRight
           | __MODULE__.Pinwheel
-          | __MODULE__.Loop
-          | __MODULE__.OneShot
+          | __MODULE__.Static
 
   @doc """
   Returns a list of the available types of animations.
@@ -106,4 +107,24 @@ defmodule Xebow.Animation do
     next_frame = animation.type.next_frame(animation)
     %Animation{animation | next_frame: next_frame, tick: animation.tick + 1}
   end
+
+  @doc """
+  Returns the frame count of a given animation,
+
+  Note: this function returns -1 for dynamic animations.
+  """
+  @spec frame_count(animation :: Animation.t()) :: non_neg_integer | -1
+  def frame_count(%{loop: -1}), do: -1
+
+  def frame_count(animation), do: length(animation.frames) * animation.loop
+
+  @doc """
+  Returns the expected duration of a given animation.
+
+  Note: this function returns -1 for dynamic animations.
+  """
+  @spec duration(animation :: Animation.t()) :: non_neg_integer | -1
+  def duration(%{loop: -1}), do: -1
+
+  def duration(animation), do: frame_count(animation) * animation.delay_ms
 end

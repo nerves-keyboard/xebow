@@ -45,17 +45,6 @@ defmodule Xebow.RGBMatrix do
     GenServer.cast(__MODULE__, :previous_animation)
   end
 
-  @spec play_one_shot(animation :: Animation.t()) :: :ok
-  def play_one_shot(animation) do
-    expected_duration = length(animation.frames) * animation.delay_ms
-
-    GenServer.call(
-      __MODULE__,
-      {:play_one_shot, animation, expected_duration},
-      expected_duration + 50
-    )
-  end
-
   @spec play_animation(animation :: Animation.t()) :: :ok
   def play_animation(animation) do
     GenServer.cast(__MODULE__, {:play_animation, animation})
@@ -95,8 +84,7 @@ defmodule Xebow.RGBMatrix do
   end
 
   @impl GenServer
-  def handle_info({:reply_one_shot, from, reset_animation}, state) do
-    GenServer.reply(from, :ok)
+  def handle_info({:reset_animation, reset_animation}, state) do
     {:noreply, %State{state | animation: reset_animation}}
   end
 
@@ -154,14 +142,20 @@ defmodule Xebow.RGBMatrix do
   end
 
   @impl GenServer
-  def handle_cast({:play_animation, animation}, state) do
+  def handle_cast({:play_animation, %{loop: loop} = animation}, state) when loop >= 1 do
+    current_animation = state.animation
+    expected_duration = Animation.duration(animation)
+    Process.send_after(self(), {:reset_animation, current_animation}, expected_duration)
+
     {:noreply, %State{state | animation: animation}}
   end
 
+  def handle_cast({:play_animation, %{loop: 0} = _animation}, state) do
+    {:noreply, state}
+  end
+
   @impl GenServer
-  def handle_call({:play_one_shot, animation, expected_duration}, from, state) do
-    current_animation = state.animation
-    Process.send_after(self(), {:reply_one_shot, from, current_animation}, expected_duration)
+  def handle_cast({:play_animation, animation}, state) do
     {:noreply, %State{state | animation: animation}}
   end
 end

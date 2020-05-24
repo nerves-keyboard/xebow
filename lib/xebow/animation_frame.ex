@@ -1,5 +1,10 @@
 defmodule Xebow.AnimationFrame do
-  @moduledoc false
+  @moduledoc """
+  Provides a data structure and functions for working with animation frames.
+
+  An animation frame is a mapping of pixel coordinates to their corresponding color. An animation can be composed of a
+  list of frames or each frame can be dynamically generated based on the tick of some animation.
+  """
 
   alias Xebow.RGBMatrix
 

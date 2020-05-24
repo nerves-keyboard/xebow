@@ -70,7 +70,7 @@ defmodule Xebow.RGBMatrix do
         speed_hz: @spi_speed_hz
       )
 
-    send(self(), :get_next_state)
+    send(self(), :get_next_frame)
 
     [initial_animation_type | _] = Animation.types()
 
@@ -86,14 +86,12 @@ defmodule Xebow.RGBMatrix do
   end
 
   @impl GenServer
-  def handle_info(:get_next_state, state) do
-    new_animation_state = Animation.next_state(state.animation)
+  def handle_info(:get_next_frame, state) do
+    animation = Animation.next_frame(state.animation)
+    paint(state.spidev, animation.next_frame)
 
-    paint(state.spidev, new_animation_state.next_frame)
-
-    Process.send_after(self(), :get_next_state, new_animation_state.delay_ms)
-
-    {:noreply, %State{state | animation: new_animation_state}}
+    Process.send_after(self(), :get_next_frame, animation.delay_ms)
+    {:noreply, %State{state | animation: animation}}
   end
 
   @impl GenServer

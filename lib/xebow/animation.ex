@@ -12,11 +12,11 @@ defmodule Xebow.Animation do
   animation. See `Xebow.Animation.{CycleAll, CycleLeftToRight, Pinwheel} for examples.
   """
 
+  alias __MODULE__
   alias Xebow.{AnimationFrame, RGBMatrix}
 
   @callback init_state(frames :: list(AnimationFrame.t())) :: t
-  @callback next_frame(animation :: t) :: AnimationFrame.t()
-  @callback next_state(animation :: t) :: t
+  @callback next_frame(animation :: Animation.t()) :: AnimationFrame.t()
 
   @type t :: %__MODULE__{
           type: type,
@@ -24,7 +24,7 @@ defmodule Xebow.Animation do
           speed: non_neg_integer,
           delay_ms: non_neg_integer,
           frames: list(AnimationFrame.t()),
-          next_frame: AnimationFrame.t() | nil
+          next_frame: AnimationFrame.t()
         }
   defstruct [:type, :tick, :speed, :delay_ms, :next_frame, :frames]
 
@@ -38,15 +38,6 @@ defmodule Xebow.Animation do
       @impl Animation
       def init_state(pixels) do
         init_state_from_defaults(__MODULE__, pixels)
-      end
-
-      @impl Animation
-      @spec next_state(animation :: Animation.t()) :: Animation.t()
-      # Predefined animations
-      def next_state(animation) do
-        next_frame = next_frame(animation)
-
-        %Animation{animation | next_frame: next_frame, tick: animation.tick + 1}
       end
 
       # Initialize an `Animation` struct with default values.
@@ -64,7 +55,7 @@ defmodule Xebow.Animation do
           tick: opts[:tick] || 0,
           speed: opts[:speed] || 100,
           delay_ms: opts[:delay_ms] || 17,
-          next_frame: nil,
+          next_frame: init_frame,
           frames: [init_frame]
         }
       end
@@ -108,14 +99,11 @@ defmodule Xebow.Animation do
   end
 
   @doc """
-  Returns the next frame of an animation based on its current state.
+  Updates the state of an animation with the next tick of animation.
   """
-  @spec next_frame(animation :: t) :: AnimationFrame.t()
+  @spec next_frame(animation :: Animation.t()) :: Animation.t()
   def next_frame(animation) do
-    animation.type.next_frame(animation)
-  end
-
-  def next_state(animation) do
-    animation.type.next_state(animation)
+    next_frame = animation.type.next_frame(animation)
+    %Animation{animation | next_frame: next_frame, tick: animation.tick + 1}
   end
 end

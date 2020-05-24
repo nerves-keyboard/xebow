@@ -4,11 +4,12 @@ defmodule Xebow.Animation do
 
   There are currently two distinct ways to define an animation.
 
-  You may define an animation with a predefined `:frames` field. Each frame will advance every `:delay_ms` milliseconds. These animations should use the `Xebow.Animation.Loop` `:type`. See the moduledoc of `Xebow.Animation.Loop` for an example. These animations should have a nil `:frame_buffer_length`.
+  You may define an animation with a predefined `:frames` field. Each frame will advance every `:delay_ms` milliseconds.
+  These animations should use the `Xebow.Animation.{OneShot,Loop}` `:type`. See the moduledocs of those modules for
+  examples.
 
-  Alternatively, you may have a more dynamic animation which generates frames based on the current `:tick` of the animation. See `Xebow.Animation.{CycleAll, CycleLeftToRight, Pinwheel} for examples.
-
-  For the dynamic animations, the last `:frame_buffer_length` frames of animation are stored in the `:frames` field of the `%Xebow.Animation{}` struct. These are not currently being used, however, they can be used for animations that depend on events around the LED matrix. For example, a "wave" effect that reflects off of the matrix edges / key presses.
+  Alternatively, you may have a more dynamic animation which generates frames based on the current `:tick` of the
+  animation. See `Xebow.Animation.{CycleAll, CycleLeftToRight, Pinwheel} for examples.
   """
 
   alias Xebow.{AnimationFrame, RGBMatrix}
@@ -23,10 +24,9 @@ defmodule Xebow.Animation do
           speed: non_neg_integer,
           delay_ms: non_neg_integer,
           frames: list(AnimationFrame.t()),
-          next_frame: AnimationFrame.t() | nil,
-          frame_buffer_length: pos_integer | nil
+          next_frame: AnimationFrame.t() | nil
         }
-  defstruct [:type, :tick, :speed, :delay_ms, :next_frame, :frames, :frame_buffer_length]
+  defstruct [:type, :tick, :speed, :delay_ms, :next_frame, :frames]
 
   # Helpers for implementing animations.
   defmacro __using__(_) do
@@ -43,19 +43,10 @@ defmodule Xebow.Animation do
       @impl Animation
       @spec next_state(animation :: Animation.t()) :: Animation.t()
       # Predefined animations
-      def next_state(%{frame_buffer_length: nil} = animation) do
+      def next_state(animation) do
         next_frame = next_frame(animation)
 
         %Animation{animation | next_frame: next_frame, tick: animation.tick + 1}
-      end
-
-      # Dynamic animations
-      def next_state(animation) do
-        next_frame = next_frame(animation)
-        frames = [next_frame | animation.frames]
-        frames = buffer_frames(frames, animation.frame_buffer_length)
-
-        %Animation{animation | next_frame: next_frame, frames: frames, tick: animation.tick + 1}
       end
 
       # Initialize an `Animation` struct with default values.
@@ -74,8 +65,7 @@ defmodule Xebow.Animation do
           speed: opts[:speed] || 100,
           delay_ms: opts[:delay_ms] || 17,
           next_frame: nil,
-          frames: [init_frame],
-          frame_buffer_length: opts[:frame_buffer_length] || 3
+          frames: [init_frame]
         }
       end
 
@@ -85,10 +75,6 @@ defmodule Xebow.Animation do
       defp init_pixel_colors(pixels) do
         Enum.map(pixels, fn _pixel -> Chameleon.HSV.new(0, 0, 0) end)
       end
-
-      # We don't want the length of the frame buffer to continuously grow, however, we do
-      # want to store some of the frames so animations can use previous frames as reference.
-      defp buffer_frames(frames, buffer_len), do: Enum.take(frames, buffer_len)
 
       defoverridable init_state: 1
     end

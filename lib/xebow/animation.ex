@@ -5,7 +5,7 @@ defmodule Xebow.Animation do
   There are currently two distinct ways to define an animation.
 
   You may define an animation with a predefined `:frames` field. Each frame will advance every `:delay_ms` milliseconds.
-  These animations should use the `Xebow.Animation.{OneShot,Loop}` `:type`. See the moduledocs of those modules for
+  These animations should use the `Xebow.Animation.Static` `:type`. See the moduledocs of that module for
   examples.
 
   Alternatively, you may have a more dynamic animation which generates frames based on the current `:tick` of the

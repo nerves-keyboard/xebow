@@ -29,7 +29,7 @@ defmodule Xebow.Animation do
           type: animation_type,
           tick: non_neg_integer,
           speed: non_neg_integer,
-          loop: non_neg_integer | -1,
+          loop: non_neg_integer | :infinite,
           delay_ms: non_neg_integer,
           frames: list(Frame.t()),
           next_frame: Frame.t() | nil
@@ -60,7 +60,7 @@ defmodule Xebow.Animation do
           | {:tick, non_neg_integer}
           | {:speed, non_neg_integer}
           | {:delay_ms, non_neg_integer}
-          | {:loop, non_neg_integer | -1}
+          | {:loop, non_neg_integer | :infinite}
 
   @type animation_opts :: list(animation_opt)
 
@@ -74,7 +74,7 @@ defmodule Xebow.Animation do
       tick: opts[:tick] || 0,
       speed: opts[:speed] || 100,
       delay_ms: opts[:delay_ms] || 17,
-      loop: opts[:loop] || -1,
+      loop: opts[:loop] || :infinite,
       frames: frames,
       next_frame: List.first(frames)
     }
@@ -92,20 +92,20 @@ defmodule Xebow.Animation do
   @doc """
   Returns the frame count of a given animation,
 
-  Note: this function returns -1 for dynamic animations.
+  Note: this function returns :infinite for dynamic animations.
   """
-  @spec frame_count(animation :: Animation.t()) :: non_neg_integer | -1
-  def frame_count(%{loop: -1}), do: -1
+  @spec frame_count(animation :: Animation.t()) :: non_neg_integer | :infinite
+  def frame_count(%{loop: :infinite}), do: :infinite
 
   def frame_count(animation), do: length(animation.frames) * animation.loop
 
   @doc """
   Returns the expected duration of a given animation.
 
-  Note: this function returns -1 for dynamic animations.
+  Note: this function returns :infinite for dynamic animations.
   """
-  @spec duration(animation :: Animation.t()) :: non_neg_integer | -1
-  def duration(%{loop: -1}), do: -1
+  @spec duration(animation :: Animation.t()) :: non_neg_integer | :infinite
+  def duration(%{loop: :infinite}), do: :infinite
 
   def duration(animation), do: frame_count(animation) * animation.delay_ms
 end

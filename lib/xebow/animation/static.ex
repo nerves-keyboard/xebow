@@ -4,7 +4,7 @@ defmodule Xebow.Animation.Static do
 
   The `Xebow.Animation.Static` animation type is used to define animations with a pre-defined set of frames. These
   animations can be played continiously or on a loop. This behavior is controlled by the `:loop` field on the animation.
-  A value of -1 means to play the animation continuously, while a value greater than 0 means to loop the animation
+  A value of :infinite means to play the animation continuously, while a value greater than 0 means to loop the animation
   `:loop` times.
 
   Note that the playback speed of these animations is controlled by the `:delay_ms` field in the animation struct. The 
@@ -28,7 +28,7 @@ defmodule Xebow.Animation.Static do
     delay_ms: 100,
     frames: frames,
     tick: 0,
-    loop: -1,
+    loop: :infinite,
     type: Xebow.Animation.Static
   }
 
@@ -91,7 +91,7 @@ defmodule Xebow.Animation.Static do
   use Animation
 
   @impl Animation
-  def next_frame(%{loop: -1} = animation) do
+  def next_frame(%{loop: :infinite} = animation) do
     %Animation{frames: frames, tick: tick} = animation
 
     index = mod(tick, length(frames))

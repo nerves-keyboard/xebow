@@ -20,7 +20,7 @@ defmodule Xebow.Animation.Static do
     end)
   end
 
-  generator = fn -> struct!(Xebow.AnimationFrame, pixel_map: gen_map.()) end
+  generator = fn -> struct!(Xebow.Frame, pixel_map: gen_map.()) end
   frames = Stream.repeatedly(generator) |> Enum.take(10)
 
   animation =
@@ -38,7 +38,7 @@ defmodule Xebow.Animation.Static do
   ### Play a pre-defined animation, three times
   ```
   frames = [
-    %Xebow.AnimationFrame{
+    %Xebow.Frame{
       pixel_map: %{
         {0, 0} => %Chameleon.HSV{h: 100, s: 100, v: 100},
         {0, 1} => %Chameleon.HSV{h: 100, s: 100, v: 100},
@@ -54,7 +54,7 @@ defmodule Xebow.Animation.Static do
         {2, 3} => %Chameleon.HSV{h: 100, s: 100, v: 100}
       }
     },
-    %Xebow.AnimationFrame{
+    %Xebow.Frame{
       pixel_map: %{
         {0, 0} => %Chameleon.HSV{h: 0, s: 0, v: 0},
         {0, 1} => %Chameleon.HSV{h: 0, s: 0, v: 0},

@@ -5,7 +5,7 @@ defmodule Xebow.Animation.CycleAll do
 
   alias Chameleon.HSV
 
-  alias Xebow.{Animation, AnimationFrame}
+  alias Xebow.{Animation, Frame}
 
   import Xebow.Utils, only: [mod: 2]
 
@@ -22,6 +22,6 @@ defmodule Xebow.Animation.CycleAll do
     pixels = Xebow.Utils.pixels()
     pixel_colors = Enum.map(pixels, fn {_x, _y} -> color end)
 
-    AnimationFrame.new(pixels, pixel_colors)
+    Frame.new(pixels, pixel_colors)
   end
 end

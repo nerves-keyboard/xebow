@@ -5,7 +5,7 @@ defmodule Xebow.Animation.CycleLeftToRight do
 
   alias Chameleon.HSV
 
-  alias Xebow.{Animation, AnimationFrame}
+  alias Xebow.{Animation, Frame}
 
   import Xebow.Utils, only: [mod: 2]
 
@@ -24,6 +24,6 @@ defmodule Xebow.Animation.CycleLeftToRight do
         HSV.new(hue, 100, 100)
       end
 
-    AnimationFrame.new(pixels, pixel_colors)
+    Frame.new(pixels, pixel_colors)
   end
 end

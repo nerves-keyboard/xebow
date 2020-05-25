@@ -5,7 +5,7 @@ defmodule Xebow.Animation.Pinwheel do
 
   alias Chameleon.HSV
 
-  alias Xebow.{Animation, AnimationFrame}
+  alias Xebow.{Animation, Frame}
 
   import Xebow.Utils, only: [mod: 2]
 
@@ -33,7 +33,7 @@ defmodule Xebow.Animation.Pinwheel do
         HSV.new(hue, 100, 100)
       end
 
-    AnimationFrame.new(pixels, pixel_colors)
+    Frame.new(pixels, pixel_colors)
   end
 
   defp atan2_8(x, y) do

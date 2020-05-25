@@ -13,7 +13,7 @@ defmodule Xebow.Animation do
   """
 
   alias __MODULE__
-  alias Xebow.{AnimationFrame}
+  alias Xebow.Frame
 
   defmacro __using__(_) do
     quote do
@@ -23,7 +23,7 @@ defmodule Xebow.Animation do
     end
   end
 
-  @callback next_frame(animation :: Animation.t()) :: AnimationFrame.t()
+  @callback next_frame(animation :: Animation.t()) :: Frame.t()
 
   @type t :: %__MODULE__{
           type: animation_type,
@@ -31,8 +31,8 @@ defmodule Xebow.Animation do
           speed: non_neg_integer,
           loop: non_neg_integer | -1,
           delay_ms: non_neg_integer,
-          frames: list(AnimationFrame.t()),
-          next_frame: AnimationFrame.t() | nil
+          frames: list(Frame.t()),
+          next_frame: Frame.t() | nil
         }
   defstruct [:type, :tick, :speed, :delay_ms, :loop, :next_frame, :frames]
 

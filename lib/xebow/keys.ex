@@ -4,7 +4,7 @@ defmodule Xebow.Keys do
   use GenServer
 
   alias Circuits.GPIO
-  alias Xebow.{Animation, AnimationFrame}
+  alias Xebow.{Animation, Frame}
 
   @gpio_pins %{
     20 => :k001,
@@ -160,7 +160,7 @@ defmodule Xebow.Keys do
   def flash(color) do
     pixels = Xebow.Utils.pixels()
     color = Chameleon.Keyword.new(color)
-    frame = AnimationFrame.solid_color(pixels, color)
+    frame = Frame.solid_color(pixels, color)
 
     animation = Animation.new(type: Animation.Static, frames: [frame], delay_ms: 250, loop: 1)
 

@@ -1,4 +1,4 @@
-defmodule Xebow.AnimationFrame do
+defmodule Xebow.Frame do
   @moduledoc """
   Provides a data structure and functions for working with animation frames.
 

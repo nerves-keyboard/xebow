@@ -13,67 +13,30 @@ defmodule Xebow.Animation do
   """
 
   alias __MODULE__
-  alias Xebow.{AnimationFrame, RGBMatrix}
+  alias Xebow.{AnimationFrame}
 
-  @callback init_state(frames :: list(AnimationFrame.t())) :: t
-  @callback next_frame(animation :: Animation.t()) :: AnimationFrame.t()
-
-  @type t :: %__MODULE__{
-          type: type,
-          tick: non_neg_integer,
-          speed: non_neg_integer,
-          loop: non_neg_integer | -1,
-          delay_ms: non_neg_integer,
-          frames: list(AnimationFrame.t()),
-          next_frame: AnimationFrame.t()
-        }
-  defstruct [:type, :tick, :speed, :delay_ms, :loop, :next_frame, :frames]
-
-  # Helpers for implementing animations.
   defmacro __using__(_) do
     quote do
       alias Xebow.Animation
 
       @behaviour Animation
-
-      @impl Animation
-      def init_state(pixels) do
-        init_state_from_defaults(__MODULE__, pixels)
-      end
-
-      # Initialize an `Animation` struct with default values.
-      # Defaults can be overridden by passing the corresponding keyword as `opts`.
-      @spec init_state_from_defaults(
-              animation_type :: Animation.type(),
-              pixels :: list(RGBMatrix.pixel()),
-              opts :: list(keyword)
-            ) :: Animation.t()
-      defp init_state_from_defaults(animation_type, pixels, opts \\ []) do
-        init_frame = AnimationFrame.new(pixels, opts[:pixel_colors] || init_pixel_colors(pixels))
-
-        %Animation{
-          type: animation_type,
-          tick: opts[:tick] || 0,
-          speed: opts[:speed] || 100,
-          delay_ms: opts[:delay_ms] || 17,
-          loop: opts[:loop] || -1,
-          next_frame: init_frame,
-          frames: [init_frame]
-        }
-      end
-
-      # Initialize a list of default pixel colors.
-      # The default sets all pixels to be turned off ("black").
-      @spec init_pixel_colors(pixels :: list(RGBMatrix.pixel())) :: list(RGBMatrix.pixel_color())
-      defp init_pixel_colors(pixels) do
-        Enum.map(pixels, fn _pixel -> Chameleon.HSV.new(0, 0, 0) end)
-      end
-
-      defoverridable init_state: 1
     end
   end
 
-  @type type ::
+  @callback next_frame(animation :: Animation.t()) :: AnimationFrame.t()
+
+  @type t :: %__MODULE__{
+          type: animation_type,
+          tick: non_neg_integer,
+          speed: non_neg_integer,
+          loop: non_neg_integer | -1,
+          delay_ms: non_neg_integer,
+          frames: list(AnimationFrame.t()),
+          next_frame: AnimationFrame.t() | nil
+        }
+  defstruct [:type, :tick, :speed, :delay_ms, :loop, :next_frame, :frames]
+
+  @type animation_type ::
           __MODULE__.CycleAll
           | __MODULE__.CycleLeftToRight
           | __MODULE__.Pinwheel
@@ -82,7 +45,7 @@ defmodule Xebow.Animation do
   @doc """
   Returns a list of the available types of animations.
   """
-  @spec types :: list(type)
+  @spec types :: list(animation_type)
   def types do
     [
       __MODULE__.CycleAll,
@@ -91,12 +54,30 @@ defmodule Xebow.Animation do
     ]
   end
 
-  @doc """
-  Returns an animation set to its initial state.
-  """
-  @spec init_state(animation_type :: type, pixels :: list(RGBMatrix.pixel())) :: t
-  def init_state(animation_type, pixels) do
-    animation_type.init_state(pixels)
+  @type animation_opt ::
+          {:type, animation_type}
+          | {:frames, list}
+          | {:tick, non_neg_integer}
+          | {:speed, non_neg_integer}
+          | {:delay_ms, non_neg_integer}
+          | {:loop, non_neg_integer | -1}
+
+  @type animation_opts :: list(animation_opt)
+
+  @spec new(opts :: animation_opts) :: Animation.t()
+  def new(opts) do
+    animation_type = Keyword.fetch!(opts, :type)
+    frames = Keyword.get(opts, :frames, [])
+
+    %Animation{
+      type: animation_type,
+      tick: opts[:tick] || 0,
+      speed: opts[:speed] || 100,
+      delay_ms: opts[:delay_ms] || 17,
+      loop: opts[:loop] || -1,
+      frames: frames,
+      next_frame: List.first(frames)
+    }
   end
 
   @doc """

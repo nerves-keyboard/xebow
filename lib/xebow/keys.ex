@@ -4,6 +4,7 @@ defmodule Xebow.Keys do
   use GenServer
 
   alias Circuits.GPIO
+  alias Xebow.{Animation, AnimationFrame}
 
   @gpio_pins %{
     20 => :k001,
@@ -55,7 +56,7 @@ defmodule Xebow.Keys do
     },
     # Layer 2:
     %{
-      k001: AFK.Keycode.MFA.new({__MODULE__, :flash_red, []}),
+      k001: AFK.Keycode.MFA.new({__MODULE__, :flash, ["red"]}),
       k002: AFK.Keycode.MFA.new({__MODULE__, :previous_animation, []}),
       k003: AFK.Keycode.Transparent.new(),
       k004: AFK.Keycode.Transparent.new(),
@@ -63,7 +64,7 @@ defmodule Xebow.Keys do
       k006: AFK.Keycode.Transparent.new(),
       k007: AFK.Keycode.Transparent.new(),
       k008: AFK.Keycode.Transparent.new(),
-      k009: AFK.Keycode.MFA.new({__MODULE__, :flash_green, []}),
+      k009: AFK.Keycode.MFA.new({__MODULE__, :flash, ["green"]}),
       k010: AFK.Keycode.MFA.new({__MODULE__, :next_animation, []}),
       k011: AFK.Keycode.Transparent.new(),
       k012: AFK.Keycode.Transparent.new()
@@ -156,12 +157,14 @@ defmodule Xebow.Keys do
 
   # Custom Key Functions
 
-  def flash_red do
-    Xebow.RGBMatrix.flash("red")
-  end
+  def flash(color) do
+    pixels = Xebow.Utils.pixels()
+    color = Chameleon.Keyword.new(color)
+    frame = AnimationFrame.solid_color(pixels, color)
 
-  def flash_green do
-    Xebow.RGBMatrix.flash("green")
+    animation = Animation.new(type: Animation.Static, frames: [frame], delay_ms: 250, loop: 1)
+
+    Xebow.RGBMatrix.play_animation(animation)
   end
 
   def next_animation do
@@ -174,8 +177,8 @@ defmodule Xebow.Keys do
 
   def start_wifi_wizard do
     case VintageNetWizard.run_wizard() do
-      :ok -> Xebow.RGBMatrix.flash("green")
-      {:error, _reason} -> Xebow.RGBMatrix.flash("red")
+      :ok -> flash("green")
+      {:error, _reason} -> flash("red")
     end
   end
 end

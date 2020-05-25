@@ -33,10 +33,6 @@ defmodule Xebow.RGBMatrix do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
-  def flash(color, sleep_ms \\ 250) do
-    GenServer.cast(__MODULE__, {:flash, color, sleep_ms})
-  end
-
   def next_animation do
     GenServer.cast(__MODULE__, :next_animation)
   end
@@ -62,16 +58,17 @@ defmodule Xebow.RGBMatrix do
     send(self(), :get_next_frame)
 
     [initial_animation_type | _] = Animation.types()
+    animation = Animation.new(type: initial_animation_type)
 
     state =
       %State{spidev: spidev}
-      |> set_animation(initial_animation_type)
+      |> set_animation(animation)
 
     {:ok, state}
   end
 
-  defp set_animation(state, animation_type) do
-    %State{state | animation: Animation.init_state(animation_type, Xebow.Utils.pixels())}
+  defp set_animation(state, animation) do
+    %State{state | animation: animation}
   end
 
   @impl GenServer
@@ -80,12 +77,12 @@ defmodule Xebow.RGBMatrix do
     paint(state.spidev, animation.next_frame)
 
     Process.send_after(self(), :get_next_frame, animation.delay_ms)
-    {:noreply, %State{state | animation: animation}}
+    {:noreply, set_animation(state, animation)}
   end
 
   @impl GenServer
   def handle_info({:reset_animation, reset_animation}, state) do
-    {:noreply, %State{state | animation: reset_animation}}
+    {:noreply, set_animation(state, reset_animation)}
   end
 
   defp paint(spidev, frame) do
@@ -103,22 +100,6 @@ defmodule Xebow.RGBMatrix do
     SPI.transfer(spidev, data)
   end
 
-  defp paint_solid(spidev, color) do
-    color = Chameleon.Keyword.new(color)
-    pixels = Xebow.Utils.pixels()
-    animation_frame = AnimationFrame.solid_color(pixels, color)
-    paint(spidev, animation_frame)
-  end
-
-  @impl GenServer
-  def handle_cast({:flash, color, sleep_ms}, state) do
-    paint_solid(state.spidev, color)
-
-    Process.sleep(sleep_ms)
-
-    {:noreply, state}
-  end
-
   @impl GenServer
   def handle_cast(:next_animation, state) do
     animation_types = Animation.types()
@@ -126,8 +107,9 @@ defmodule Xebow.RGBMatrix do
     current = Enum.find_index(animation_types, &(&1 == state.animation.type))
     next = mod(current + 1, num)
     animation_type = Enum.at(animation_types, next)
+    animation = Animation.new(type: animation_type)
 
-    {:noreply, set_animation(state, animation_type)}
+    {:noreply, set_animation(state, animation)}
   end
 
   @impl GenServer
@@ -137,8 +119,9 @@ defmodule Xebow.RGBMatrix do
     current = Enum.find_index(animation_types, &(&1 == state.animation.type))
     previous = mod(current - 1, num)
     animation_type = Enum.at(animation_types, previous)
+    animation = Animation.new(type: animation_type)
 
-    {:noreply, set_animation(state, animation_type)}
+    {:noreply, set_animation(state, animation)}
   end
 
   @impl GenServer
@@ -147,7 +130,7 @@ defmodule Xebow.RGBMatrix do
     expected_duration = Animation.duration(animation)
     Process.send_after(self(), {:reset_animation, current_animation}, expected_duration)
 
-    {:noreply, %State{state | animation: animation}}
+    {:noreply, set_animation(state, animation)}
   end
 
   def handle_cast({:play_animation, %{loop: 0} = _animation}, state) do
@@ -156,6 +139,6 @@ defmodule Xebow.RGBMatrix do
 
   @impl GenServer
   def handle_cast({:play_animation, animation}, state) do
-    {:noreply, %State{state | animation: animation}}
+    {:noreply, set_animation(state, animation)}
   end
 end

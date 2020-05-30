@@ -41,6 +41,13 @@ defmodule Xebow.RGBMatrix do
     GenServer.cast(__MODULE__, :previous_animation)
   end
 
+  @doc """
+  Play a given animation on the matrix.
+
+  Note that the animation can be played synchronously by passing `:false` for the `:async` option. However, only
+  `Xebow.Animation.Static` animations may be played this way. This is to ensure that the caller is not blocked
+  forever.
+  """
   @spec play_animation(animation :: Animation.t(), opts :: keyword()) :: :ok
   def play_animation(animation, opts \\ []) do
     async? = Keyword.get(opts, :async, true)

@@ -164,7 +164,7 @@ defmodule Xebow.Keys do
 
     animation = Animation.new(type: Animation.Static, frames: [frame], delay_ms: 250, loop: 1)
 
-    Xebow.RGBMatrix.play_animation(animation)
+    Xebow.RGBMatrix.play_animation(animation, async: false)
   end
 
   def next_animation do

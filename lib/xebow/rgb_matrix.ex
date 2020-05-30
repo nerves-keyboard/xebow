@@ -41,9 +41,15 @@ defmodule Xebow.RGBMatrix do
     GenServer.cast(__MODULE__, :previous_animation)
   end
 
-  @spec play_animation(animation :: Animation.t()) :: :ok
-  def play_animation(animation) do
-    GenServer.cast(__MODULE__, {:play_animation, animation})
+  @spec play_animation(animation :: Animation.t(), opts :: keyword()) :: :ok
+  def play_animation(animation, opts \\ []) do
+    async? = Keyword.get(opts, :async, true)
+
+    if async? do
+      GenServer.cast(__MODULE__, {:play_animation, animation})
+    else
+      GenServer.call(__MODULE__, {:play_animation, animation})
+    end
   end
 
   # Server
@@ -82,6 +88,13 @@ defmodule Xebow.RGBMatrix do
 
   @impl GenServer
   def handle_info({:reset_animation, reset_animation}, state) do
+    {:noreply, set_animation(state, reset_animation)}
+  end
+
+  @impl GenServer
+  def handle_info({:reply, from, reset_animation}, state) do
+    GenServer.reply(from, :ok)
+
     {:noreply, set_animation(state, reset_animation)}
   end
 
@@ -139,6 +152,15 @@ defmodule Xebow.RGBMatrix do
 
   @impl GenServer
   def handle_cast({:play_animation, animation}, state) do
+    {:noreply, set_animation(state, animation)}
+  end
+
+  @impl GenServer
+  def handle_call({:play_animation, %{type: Xebow.Animation.Static} = animation}, from, state) do
+    current_animation = state.animation
+    duration = Animation.duration(animation)
+    Process.send_after(self(), {:reply, from, current_animation}, duration)
+
     {:noreply, set_animation(state, animation)}
   end
 end

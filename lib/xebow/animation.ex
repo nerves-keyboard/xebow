@@ -62,9 +62,7 @@ defmodule Xebow.Animation do
           | {:delay_ms, non_neg_integer}
           | {:loop, non_neg_integer | :infinite}
 
-  @type animation_opts :: list(animation_opt)
-
-  @spec new(opts :: animation_opts) :: Animation.t()
+  @spec new(opts :: list(animation_opt)) :: Animation.t()
   def new(opts) do
     animation_type = Keyword.fetch!(opts, :type)
     frames = Keyword.get(opts, :frames, [])

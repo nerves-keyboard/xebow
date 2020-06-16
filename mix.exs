@@ -62,6 +62,7 @@ defmodule Xebow.MixProject do
       {:afk, "~> 0.3"},
       {:dialyxir, "~> 1.0.0", only: :dev, runtime: false},
       {:ex_doc, "~> 0.22.1", only: :dev, runtime: false},
+      {:mox, "~> 0.5", only: :test},
 
       # Dependencies for all targets except :host
       {:nerves_runtime, "~> 0.11", targets: @all_targets, override: true},

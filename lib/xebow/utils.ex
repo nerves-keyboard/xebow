@@ -19,4 +19,24 @@ defmodule Xebow.Utils do
         remainder
     end
   end
+
+  # pixels on the xebow start in upper left corner and count down instead of
+  # across
+  @pixels [
+    {0, 0},
+    {0, 1},
+    {0, 2},
+    {0, 3},
+    {1, 0},
+    {1, 1},
+    {1, 2},
+    {1, 3},
+    {2, 0},
+    {2, 1},
+    {2, 2},
+    {2, 3}
+  ]
+
+  @spec pixels() :: list(Xebow.RGBMatrix.pixel())
+  def pixels, do: @pixels
 end

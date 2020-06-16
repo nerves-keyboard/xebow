@@ -54,14 +54,14 @@ defmodule Xebow.MixProject do
   defp deps do
     [
       # Dependencies for all targets
-      {:nerves, "~> 1.6.1", runtime: false},
+      {:nerves, "~> 1.6.3", runtime: false},
       {:shoehorn, "~> 0.6"},
       {:ring_logger, "~> 0.8"},
       {:toolshed, "~> 0.2"},
       {:chameleon, "~> 2.2"},
       {:afk, "~> 0.3"},
       {:dialyxir, "~> 1.0.0", only: :dev, runtime: false},
-      {:ex_doc, "~> 0.21.3", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.22.1", only: :dev, runtime: false},
 
       # Dependencies for all targets except :host
       {:nerves_runtime, "~> 0.11", targets: @all_targets, override: true},

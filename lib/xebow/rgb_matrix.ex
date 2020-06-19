@@ -1,4 +1,6 @@
 defmodule Xebow.RGBMatrix do
+  @behaviour Xebow.Paintable
+
   use GenServer
 
   alias Circuits.SPI
@@ -31,10 +33,8 @@ defmodule Xebow.RGBMatrix do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
-  @doc """
-  Returns a function that can be called to paint the pixels.
-  """
-  @spec get_paint_fn :: (Xebow.Frame.t() -> any)
+
+  @impl Xebow.Paintable
   def get_paint_fn do
     GenServer.call(__MODULE__, :get_paint_fn)
   end

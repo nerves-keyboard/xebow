@@ -21,8 +21,7 @@ defmodule Xebow.Engine do
   Start the engine.
 
   This function accepts a tuple that contains the following arguments:
-  - `paintable_module` - A module that implements `get_paint_fn`, which
-    returns an anonymous function that accepts a frame to paint.
+  - `paintable_module` - A module that implements the `Xebow.Paintable` behaviour.
   """
   @spec start_link({paintable_module :: module}) :: GenServer.on_start()
   def start_link({paintable_module}) do

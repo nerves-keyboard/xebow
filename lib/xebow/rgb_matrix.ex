@@ -2,12 +2,10 @@ defmodule Xebow.RGBMatrix do
   use GenServer
 
   alias Circuits.SPI
-  alias Xebow.Animation
-
-  import Xebow.Utils, only: [mod: 2]
 
   defmodule State do
-    defstruct [:spidev, :animation]
+    @moduledoc false
+    defstruct [:spidev]
   end
 
   @type any_color_model ::
@@ -33,30 +31,12 @@ defmodule Xebow.RGBMatrix do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
-  def next_animation do
-    GenServer.cast(__MODULE__, :next_animation)
-  end
-
-  def previous_animation do
-    GenServer.cast(__MODULE__, :previous_animation)
-  end
-
   @doc """
-  Play a given animation on the matrix.
-
-  Note that the animation can be played synchronously by passing `:false` for the `:async` option. However, only
-  looping (animations with `:loop` >= 1) animations may be played this way. This is to ensure that the caller is not
-  blocked forever.
+  Returns a function that can be called to paint the pixels.
   """
-  @spec play_animation(animation :: Animation.t(), opts :: keyword()) :: :ok
-  def play_animation(animation, opts \\ []) do
-    async? = Keyword.get(opts, :async, true)
-
-    if async? do
-      GenServer.cast(__MODULE__, {:play_animation, animation})
-    else
-      GenServer.call(__MODULE__, {:play_animation, animation})
-    end
+  @spec get_paint_fn :: (Xebow.Frame.t() -> any)
+  def get_paint_fn do
+    GenServer.call(__MODULE__, :get_paint_fn)
   end
 
   # Server
@@ -68,41 +48,15 @@ defmodule Xebow.RGBMatrix do
         speed_hz: @spi_speed_hz
       )
 
-    send(self(), :get_next_frame)
-
-    [initial_animation_type | _] = Animation.types()
-    animation = Animation.new(type: initial_animation_type)
-
-    state =
-      %State{spidev: spidev}
-      |> set_animation(animation)
+    state = %State{spidev: spidev}
 
     {:ok, state}
   end
 
-  defp set_animation(state, animation) do
-    %State{state | animation: animation}
-  end
-
   @impl GenServer
-  def handle_info(:get_next_frame, state) do
-    animation = Animation.next_frame(state.animation)
-    paint(state.spidev, animation.next_frame)
-
-    Process.send_after(self(), :get_next_frame, animation.delay_ms)
-    {:noreply, set_animation(state, animation)}
-  end
-
-  @impl GenServer
-  def handle_info({:reset_animation, reset_animation}, state) do
-    {:noreply, set_animation(state, reset_animation)}
-  end
-
-  @impl GenServer
-  def handle_info({:reply, from, reset_animation}, state) do
-    GenServer.reply(from, :ok)
-
-    {:noreply, set_animation(state, reset_animation)}
+  def handle_call(:get_paint_fn, _from, state) do
+    paint_fn = fn frame -> paint(state.spidev, frame) end
+    {:reply, paint_fn, state}
   end
 
   defp paint(spidev, frame) do
@@ -118,56 +72,5 @@ defmodule Xebow.RGBMatrix do
       end) <> @eof
 
     SPI.transfer(spidev, data)
-  end
-
-  @impl GenServer
-  def handle_cast(:next_animation, state) do
-    animation_types = Animation.types()
-    num = Enum.count(animation_types)
-    current = Enum.find_index(animation_types, &(&1 == state.animation.type))
-    next = mod(current + 1, num)
-    animation_type = Enum.at(animation_types, next)
-    animation = Animation.new(type: animation_type)
-
-    {:noreply, set_animation(state, animation)}
-  end
-
-  @impl GenServer
-  def handle_cast(:previous_animation, state) do
-    animation_types = Animation.types()
-    num = Enum.count(animation_types)
-    current = Enum.find_index(animation_types, &(&1 == state.animation.type))
-    previous = mod(current - 1, num)
-    animation_type = Enum.at(animation_types, previous)
-    animation = Animation.new(type: animation_type)
-
-    {:noreply, set_animation(state, animation)}
-  end
-
-  @impl GenServer
-  def handle_cast({:play_animation, %{loop: loop} = animation}, state) when loop >= 1 do
-    current_animation = state.animation
-    expected_duration = Animation.duration(animation)
-    Process.send_after(self(), {:reset_animation, current_animation}, expected_duration)
-
-    {:noreply, set_animation(state, animation)}
-  end
-
-  def handle_cast({:play_animation, %{loop: 0} = _animation}, state) do
-    {:noreply, state}
-  end
-
-  @impl GenServer
-  def handle_cast({:play_animation, animation}, state) do
-    {:noreply, set_animation(state, animation)}
-  end
-
-  @impl GenServer
-  def handle_call({:play_animation, %{loop: loop} = animation}, from, state) when loop >= 1 do
-    current_animation = state.animation
-    duration = Animation.duration(animation)
-    Process.send_after(self(), {:reply, from, current_animation}, duration)
-
-    {:noreply, set_animation(state, animation)}
   end
 end

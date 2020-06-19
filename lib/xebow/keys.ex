@@ -164,15 +164,15 @@ defmodule Xebow.Keys do
 
     animation = Animation.new(type: Animation.Static, frames: [frame], delay_ms: 250, loop: 1)
 
-    Xebow.RGBMatrix.play_animation(animation, async: false)
+    Xebow.Engine.play_animation(animation, async: false)
   end
 
   def next_animation do
-    Xebow.RGBMatrix.next_animation()
+    Xebow.Engine.next_animation()
   end
 
   def previous_animation do
-    Xebow.RGBMatrix.previous_animation()
+    Xebow.Engine.previous_animation()
   end
 
   def start_wifi_wizard do

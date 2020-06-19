@@ -36,6 +36,7 @@ defmodule Xebow.Application do
       # {Xebow.Worker, arg},
       Xebow.HIDGadget,
       Xebow.RGBMatrix,
+      {Xebow.Engine, {Xebow.RGBMatrix}},
       Xebow.Keys
     ]
   end

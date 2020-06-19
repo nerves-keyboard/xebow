@@ -10,8 +10,8 @@ jobs:
       - name: Set up Elixir
         uses: actions/setup-elixir@v1
         with:
-          otp-version: 22.3
-          elixir-version: 1.10.2
+          otp-version: 23.0
+          elixir-version: 1.10.3
       - name: Checkout repository
         uses: actions/checkout@v2
       - name: Check code formatting
@@ -26,8 +26,8 @@ jobs:
       - name: Set up Elixir
         uses: actions/setup-elixir@v1
         with:
-          otp-version: 22.3
-          elixir-version: 1.10.2
+          otp-version: 23.0
+          elixir-version: 1.10.3
       - name: Install Nerves bootstrap
         run: mix archive.install --force hex nerves_bootstrap
       - name: Restore Nerves artifacts

@@ -62,11 +62,12 @@ defmodule Xebow.MixProject do
       {:afk, "~> 0.3"},
       {:dialyxir, "~> 1.0.0", only: :dev, runtime: false},
       {:ex_doc, "~> 0.22.1", only: :dev, runtime: false},
+      {:mox, "~> 0.5", only: :test},
 
       # Dependencies for all targets except :host
       {:nerves_runtime, "~> 0.11", targets: @all_targets, override: true},
       {:nerves_pack, "~> 0.3", targets: @all_targets},
-      {:vintage_net_wizard, "~> 0.2", target: @all_targets},
+      {:vintage_net_wizard, "~> 0.2", target: @all_targets, only: [:dev, :prod]},
       {:circuits_gpio, "~> 0.4", targets: @all_targets},
       {:circuits_spi, "~> 0.1", targets: @all_targets},
       {:usb_gadget, github: "nerves-project/usb_gadget", ref: "master", targets: @all_targets},

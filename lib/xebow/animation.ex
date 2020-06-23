@@ -9,7 +9,7 @@ defmodule Xebow.Animation do
   examples.
 
   Alternatively, you may have a more dynamic animation which generates frames based on the current `:tick` of the
-  animation. See `Xebow.Animation.{CycleAll, CycleLeftToRight, Pinwheel} for examples.
+  animation. See `Xebow.Animation.{CycleAll, CycleLeftToRight, Pinwheel}` for examples.
   """
 
   alias __MODULE__

@@ -12,7 +12,7 @@ defmodule Xebow.Engine do
 
   defmodule State do
     @moduledoc false
-    defstruct [:animation, :paint_fn]
+    defstruct [:animation, :paintables]
   end
 
   # Client
@@ -20,13 +20,12 @@ defmodule Xebow.Engine do
   @doc """
   Start the engine.
 
-  This function accepts a tuple that contains the following arguments:
-  - `paintable_module` - A module that implements the `Xebow.Paintable` behaviour.
+  This function accepts the following arguments:
+  - `paintables` - A list of modules that implement the `Xebow.Paintable` behaviour.
   """
-  @spec start_link({paintable_module :: module}) :: GenServer.on_start()
-  def start_link({paintable_module}) do
-    paint_fn = paintable_module.get_paint_fn
-    GenServer.start_link(__MODULE__, {paint_fn}, name: __MODULE__)
+  @spec start_link(paintables :: list(module)) :: GenServer.on_start()
+  def start_link(paintables \\ []) do
+    GenServer.start_link(__MODULE__, {paintables}, name: __MODULE__)
   end
 
   @doc """
@@ -63,20 +62,51 @@ defmodule Xebow.Engine do
     end
   end
 
+  @doc """
+  Register a `Xebow.Paintable` for the engine to paint pixels to.
+  This function is idempotent.
+  """
+  @spec register_paintable(paintable :: module) :: :ok
+  def register_paintable(paintable) do
+    GenServer.call(__MODULE__, {:register_paintable, paintable})
+  end
+
+  @doc """
+  Unregister a `Xebow.Paintable` so the engine no longer paints pixels to it.
+  This function is idempotent.
+  """
+  @spec unregister_paintable(paintable :: module) :: :ok
+  def unregister_paintable(paintable) do
+    GenServer.call(__MODULE__, {:unregister_paintable, paintable})
+  end
+
   # Server
 
   @impl GenServer
-  def init({paint_fn}) do
+  def init({paintables}) do
     send(self(), :get_next_frame)
 
     [initial_animation_type | _] = Animation.types()
     animation = Animation.new(type: initial_animation_type)
+    initial_state = %State{paintables: %{}}
 
     state =
-      %State{paint_fn: paint_fn}
+      Enum.reduce(paintables, initial_state, fn paintable, state ->
+        add_paintable(paintable, state)
+      end)
       |> set_animation(animation)
 
     {:ok, state}
+  end
+
+  defp add_paintable(paintable, state) do
+    paintables = Map.put(state.paintables, paintable, paintable.get_paint_fn)
+    %State{state | paintables: paintables}
+  end
+
+  defp remove_paintable(paintable, state) do
+    paintables = Map.delete(state.paintables, paintable)
+    %State{state | paintables: paintables}
   end
 
   defp set_animation(state, animation) do
@@ -86,7 +116,12 @@ defmodule Xebow.Engine do
   @impl GenServer
   def handle_info(:get_next_frame, state) do
     animation = Animation.next_frame(state.animation)
-    state.paint_fn.(animation.next_frame)
+
+    state.paintables
+    |> Map.values()
+    |> Enum.each(fn paint_fn ->
+      paint_fn.(animation.next_frame)
+    end)
 
     Process.send_after(self(), :get_next_frame, animation.delay_ms)
     {:noreply, set_animation(state, animation)}
@@ -154,5 +189,17 @@ defmodule Xebow.Engine do
     Process.send_after(self(), {:reply, from, current_animation}, duration)
 
     {:noreply, set_animation(state, animation)}
+  end
+
+  @impl GenServer
+  def handle_call({:register_paintable, paintable}, _from, state) do
+    state = add_paintable(paintable, state)
+    {:reply, :ok, state}
+  end
+
+  @impl GenServer
+  def handle_call({:unregister_paintable, paintable}, _from, state) do
+    state = remove_paintable(paintable, state)
+    {:reply, :ok, state}
   end
 end

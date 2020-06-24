@@ -17,7 +17,12 @@ defmodule Xebow.MixProject do
       deps: deps(),
       docs: [extras: ["README.md"]],
       releases: [{@app, release()}],
-      preferred_cli_target: [run: :host, test: :host, dialyzer: :keybow],
+      preferred_cli_target: [
+        run: :host,
+        test: :host,
+        dialyzer: :keybow,
+        docs: :keybow
+      ],
       dialyzer: [
         ignore_warnings: "dialyzer.ignore.exs",
         list_unused_filters: true,

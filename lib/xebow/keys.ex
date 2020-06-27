@@ -83,10 +83,11 @@ defmodule Xebow.Keys do
   def init([]) do
     pins =
       Enum.map(@gpio_pins, fn {pin_number, _key} ->
-        {:ok, pin} = GPIO.open(pin_number, :input, pull_mode: :pullup)
-        GPIO.set_interrupts(pin, :both)
+        {:ok, pin_ref} = GPIO.open(pin_number, :input, pull_mode: :pullup)
+        # Don't read because the initial value might be garbage
+        value = 1
 
-        pin
+        {pin_number, pin_ref, value}
       end)
 
     hid = File.open!(@hid_device, [:write])
@@ -98,61 +99,51 @@ defmodule Xebow.Keys do
         hid_report_mod: AFK.HIDReport.SixKeyRollover
       )
 
+    poll_timer_ms = 15
+    :timer.send_interval(poll_timer_ms, self(), :update_pin_values)
+
     {:ok,
      %{
        pins: pins,
        keyboard_state: keyboard_state,
-       hid: hid,
-       # The above `set_interrupts` will send an initial event (in this case a
-       # 'release' event).
-       # We need to keep track of which ones we haven't seen yet so we can
-       # ignore them.
-       init_releases_pending: @gpio_pins |> Map.keys() |> MapSet.new()
+       hid: hid
      }}
   end
 
-  @impl true
-  def handle_info(
-        {:circuits_gpio, pin_number, _timestamp, value},
-        %{init_releases_pending: _} = state
-      ) do
-    # ignore initial release events, process others
-    if MapSet.member?(state.init_releases_pending, pin_number) do
-      new_pending = MapSet.delete(state.init_releases_pending, pin_number)
-
-      if MapSet.size(new_pending) == 0 do
-        {:noreply, Map.delete(state, :init_releases_pending)}
-      else
-        {:noreply, %{state | init_releases_pending: new_pending}}
-      end
-    else
-      handle_gpio_interrupt({pin_number, value}, state)
-    end
-  end
-
-  def handle_info({:circuits_gpio, pin_number, _timestamp, value}, state) do
-    handle_gpio_interrupt({pin_number, value}, state)
-  end
-
+  @impl GenServer
   def handle_info({:hid_report, hid_report}, state) do
     IO.binwrite(state.hid, hid_report)
     {:noreply, state}
   end
 
-  defp handle_gpio_interrupt({pin_number, value}, state) do
+  def handle_info(:update_pin_values, state) do
+    new_pins =
+      Enum.map(state.pins, fn {pin_number, pin_ref, old_value} ->
+        new_value = GPIO.read(pin_ref)
+
+        if old_value != new_value do
+          handle_gpio_interrupt(pin_number, new_value, state.keyboard_state)
+        end
+
+        {pin_number, pin_ref, new_value}
+      end)
+
+    state = %{state | pins: new_pins}
+    {:noreply, state}
+  end
+
+  defp handle_gpio_interrupt(pin_number, value, keyboard_state) do
     key_id = @gpio_pins[pin_number]
 
     case value do
       0 ->
         Logger.debug("key pressed #{key_id}")
-        AFK.State.press_key(state.keyboard_state, key_id)
+        AFK.State.press_key(keyboard_state, key_id)
 
       1 ->
         Logger.debug("key released #{key_id}")
-        AFK.State.release_key(state.keyboard_state, key_id)
+        AFK.State.release_key(keyboard_state, key_id)
     end
-
-    {:noreply, state}
   end
 
   # Custom Key Functions

@@ -6,9 +6,9 @@ defmodule Xebow.Frame do
   list of frames or each frame can be dynamically generated based on the tick of some animation.
   """
 
-  alias Xebow.RGBMatrix
+  alias Xebow.Pixel
 
-  @type pixel_map :: %{required(RGBMatrix.pixel()) => RGBMatrix.pixel_color()}
+  @type pixel_map :: %{required(Pixel.t()) => Pixel.color()}
 
   @type t :: %__MODULE__{
           pixel_map: pixel_map()
@@ -16,7 +16,7 @@ defmodule Xebow.Frame do
 
   defstruct [:pixel_map]
 
-  @spec new(pixels :: list(RGBMatrix.pixel()), pixel_colors :: list(RGBMatrix.pixel_color())) ::
+  @spec new(pixels :: list(Pixel.t()), pixel_colors :: list(Pixel.color())) ::
           t()
   def new(pixels, pixel_colors) do
     pixel_map =
@@ -26,7 +26,7 @@ defmodule Xebow.Frame do
     %__MODULE__{pixel_map: pixel_map}
   end
 
-  @spec solid_color(pixels :: list(RGBMatrix.pixel()), color :: RGBMatrix.pixel_color()) :: t()
+  @spec solid_color(pixels :: list(Pixel.t()), color :: Pixel.color()) :: t()
   def solid_color(pixels, color) do
     pixel_colors = List.duplicate(color, length(pixels))
     new(pixels, pixel_colors)

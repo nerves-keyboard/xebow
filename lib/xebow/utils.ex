@@ -37,6 +37,6 @@ defmodule Xebow.Utils do
     {2, 3}
   ]
 
-  @spec pixels() :: list(Xebow.RGBMatrix.pixel())
+  @spec pixels() :: list(Xebow.Pixel.t())
   def pixels, do: @pixels
 end

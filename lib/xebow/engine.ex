@@ -20,12 +20,19 @@ defmodule Xebow.Engine do
   @doc """
   Start the engine.
 
-  This function accepts the following arguments:
-  - `paintables` - A list of modules that implement the `Xebow.Paintable` behaviour.
+  This module registers its process globally and is expected to be started by
+  a supervisor.
+
+  This function accepts the following arguments as a tuple:
+  - `initial_animation` - The animation that plays when the engine starts.
+  - `paintables` - A list of modules to output `Xebow.Frame` to that implement
+      the `Xebow.Paintable` behavior. If you want to register your paintables
+      dynamically, set this to an empty list `[]`.
   """
-  @spec start_link(paintables :: list(module)) :: GenServer.on_start()
-  def start_link(paintables \\ []) do
-    GenServer.start_link(__MODULE__, {paintables}, name: __MODULE__)
+  @spec start_link({initial_animation :: Animation.t(), paintables :: list(module)}) ::
+          GenServer.on_start()
+  def start_link({initial_animation, paintables}) do
+    GenServer.start_link(__MODULE__, {initial_animation, paintables}, name: __MODULE__)
   end
 
   @doc """
@@ -83,18 +90,16 @@ defmodule Xebow.Engine do
   # Server
 
   @impl GenServer
-  def init({paintables}) do
+  def init({initial_animation, paintables}) do
     send(self(), :get_next_frame)
 
-    [initial_animation_type | _] = Animation.types()
-    animation = Animation.new(type: initial_animation_type)
     initial_state = %State{paintables: %{}}
 
     state =
       Enum.reduce(paintables, initial_state, fn paintable, state ->
         add_paintable(paintable, state)
       end)
-      |> set_animation(animation)
+      |> set_animation(initial_animation)
 
     {:ok, state}
   end

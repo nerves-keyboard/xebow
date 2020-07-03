@@ -21,7 +21,8 @@ defmodule Xebow.MixProject do
         run: :host,
         test: :host,
         dialyzer: :keybow,
-        docs: :keybow
+        docs: :keybow,
+        firmware: :keybow
       ],
       dialyzer: [
         ignore_warnings: "dialyzer.ignore.exs",

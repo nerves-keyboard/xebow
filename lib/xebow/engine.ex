@@ -6,8 +6,6 @@ defmodule Xebow.Engine do
 
   use GenServer
 
-  import Xebow.Utils, only: [mod: 2]
-
   alias Xebow.Animation
 
   defmodule State do
@@ -33,22 +31,6 @@ defmodule Xebow.Engine do
           GenServer.on_start()
   def start_link({initial_animation, paintables}) do
     GenServer.start_link(__MODULE__, {initial_animation, paintables}, name: __MODULE__)
-  end
-
-  @doc """
-  Cycle to the next animation and play it.
-  """
-  @spec next_animation :: :ok
-  def next_animation do
-    GenServer.cast(__MODULE__, :next_animation)
-  end
-
-  @doc """
-  Cycle to the previous animation and play it.
-  """
-  @spec previous_animation :: :ok
-  def previous_animation do
-    GenServer.cast(__MODULE__, :previous_animation)
   end
 
   @doc """
@@ -145,31 +127,8 @@ defmodule Xebow.Engine do
   end
 
   @impl GenServer
-  def handle_cast(:next_animation, state) do
-    animation_types = Animation.types()
-    num = Enum.count(animation_types)
-    current = Enum.find_index(animation_types, &(&1 == state.animation.type))
-    next = mod(current + 1, num)
-    animation_type = Enum.at(animation_types, next)
-    animation = Animation.new(type: animation_type)
-
-    {:noreply, set_animation(state, animation)}
-  end
-
-  @impl GenServer
-  def handle_cast(:previous_animation, state) do
-    animation_types = Animation.types()
-    num = Enum.count(animation_types)
-    current = Enum.find_index(animation_types, &(&1 == state.animation.type))
-    previous = mod(current - 1, num)
-    animation_type = Enum.at(animation_types, previous)
-    animation = Animation.new(type: animation_type)
-
-    {:noreply, set_animation(state, animation)}
-  end
-
-  @impl GenServer
-  def handle_cast({:play_animation, %{loop: loop} = animation}, state) when loop >= 1 do
+  def handle_cast({:play_animation, %{loop: loop} = animation}, state)
+      when is_integer(loop) and loop >= 1 do
     current_animation = state.animation
     expected_duration = Animation.duration(animation)
     Process.send_after(self(), {:reset_animation, current_animation}, expected_duration)
@@ -188,7 +147,8 @@ defmodule Xebow.Engine do
   end
 
   @impl GenServer
-  def handle_call({:play_animation, %{loop: loop} = animation}, from, state) when loop >= 1 do
+  def handle_call({:play_animation, %{loop: loop} = animation}, from, state)
+      when is_integer(loop) and loop >= 1 do
     current_animation = state.animation
     duration = Animation.duration(animation)
     Process.send_after(self(), {:reply, from, current_animation}, duration)

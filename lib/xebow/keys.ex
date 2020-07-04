@@ -73,8 +73,25 @@ defmodule Xebow.Keys do
 
   # Client
 
-  def start_link([], opts \\ []) do
-    GenServer.start_link(__MODULE__, [], opts)
+  @spec start_link(any()) :: GenServer.on_start()
+  def start_link(_) do
+    GenServer.start_link(__MODULE__, [], name: __MODULE__)
+  end
+
+  @doc """
+  Cycle to the next animation
+  """
+  @spec next_animation() :: :ok
+  def next_animation do
+    GenServer.cast(__MODULE__, :next_animation)
+  end
+
+  @doc """
+  Cycle to the previous animation
+  """
+  @spec previous_animation() :: :ok
+  def previous_animation do
+    GenServer.cast(__MODULE__, :previous_animation)
   end
 
   # Server
@@ -102,12 +119,56 @@ defmodule Xebow.Keys do
     poll_timer_ms = 15
     :timer.send_interval(poll_timer_ms, self(), :update_pin_values)
 
+    animations =
+      Animation.types()
+      |> Enum.map(&Animation.new(type: &1))
+
     {:ok,
      %{
        pins: pins,
        keyboard_state: keyboard_state,
-       hid: hid
+       hid: hid,
+       animations: animations,
+       current_animation_index: 0
      }}
+  end
+
+  @impl GenServer
+  def handle_cast(:next_animation, state) do
+    next_index = state.current_animation_index + 1
+
+    next_index =
+      case next_index < Enum.count(state.animations) do
+        true -> next_index
+        _ -> 0
+      end
+
+    animation = Enum.at(state.animations, next_index)
+
+    Xebow.Engine.play_animation(animation)
+
+    state = %{state | current_animation_index: next_index}
+
+    {:noreply, state}
+  end
+
+  @impl GenServer
+  def handle_cast(:previous_animation, state) do
+    previous_index = state.current_animation_index - 1
+
+    previous_index =
+      case previous_index < 0 do
+        true -> Enum.count(state.animations) - 1
+        _ -> previous_index
+      end
+
+    animation = Enum.at(state.animations, previous_index)
+
+    Xebow.Engine.play_animation(animation)
+
+    state = %{state | current_animation_index: previous_index}
+
+    {:noreply, state}
   end
 
   @impl GenServer
@@ -116,6 +177,7 @@ defmodule Xebow.Keys do
     {:noreply, state}
   end
 
+  @impl GenServer
   def handle_info(:update_pin_values, state) do
     new_pins =
       Enum.map(state.pins, fn {pin_number, pin_ref, old_value} ->
@@ -156,14 +218,6 @@ defmodule Xebow.Keys do
     animation = Animation.new(type: Animation.Static, frames: [frame], delay_ms: 250, loop: 1)
 
     Xebow.Engine.play_animation(animation, async: false)
-  end
-
-  def next_animation do
-    Xebow.Engine.next_animation()
-  end
-
-  def previous_animation do
-    Xebow.Engine.previous_animation()
   end
 
   def start_wifi_wizard do

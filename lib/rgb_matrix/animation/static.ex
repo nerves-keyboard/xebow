@@ -1,13 +1,13 @@
-defmodule Xebow.Animation.Static do
+defmodule RGBMatrix.Animation.Static do
   @moduledoc """
   Pre-defined animations that run as a one-shot or on a loop.
 
-  The `Xebow.Animation.Static` animation type is used to define animations with a pre-defined set of frames. These
+  The `RGBMatrix.Animation.Static` animation type is used to define animations with a pre-defined set of frames. These
   animations can be played continiously or on a loop. This behavior is controlled by the `:loop` field on the animation.
   A value of `:infinite` means to play the animation continuously, while a value greater than 0 means to loop the animation
   `:loop` times.
 
-  Note that the playback speed of these animations is controlled by the `:delay_ms` field in the animation struct. The 
+  Note that the playback speed of these animations is controlled by the `:delay_ms` field in the animation struct. The
   `:speed` field not used when rendering these animations.
 
   ## Examples
@@ -20,25 +20,25 @@ defmodule Xebow.Animation.Static do
     end)
   end
 
-  generator = fn -> struct!(Xebow.Frame, pixel_map: gen_map.()) end
+  generator = fn -> struct!(RGBMatrix.Frame, pixel_map: gen_map.()) end
   frames = Stream.repeatedly(generator) |> Enum.take(10)
 
   animation =
-    %Xebow.Animation{
+    %RGBMatrix.Animation{
     delay_ms: 100,
     frames: frames,
     tick: 0,
     loop: :infinite,
-    type: Xebow.Animation.Static
+    type: RGBMatrix.Animation.Static
   }
 
-  Xebow.RGBMatrix.play_animation(animation)
+  Xebow.LEDs.play_animation(animation)
   ```
 
   ### Play a pre-defined animation, three times
   ```
   frames = [
-    %Xebow.Frame{
+    %RGBMatrix.Frame{
       pixel_map: %{
         {0, 0} => %Chameleon.HSV{h: 100, s: 100, v: 100},
         {0, 1} => %Chameleon.HSV{h: 100, s: 100, v: 100},
@@ -54,7 +54,7 @@ defmodule Xebow.Animation.Static do
         {2, 3} => %Chameleon.HSV{h: 100, s: 100, v: 100}
       }
     },
-    %Xebow.Frame{
+    %RGBMatrix.Frame{
       pixel_map: %{
         {0, 0} => %Chameleon.HSV{h: 0, s: 0, v: 0},
         {0, 1} => %Chameleon.HSV{h: 0, s: 0, v: 0},
@@ -72,21 +72,21 @@ defmodule Xebow.Animation.Static do
     }
   ]
 
-  animation = %Xebow.Animation{
+  animation = %RGBMatrix.Animation{
     delay_ms: 200,
     frames: frames,
     tick: 0,
     loop: 3,
-    type: Xebow.Animation.Static
+    type: RGBMatrix.Animation.Static
   }
 
-  Xebow.RGBMatrix.play_animation(animation)
+  Xebow.LEDs.play_animation(animation)
   ```
   """
 
-  alias Xebow.Animation
+  alias RGBMatrix.Animation
 
-  import Xebow.Utils, only: [mod: 2]
+  import RGBMatrix.Utils, only: [mod: 2]
 
   use Animation
 

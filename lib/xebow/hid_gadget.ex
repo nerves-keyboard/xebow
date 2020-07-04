@@ -1,6 +1,8 @@
 defmodule Xebow.HIDGadget do
   @moduledoc """
-  Set up the gadget devices with usb_gadget
+  Set up the gadget devices with usb_gadget.
+
+  This sets up a composite USB device with ethernet (ecm + rndis) and HID.
   """
 
   use GenServer, restart: :temporary

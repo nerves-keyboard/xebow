@@ -1,13 +1,13 @@
-defmodule Xebow.Animation.Pinwheel do
+defmodule RGBMatrix.Animation.Pinwheel do
   @moduledoc """
   Cycles hue in a pinwheel pattern.
   """
 
   alias Chameleon.HSV
 
-  alias Xebow.{Animation, Frame}
+  alias RGBMatrix.{Animation, Frame}
 
-  import Xebow.Utils, only: [mod: 2]
+  import RGBMatrix.Utils, only: [mod: 2]
 
   use Animation
 
@@ -21,6 +21,7 @@ defmodule Xebow.Animation.Pinwheel do
     %Animation{tick: tick, speed: speed} = animation
     time = div(tick * speed, 100)
 
+    # FIXME: no reaching into Xebow namespace
     pixels = Xebow.Utils.pixels()
 
     pixel_colors =

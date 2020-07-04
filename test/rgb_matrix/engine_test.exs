@@ -1,9 +1,9 @@
-defmodule Xebow.EngineTest do
+defmodule RGBMatrix.EngineTest do
   use ExUnit.Case
 
-  alias Xebow.{Animation, Engine, Frame}
+  alias RGBMatrix.{Animation, Engine, Frame}
 
-  # Creates a Xebow.Paintable module that emits frames to the test suite process.
+  # Creates a RGBMatrix.Paintable module that emits frames to the test suite process.
   defp paintable(%{test: test_name}) do
     process = self()
     module_name = String.to_atom("#{test_name}-paintable")

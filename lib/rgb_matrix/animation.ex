@@ -1,23 +1,23 @@
-defmodule Xebow.Animation do
+defmodule RGBMatrix.Animation do
   @moduledoc """
-  Provides a data structure and functions to define a Xebow animation.
+  Provides a data structure and functions to define an RGBMatrix animation.
 
   There are currently two distinct ways to define an animation.
 
   You may define an animation with a predefined `:frames` field. Each frame will advance every `:delay_ms` milliseconds.
-  These animations should use the `Xebow.Animation.Static` `:type`. See the moduledocs of that module for
+  These animations should use the `RGBMatrix.Animation.Static` `:type`. See the moduledocs of that module for
   examples.
 
   Alternatively, you may have a more dynamic animation which generates frames based on the current `:tick` of the
-  animation. See `Xebow.Animation.{CycleAll, CycleLeftToRight, Pinwheel}` for examples.
+  animation. See `RGBMatrix.Animation.{CycleAll, CycleLeftToRight, Pinwheel}` for examples.
   """
 
   alias __MODULE__
-  alias Xebow.Frame
+  alias RGBMatrix.Frame
 
   defmacro __using__(_) do
     quote do
-      alias Xebow.Animation
+      alias RGBMatrix.Animation
 
       @behaviour Animation
     end

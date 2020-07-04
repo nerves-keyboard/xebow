@@ -1,13 +1,13 @@
-defmodule Xebow.Animation.CycleLeftToRight do
+defmodule RGBMatrix.Animation.CycleLeftToRight do
   @moduledoc """
   Cycles hue left to right.
   """
 
   alias Chameleon.HSV
 
-  alias Xebow.{Animation, Frame}
+  alias RGBMatrix.{Animation, Frame}
 
-  import Xebow.Utils, only: [mod: 2]
+  import RGBMatrix.Utils, only: [mod: 2]
 
   use Animation
 
@@ -16,6 +16,7 @@ defmodule Xebow.Animation.CycleLeftToRight do
     %Animation{tick: tick, speed: speed} = animation
     time = div(tick * speed, 100)
 
+    # FIXME: no reaching into Xebow namespace
     pixels = Xebow.Utils.pixels()
 
     pixel_colors =

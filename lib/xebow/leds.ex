@@ -1,5 +1,13 @@
-defmodule Xebow.RGBMatrix do
-  @behaviour Xebow.Paintable
+defmodule Xebow.LEDs do
+  @moduledoc """
+  GenServer that interacts with the SPI device that controls the RGB LEDs on the
+  Keybow.
+
+  It also implements the RGBMatrix.Paintable behavior so that the RGBMatrix
+  effects can be painted onto the keybow's RGB LEDs.
+  """
+
+  @behaviour RGBMatrix.Paintable
 
   use GenServer
 
@@ -21,7 +29,7 @@ defmodule Xebow.RGBMatrix do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
-  @impl Xebow.Paintable
+  @impl RGBMatrix.Paintable
   def get_paint_fn do
     GenServer.call(__MODULE__, :get_paint_fn)
   end

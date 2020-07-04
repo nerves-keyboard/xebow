@@ -5,6 +5,9 @@ defmodule Xebow.Application do
 
   use Application
 
+  @animation_type Xebow.Animation.types() |> List.first()
+  @animation Xebow.Animation.new(type: @animation_type)
+
   def start(_type, _args) do
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
@@ -36,7 +39,7 @@ defmodule Xebow.Application do
       # {Xebow.Worker, arg},
       Xebow.HIDGadget,
       Xebow.RGBMatrix,
-      {Xebow.Engine, [Xebow.RGBMatrix]},
+      {Xebow.Engine, {@animation, [Xebow.RGBMatrix]}},
       Xebow.Keys
     ]
   end

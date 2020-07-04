@@ -1,4 +1,4 @@
-defmodule Xebow.Paintable do
+defmodule RGBMatrix.Paintable do
   @moduledoc """
   A paintable module controls physical pixels.
   """
@@ -10,5 +10,5 @@ defmodule Xebow.Paintable do
   This callback makes any hardware implementation details opaque to the caller,
   while allowing the paintable to retain control of the physical pixels.
   """
-  @callback get_paint_fn :: (frame :: Xebow.Frame.t() -> any)
+  @callback get_paint_fn :: (frame :: RGBMatrix.Frame.t() -> any)
 end

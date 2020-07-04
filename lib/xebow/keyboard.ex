@@ -1,11 +1,27 @@
 require Logger
 
-defmodule Xebow.Keys do
+defmodule Xebow.Keyboard do
+  @moduledoc """
+  Keyboard GenServer for handling key events.
+
+  This module implements three pieces of functionality (and should maybe be
+  broken out into sub-modules):
+
+  1. Interacts with the GPIO pins on the raspberry pi to detect physical key
+     press and key release events.
+  2. Uses AFK to turn those physical key presses and releases into HID events.
+  3. Writes the HID events to the linux HID file device that was set up by
+     `Xebow.HIDGadget`
+  """
+
   use GenServer
 
   alias Circuits.GPIO
-  alias Xebow.{Animation, Frame}
+  alias RGBMatrix.{Animation, Frame}
 
+  # maps the physical GPIO pins to key IDs
+  # TODO: re-number these keys so they map to the keyboard in X/Y natural order,
+  # rather than keybow hardware order.
   @gpio_pins %{
     20 => :k001,
     6 => :k002,
@@ -21,6 +37,7 @@ defmodule Xebow.Keys do
     23 => :k012
   }
 
+  # this file exists because `Xebow.HIDGadget` set it up during boot.
   @hid_device "/dev/hidg0"
 
   @keymap [
@@ -145,7 +162,7 @@ defmodule Xebow.Keys do
 
     animation = Enum.at(state.animations, next_index)
 
-    Xebow.Engine.play_animation(animation)
+    RGBMatrix.Engine.play_animation(animation)
 
     state = %{state | current_animation_index: next_index}
 
@@ -164,7 +181,7 @@ defmodule Xebow.Keys do
 
     animation = Enum.at(state.animations, previous_index)
 
-    Xebow.Engine.play_animation(animation)
+    RGBMatrix.Engine.play_animation(animation)
 
     state = %{state | current_animation_index: previous_index}
 
@@ -217,13 +234,6 @@ defmodule Xebow.Keys do
 
     animation = Animation.new(type: Animation.Static, frames: [frame], delay_ms: 250, loop: 1)
 
-    Xebow.Engine.play_animation(animation, async: false)
-  end
-
-  def start_wifi_wizard do
-    case VintageNetWizard.run_wizard() do
-      :ok -> flash("green")
-      {:error, _reason} -> flash("red")
-    end
+    RGBMatrix.Engine.play_animation(animation, async: false)
   end
 end

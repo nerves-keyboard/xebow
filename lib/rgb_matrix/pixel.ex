@@ -1,4 +1,4 @@
-defmodule Xebow.Pixel do
+defmodule RGBMatrix.Pixel do
   @moduledoc """
   A pixel is a unit that has X and Y coordinates and displays a single color.
   """

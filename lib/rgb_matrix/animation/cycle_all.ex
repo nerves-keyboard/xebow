@@ -1,13 +1,13 @@
-defmodule Xebow.Animation.CycleAll do
+defmodule RGBMatrix.Animation.CycleAll do
   @moduledoc """
   Cycles hue of all keys.
   """
 
   alias Chameleon.HSV
 
-  alias Xebow.{Animation, Frame}
+  alias RGBMatrix.{Animation, Frame}
 
-  import Xebow.Utils, only: [mod: 2]
+  import RGBMatrix.Utils, only: [mod: 2]
 
   use Animation
 
@@ -19,6 +19,7 @@ defmodule Xebow.Animation.CycleAll do
     hue = mod(time, 360)
     color = HSV.new(hue, 100, 100)
 
+    # FIXME: no reaching into Xebow namespace
     pixels = Xebow.Utils.pixels()
     pixel_colors = Enum.map(pixels, fn {_x, _y} -> color end)
 

@@ -5,8 +5,8 @@ defmodule Xebow.Application do
 
   use Application
 
-  @animation_type Xebow.Animation.types() |> List.first()
-  @animation Xebow.Animation.new(type: @animation_type)
+  @animation_type RGBMatrix.Animation.types() |> List.first()
+  @animation RGBMatrix.Animation.new(type: @animation_type)
 
   def start(_type, _args) do
     # See https://hexdocs.pm/elixir/Supervisor.html
@@ -38,9 +38,9 @@ defmodule Xebow.Application do
       # Starts a worker by calling: Xebow.Worker.start_link(arg)
       # {Xebow.Worker, arg},
       Xebow.HIDGadget,
-      Xebow.RGBMatrix,
-      {Xebow.Engine, {@animation, [Xebow.RGBMatrix]}},
-      Xebow.Keys
+      Xebow.LEDs,
+      {RGBMatrix.Engine, {@animation, [Xebow.LEDs]}},
+      Xebow.Keyboard
     ]
   end
 

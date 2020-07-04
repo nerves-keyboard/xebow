@@ -1,12 +1,12 @@
-defmodule Xebow.Engine do
+defmodule RGBMatrix.Engine do
   @moduledoc """
-  Renders [`Animation`](`Xebow.Animation`)s and outputs
-  [`Frame`](`Xebow.Frame`)s to be displayed.
+  Renders [`Animation`](`RGBMatrix.Animation`)s and outputs
+  [`Frame`](`RGBMatrix.Frame`)s to be displayed.
   """
 
   use GenServer
 
-  alias Xebow.Animation
+  alias RGBMatrix.Animation
 
   defmodule State do
     @moduledoc false
@@ -23,8 +23,8 @@ defmodule Xebow.Engine do
 
   This function accepts the following arguments as a tuple:
   - `initial_animation` - The animation that plays when the engine starts.
-  - `paintables` - A list of modules to output `Xebow.Frame` to that implement
-      the `Xebow.Paintable` behavior. If you want to register your paintables
+  - `paintables` - A list of modules to output `RGBMatrix.Frame` to that implement
+      the `RGBMatrix.Paintable` behavior. If you want to register your paintables
       dynamically, set this to an empty list `[]`.
   """
   @spec start_link({initial_animation :: Animation.t(), paintables :: list(module)}) ::
@@ -52,7 +52,7 @@ defmodule Xebow.Engine do
   end
 
   @doc """
-  Register a `Xebow.Paintable` for the engine to paint pixels to.
+  Register a `RGBMatrix.Paintable` for the engine to paint pixels to.
   This function is idempotent.
   """
   @spec register_paintable(paintable :: module) :: :ok
@@ -61,7 +61,7 @@ defmodule Xebow.Engine do
   end
 
   @doc """
-  Unregister a `Xebow.Paintable` so the engine no longer paints pixels to it.
+  Unregister a `RGBMatrix.Paintable` so the engine no longer paints pixels to it.
   This function is idempotent.
   """
   @spec unregister_paintable(paintable :: module) :: :ok

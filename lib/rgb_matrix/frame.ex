@@ -1,4 +1,4 @@
-defmodule Xebow.Frame do
+defmodule RGBMatrix.Frame do
   @moduledoc """
   Provides a data structure and functions for working with animation frames.
 
@@ -6,7 +6,7 @@ defmodule Xebow.Frame do
   list of frames or each frame can be dynamically generated based on the tick of some animation.
   """
 
-  alias Xebow.Pixel
+  alias RGBMatrix.Pixel
 
   @type pixel_map :: %{required(Pixel.t()) => Pixel.color()}
 

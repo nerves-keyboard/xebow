@@ -87,7 +87,7 @@ defmodule RGBMatrix.Effect.Splash do
   end
 
   @impl true
-  def key_pressed(state, _config, led) do
+  def interact(state, _config, led) do
     # {:ignore, %{state | hits: Map.put(state.hits, led, state.tick)}}
     {:ignore, %{state | hits: %{led => state.tick}}}
   end

@@ -62,7 +62,7 @@ defmodule RGBMatrix.Effect.Pinwheel do
   end
 
   @impl true
-  def key_pressed(state, _config, %LED{x: x, y: y}) do
+  def interact(state, _config, %LED{x: x, y: y}) do
     {:ignore, %{state | center: %{x: x, y: y}}}
   end
 end

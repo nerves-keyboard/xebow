@@ -66,6 +66,11 @@ defmodule RGBMatrix.Engine do
     GenServer.call(__MODULE__, {:unregister_paintable, paintable})
   end
 
+  @spec interact(led :: LED.t()) :: :ok
+  def interact(led) do
+    GenServer.cast(__MODULE__, {:interact, led})
+  end
+
   # Server
 
   @impl GenServer
@@ -155,6 +160,15 @@ defmodule RGBMatrix.Engine do
   def handle_cast({:set_effect, effect_type}, state) do
     state = set_effect(state, effect_type)
     {:noreply, state}
+  end
+
+  @impl GenServer
+  def handle_cast({:interact, led}, state) do
+    {render_in, effect} = Effect.interact(state.effect, led)
+    state = schedule_next_render(state, render_in)
+    state = %State{state | effect: effect}
+
+    {:noreply, %State{state | effect: effect}}
   end
 
   @impl GenServer

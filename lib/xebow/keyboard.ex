@@ -17,7 +17,7 @@ defmodule Xebow.Keyboard do
   use GenServer
 
   alias Circuits.GPIO
-  alias RGBMatrix.Effect
+  alias RGBMatrix.{Effect, Engine}
 
   # maps the physical GPIO pins to key IDs
   # TODO: re-number these keys so they map to the keyboard in X/Y natural order,
@@ -215,10 +215,18 @@ defmodule Xebow.Keyboard do
       0 ->
         Logger.debug("key pressed #{key_id}")
         AFK.State.press_key(keyboard_state, key_id)
+        rgb_matrix_interact(key_id)
 
       1 ->
         Logger.debug("key released #{key_id}")
         AFK.State.release_key(keyboard_state, key_id)
+    end
+  end
+
+  defp rgb_matrix_interact(key_id) do
+    case Layout.led_for_key(Xebow.layout(), key_id) do
+      nil -> :noop
+      led -> Engine.interact(led)
     end
   end
 

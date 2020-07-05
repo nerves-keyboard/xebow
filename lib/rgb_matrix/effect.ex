@@ -4,7 +4,7 @@ defmodule RGBMatrix.Effect do
   @callback new(leds :: list(LED.t()), config :: any) :: {render_in, any}
   @callback render(state :: any, config :: any) ::
               {list(RGBMatrix.any_color_model()), render_in, any}
-  @callback key_pressed(state :: any, config :: any, led :: LED.t()) :: {render_in, any}
+  @callback interact(state :: any, config :: any, led :: LED.t()) :: {render_in, any}
 
   @type t :: %__MODULE__{
           type: type,
@@ -78,11 +78,11 @@ defmodule RGBMatrix.Effect do
   end
 
   @doc """
-  Sends a key pressed event to an effect.
+  Sends an interaction event to an effect.
   """
-  @spec key_pressed(effect :: t, led :: LED.t()) :: {render_in, t}
-  def key_pressed(effect, led) do
-    {render_in, effect_state} = effect.type.key_pressed(effect.state, effect.config, led)
+  @spec interact(effect :: t, led :: LED.t()) :: {render_in, t}
+  def interact(effect, led) do
+    {render_in, effect_state} = effect.type.interact(effect.state, effect.config, led)
     {render_in, %{effect | state: effect_state}}
   end
 end

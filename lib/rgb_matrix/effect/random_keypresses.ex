@@ -46,7 +46,7 @@ defmodule RGBMatrix.Effect.RandomKeypresses do
   end
 
   @impl true
-  def key_pressed(state, _config, led) do
+  def interact(state, _config, led) do
     {0, %{state | dirty: led.id}}
   end
 end

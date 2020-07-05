@@ -37,7 +37,7 @@ defmodule RGBMatrix.Effect.RandomSolid do
   end
 
   @impl true
-  def key_pressed(state, _config, _led) do
+  def interact(state, _config, _led) do
     {0, state}
   end
 end

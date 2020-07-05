@@ -97,7 +97,7 @@ defmodule RGBMatrix.Effect.HueWave do
   end
 
   @impl true
-  def key_pressed(state, _config, _led) do
+  def interact(state, _config, _led) do
     {:ignore, state}
   end
 end

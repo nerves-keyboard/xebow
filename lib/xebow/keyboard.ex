@@ -20,21 +20,19 @@ defmodule Xebow.Keyboard do
   alias RGBMatrix.{Effect, Engine}
 
   # maps the physical GPIO pins to key IDs
-  # TODO: re-number these keys so they map to the keyboard in X/Y natural order,
-  # rather than keybow hardware order.
   @gpio_pins %{
+    6 => :k004,
+    5 => :k009,
+    27 => :k011,
+    26 => :k003,
+    24 => :k008,
+    23 => :k012,
+    22 => :k007,
     20 => :k001,
-    6 => :k002,
-    22 => :k003,
-    17 => :k004,
-    16 => :k005,
-    12 => :k006,
-    24 => :k007,
-    27 => :k008,
-    26 => :k009,
-    13 => :k010,
-    5 => :k011,
-    23 => :k012
+    17 => :k010,
+    16 => :k002,
+    13 => :k006,
+    12 => :k005
   }
 
   # this file exists because `Xebow.HIDGadget` set it up during boot.
@@ -44,45 +42,45 @@ defmodule Xebow.Keyboard do
     # Layer 0:
     %{
       k001: AFK.Keycode.Key.new(:"7"),
-      k002: AFK.Keycode.Key.new(:"4"),
-      k003: AFK.Keycode.Key.new(:"1"),
-      k004: AFK.Keycode.Key.new(:"0"),
-      k005: AFK.Keycode.Key.new(:"8"),
-      k006: AFK.Keycode.Key.new(:"5"),
-      k007: AFK.Keycode.Key.new(:"2"),
-      k008: AFK.Keycode.Layer.new(:hold, 1),
-      k009: AFK.Keycode.Key.new(:"9"),
-      k010: AFK.Keycode.Key.new(:"6"),
-      k011: AFK.Keycode.Key.new(:"3"),
+      k002: AFK.Keycode.Key.new(:"8"),
+      k003: AFK.Keycode.Key.new(:"9"),
+      k004: AFK.Keycode.Key.new(:"4"),
+      k005: AFK.Keycode.Key.new(:"5"),
+      k006: AFK.Keycode.Key.new(:"6"),
+      k007: AFK.Keycode.Key.new(:"1"),
+      k008: AFK.Keycode.Key.new(:"2"),
+      k009: AFK.Keycode.Key.new(:"3"),
+      k010: AFK.Keycode.Key.new(:"0"),
+      k011: AFK.Keycode.Layer.new(:hold, 1),
       k012: AFK.Keycode.Layer.new(:hold, 2)
     },
     # Layer 1:
     %{
       k001: AFK.Keycode.Transparent.new(),
-      k002: AFK.Keycode.Transparent.new(),
-      k003: AFK.Keycode.Transparent.new(),
+      k002: AFK.Keycode.Key.new(:mute),
+      k003: AFK.Keycode.Key.new(:volume_up),
       k004: AFK.Keycode.Transparent.new(),
-      k005: AFK.Keycode.Key.new(:mute),
-      k006: AFK.Keycode.Transparent.new(),
+      k005: AFK.Keycode.Transparent.new(),
+      k006: AFK.Keycode.Key.new(:volume_down),
       k007: AFK.Keycode.Transparent.new(),
-      k008: AFK.Keycode.None.new(),
-      k009: AFK.Keycode.Key.new(:volume_up),
-      k010: AFK.Keycode.Key.new(:volume_down),
-      k011: AFK.Keycode.Transparent.new(),
+      k008: AFK.Keycode.Transparent.new(),
+      k009: AFK.Keycode.Transparent.new(),
+      k010: AFK.Keycode.Transparent.new(),
+      k011: AFK.Keycode.None.new(),
       k012: AFK.Keycode.Transparent.new()
     },
     # Layer 2:
     %{
       k001: AFK.Keycode.MFA.new({__MODULE__, :flash, ["red"]}),
-      k002: AFK.Keycode.MFA.new({__MODULE__, :previous_effect, []}),
-      k003: AFK.Keycode.Transparent.new(),
-      k004: AFK.Keycode.Transparent.new(),
+      k002: AFK.Keycode.Transparent.new(),
+      k003: AFK.Keycode.MFA.new({__MODULE__, :flash, ["green"]}),
+      k004: AFK.Keycode.MFA.new({__MODULE__, :previous_effect, []}),
       k005: AFK.Keycode.Transparent.new(),
-      k006: AFK.Keycode.Transparent.new(),
+      k006: AFK.Keycode.MFA.new({__MODULE__, :next_effect, []}),
       k007: AFK.Keycode.Transparent.new(),
       k008: AFK.Keycode.Transparent.new(),
-      k009: AFK.Keycode.MFA.new({__MODULE__, :flash, ["green"]}),
-      k010: AFK.Keycode.MFA.new({__MODULE__, :next_effect, []}),
+      k009: AFK.Keycode.Transparent.new(),
+      k010: AFK.Keycode.Transparent.new(),
       k011: AFK.Keycode.Transparent.new(),
       k012: AFK.Keycode.Transparent.new()
     }

@@ -1,0 +1,2 @@
+defmodule RGBMatrix do
+end

@@ -3,6 +3,8 @@ defmodule RGBMatrix.EngineTest do
 
   alias RGBMatrix.{Animation, Engine, Frame}
 
+  @leds Xebow.layout() |> Layout.leds()
+
   # Creates a RGBMatrix.Paintable module that emits frames to the test suite process.
   defp paintable(%{test: test_name}) do
     process = self()
@@ -45,7 +47,7 @@ defmodule RGBMatrix.EngineTest do
   test "renders a solid animation", %{paintable: paintable} do
     {animation, frame} = solid_animation()
 
-    start_supervised!({Engine, {animation, [paintable]}})
+    start_supervised!({Engine, {@leds, animation, [paintable]}})
 
     assert_receive {:frame, ^frame}
   end
@@ -73,7 +75,7 @@ defmodule RGBMatrix.EngineTest do
         loop: 1
       )
 
-    start_supervised!({Engine, {animation, [paintable]}})
+    start_supervised!({Engine, {@leds, animation, [paintable]}})
 
     Enum.each(frames, fn frame ->
       assert_receive {:frame, ^frame}
@@ -84,7 +86,7 @@ defmodule RGBMatrix.EngineTest do
     {animation, _frame} = solid_animation()
     {animation_2, frame_2} = solid_animation(127, 127, 127)
 
-    start_supervised!({Engine, {animation, [paintable]}})
+    start_supervised!({Engine, {@leds, animation, [paintable]}})
 
     :ok = Engine.play_animation(animation_2)
 
@@ -95,7 +97,7 @@ defmodule RGBMatrix.EngineTest do
     {animation, frame} = solid_animation()
     {animation_2, frame_2} = solid_animation(127, 127, 127)
 
-    start_supervised!({Engine, {animation, []}})
+    start_supervised!({Engine, {@leds, animation, []}})
 
     :ok = Engine.register_paintable(paintable)
 

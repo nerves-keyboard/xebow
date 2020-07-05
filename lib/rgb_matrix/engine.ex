@@ -6,11 +6,12 @@ defmodule RGBMatrix.Engine do
 
   use GenServer
 
+  alias Layout.LED
   alias RGBMatrix.Animation
 
   defmodule State do
     @moduledoc false
-    defstruct [:animation, :paintables]
+    defstruct [:leds, :animation, :paintables]
   end
 
   # Client
@@ -22,15 +23,18 @@ defmodule RGBMatrix.Engine do
   a supervisor.
 
   This function accepts the following arguments as a tuple:
+  - `leds` - The list of LEDs to be painted on.
   - `initial_animation` - The animation that plays when the engine starts.
   - `paintables` - A list of modules to output `RGBMatrix.Frame` to that implement
       the `RGBMatrix.Paintable` behavior. If you want to register your paintables
       dynamically, set this to an empty list `[]`.
   """
-  @spec start_link({initial_animation :: Animation.t(), paintables :: list(module)}) ::
+  @spec start_link(
+          {leds :: [LED.t()], initial_animation :: Animation.t(), paintables :: list(module)}
+        ) ::
           GenServer.on_start()
-  def start_link({initial_animation, paintables}) do
-    GenServer.start_link(__MODULE__, {initial_animation, paintables}, name: __MODULE__)
+  def start_link({leds, initial_animation, paintables}) do
+    GenServer.start_link(__MODULE__, {leds, initial_animation, paintables}, name: __MODULE__)
   end
 
   @doc """
@@ -72,10 +76,10 @@ defmodule RGBMatrix.Engine do
   # Server
 
   @impl GenServer
-  def init({initial_animation, paintables}) do
+  def init({leds, initial_animation, paintables}) do
     send(self(), :get_next_frame)
 
-    initial_state = %State{paintables: %{}}
+    initial_state = %State{leds: leds, paintables: %{}}
 
     state =
       Enum.reduce(paintables, initial_state, fn paintable, state ->

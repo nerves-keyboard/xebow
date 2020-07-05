@@ -6,7 +6,7 @@ defmodule Xebow.LEDs do
   Keybow.
 
   It also implements the RGBMatrix.Paintable behavior so that the RGBMatrix
-  effects can be painted onto the keybow's RGB LEDs.
+  animations can be painted onto the keybow's RGB LEDs.
   """
 
   @behaviour RGBMatrix.Paintable

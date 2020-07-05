@@ -8,8 +8,8 @@ defmodule RGBMatrix.Paintable do
   @type frame :: %{required(LED.id()) => RGBMatrix.any_color_model()}
 
   @doc """
-  Returns a function that can be called to paint the LEDs for a given frame.
-  The anonymous function's return value is unused.
+  Returns a function that can be called to paint the LEDs for a given frame. The
+  anonymous function's return value is unused.
 
   This callback makes any hardware implementation details opaque to the caller,
   while allowing the paintable to retain control of the physical LEDs.

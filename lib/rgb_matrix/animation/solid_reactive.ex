@@ -1,17 +1,17 @@
-defmodule RGBMatrix.Effect.SolidReactive do
+defmodule RGBMatrix.Animation.SolidReactive do
   @moduledoc """
   Static single hue, pulses keys hit to shifted hue then fades to current hue.
   """
 
   alias Chameleon.HSV
-  alias RGBMatrix.Effect
+  alias RGBMatrix.Animation
 
-  use Effect
+  use Animation
 
   import RGBMatrix.Utils, only: [mod: 2]
 
   defmodule Config do
-    use RGBMatrix.Effect.Config
+    use RGBMatrix.Animation.Config
 
     @doc name: "Speed",
          description: """

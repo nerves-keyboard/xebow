@@ -1,4 +1,4 @@
-defmodule RGBMatrix.Effect do
+defmodule RGBMatrix.Animation do
   alias Layout.LED
 
   @callback new(leds :: list(LED.t()), config :: any) :: {render_in, any}
@@ -15,7 +15,7 @@ defmodule RGBMatrix.Effect do
 
   defmacro __using__(_) do
     quote do
-      @behaviour RGBMatrix.Effect
+      @behaviour RGBMatrix.Animation
     end
   end
 
@@ -30,7 +30,6 @@ defmodule RGBMatrix.Effect do
           | __MODULE__.SolidColor
           | __MODULE__.Breathing
           | __MODULE__.SolidReactive
-          | __MODULE__.Splash
 
   @doc """
   Returns a list of the available types of animations.
@@ -45,44 +44,45 @@ defmodule RGBMatrix.Effect do
       __MODULE__.RandomKeypresses,
       __MODULE__.SolidColor,
       __MODULE__.Breathing,
-      __MODULE__.SolidReactive,
-      __MODULE__.Splash
+      __MODULE__.SolidReactive
     ]
   end
 
   @doc """
-  Returns an effect's initial state.
+  Returns an animation's initial state.
   """
-  @spec new(effect_type :: type, leds :: list(LED.t())) :: {render_in, t}
-  def new(effect_type, leds) do
-    config_module = Module.concat([effect_type, Config])
-    effect_config = config_module.new()
-    {render_in, effect_state} = effect_type.new(leds, effect_config)
+  @spec new(animation_type :: type, leds :: list(LED.t())) :: {render_in, t}
+  def new(animation_type, leds) do
+    config_module = Module.concat([animation_type, Config])
+    animation_config = config_module.new()
+    {render_in, animation_state} = animation_type.new(leds, animation_config)
 
-    effect = %__MODULE__{
-      type: effect_type,
-      config: effect_config,
-      state: effect_state
+    animation = %__MODULE__{
+      type: animation_type,
+      config: animation_config,
+      state: animation_state
     }
 
-    {render_in, effect}
+    {render_in, animation}
   end
 
   @doc """
-  Returns the next state of an effect based on its current state.
+  Returns the next state of an animation based on its current state.
   """
-  @spec render(effect :: t) :: {list(RGBMatrix.any_color_model()), render_in, t}
-  def render(effect) do
-    {colors, render_in, effect_state} = effect.type.render(effect.state, effect.config)
-    {colors, render_in, %{effect | state: effect_state}}
+  @spec render(animation :: t) :: {list(RGBMatrix.any_color_model()), render_in, t}
+  def render(animation) do
+    {colors, render_in, animation_state} =
+      animation.type.render(animation.state, animation.config)
+
+    {colors, render_in, %{animation | state: animation_state}}
   end
 
   @doc """
-  Sends an interaction event to an effect.
+  Sends an interaction event to an animation.
   """
-  @spec interact(effect :: t, led :: LED.t()) :: {render_in, t}
-  def interact(effect, led) do
-    {render_in, effect_state} = effect.type.interact(effect.state, effect.config, led)
-    {render_in, %{effect | state: effect_state}}
+  @spec interact(animation :: t, led :: LED.t()) :: {render_in, t}
+  def interact(animation, led) do
+    {render_in, animation_state} = animation.type.interact(animation.state, animation.config, led)
+    {render_in, %{animation | state: animation_state}}
   end
 end

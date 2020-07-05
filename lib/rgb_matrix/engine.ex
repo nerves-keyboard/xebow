@@ -2,18 +2,18 @@ require Logger
 
 defmodule RGBMatrix.Engine do
   @moduledoc """
-  Renders [`Effect`](`RGBMatrix.Effect`)s and outputs colors to be displayed by
-  [`Paintable`](`RGBMatrix.Paintable`)s.
+  Renders [`Animation`](`RGBMatrix.Animation`)s and outputs colors to be
+  displayed by [`Paintable`](`RGBMatrix.Paintable`)s.
   """
 
   use GenServer
 
   alias Layout.LED
-  alias RGBMatrix.Effect
+  alias RGBMatrix.Animation
 
   defmodule State do
     @moduledoc false
-    defstruct [:leds, :effect, :paintables, :last_frame, :timer]
+    defstruct [:leds, :animation, :paintables, :last_frame, :timer]
   end
 
   # Client
@@ -21,31 +21,32 @@ defmodule RGBMatrix.Engine do
   @doc """
   Start the engine.
 
-  This module registers its process globally and is expected to be started by
-  a supervisor.
+  This module registers its process globally and is expected to be started by a
+  supervisor.
 
   This function accepts the following arguments as a tuple:
   - `leds` - The list of LEDs to be painted on.
-  - `initial_effect` - The Effect type to initialize and play when the engine
-      starts.
+  - `initial_animation` - The Animation type to initialize and play when the
+    engine starts.
   - `paintables` - A list of modules to output colors to that implement the
-      `RGBMatrix.Paintable` behavior. If you want to register your paintables
-      dynamically, set this to an empty list `[]`.
+    `RGBMatrix.Paintable` behavior. If you want to register your paintables
+    dynamically, set this to an empty list `[]`.
   """
   @spec start_link(
-          {leds :: [LED.t()], initial_effect_type :: Effect.type(), paintables :: list(module)}
+          {leds :: [LED.t()], initial_animation_type :: Animation.type(),
+           paintables :: list(module)}
         ) ::
           GenServer.on_start()
-  def start_link({leds, initial_effect_type, paintables}) do
-    GenServer.start_link(__MODULE__, {leds, initial_effect_type, paintables}, name: __MODULE__)
+  def start_link({leds, initial_animation_type, paintables}) do
+    GenServer.start_link(__MODULE__, {leds, initial_animation_type, paintables}, name: __MODULE__)
   end
 
   @doc """
-  Sets the given effect as the currently active effect.
+  Sets the given animation as the currently active animation.
   """
-  @spec set_effect(effect_type :: Effect.type(), opts :: keyword()) :: :ok
-  def set_effect(effect_type) do
-    GenServer.cast(__MODULE__, {:set_effect, effect_type})
+  @spec set_animation(animation_type :: Animation.type(), opts :: keyword()) :: :ok
+  def set_animation(animation_type) do
+    GenServer.cast(__MODULE__, {:set_animation, animation_type})
   end
 
   @doc """
@@ -58,8 +59,8 @@ defmodule RGBMatrix.Engine do
   end
 
   @doc """
-  Unregister a `RGBMatrix.Paintable` so the engine no longer paints pixels to it.
-  This function is idempotent.
+  Unregister a `RGBMatrix.Paintable` so the engine no longer paints pixels to
+  it. This function is idempotent.
   """
   @spec unregister_paintable(paintable :: module) :: :ok
   def unregister_paintable(paintable) do
@@ -74,7 +75,7 @@ defmodule RGBMatrix.Engine do
   # Server
 
   @impl GenServer
-  def init({leds, initial_effect_type, paintables}) do
+  def init({leds, initial_animation_type, paintables}) do
     black = Chameleon.HSV.new(0, 0, 0)
     frame = Map.new(leds, &{&1.id, black})
 
@@ -84,7 +85,7 @@ defmodule RGBMatrix.Engine do
       Enum.reduce(paintables, initial_state, fn paintable, state ->
         add_paintable(paintable, state)
       end)
-      |> set_effect(initial_effect_type)
+      |> set_animation(initial_animation_type)
 
     {:ok, state}
   end
@@ -99,12 +100,12 @@ defmodule RGBMatrix.Engine do
     %State{state | paintables: paintables}
   end
 
-  defp set_effect(state, effect_type) do
-    {render_in, effect} = Effect.new(effect_type, state.leds)
+  defp set_animation(state, animation_type) do
+    {render_in, animation} = Animation.new(animation_type, state.leds)
 
     state = schedule_next_render(state, render_in)
 
-    %State{state | effect: effect}
+    %State{state | animation: animation}
   end
 
   defp schedule_next_render(state, :ignore) do
@@ -134,7 +135,7 @@ defmodule RGBMatrix.Engine do
 
   @impl true
   def handle_info(:render, state) do
-    {new_colors, render_in, effect} = Effect.render(state.effect)
+    {new_colors, render_in, animation} = Animation.render(state.animation)
 
     frame = update_frame(state.last_frame, new_colors)
 
@@ -145,7 +146,7 @@ defmodule RGBMatrix.Engine do
     end)
 
     state = schedule_next_render(state, render_in)
-    state = %State{state | effect: effect, last_frame: frame}
+    state = %State{state | animation: animation, last_frame: frame}
 
     {:noreply, state}
   end
@@ -157,18 +158,18 @@ defmodule RGBMatrix.Engine do
   end
 
   @impl GenServer
-  def handle_cast({:set_effect, effect_type}, state) do
-    state = set_effect(state, effect_type)
+  def handle_cast({:set_animation, animation_type}, state) do
+    state = set_animation(state, animation_type)
     {:noreply, state}
   end
 
   @impl GenServer
   def handle_cast({:interact, led}, state) do
-    {render_in, effect} = Effect.interact(state.effect, led)
+    {render_in, animation} = Animation.interact(state.animation, led)
     state = schedule_next_render(state, render_in)
-    state = %State{state | effect: effect}
+    state = %State{state | animation: animation}
 
-    {:noreply, %State{state | effect: effect}}
+    {:noreply, %State{state | animation: animation}}
   end
 
   @impl GenServer

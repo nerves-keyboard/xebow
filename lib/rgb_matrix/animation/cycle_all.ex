@@ -1,17 +1,17 @@
-defmodule RGBMatrix.Effect.CycleAll do
+defmodule RGBMatrix.Animation.CycleAll do
   @moduledoc """
   Cycles the hue of all LEDs at the same time.
   """
 
   alias Chameleon.HSV
-  alias RGBMatrix.Effect
+  alias RGBMatrix.Animation
 
-  use Effect
+  use Animation
 
   import RGBMatrix.Utils, only: [mod: 2]
 
   defmodule Config do
-    use RGBMatrix.Effect.Config
+    use RGBMatrix.Animation.Config
   end
 
   defmodule State do

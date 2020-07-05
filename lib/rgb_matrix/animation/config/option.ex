@@ -1,4 +1,4 @@
-defmodule RGBMatrix.Effect.Config.Option do
+defmodule RGBMatrix.Animation.Config.Option do
   @enforce_keys [:default, :options]
   defstruct [:default, :options]
 

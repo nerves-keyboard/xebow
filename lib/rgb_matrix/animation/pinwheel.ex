@@ -1,18 +1,18 @@
-defmodule RGBMatrix.Effect.Pinwheel do
+defmodule RGBMatrix.Animation.Pinwheel do
   @moduledoc """
   Cycles hue in a pinwheel pattern.
   """
 
   alias Chameleon.HSV
   alias Layout.LED
-  alias RGBMatrix.Effect
+  alias RGBMatrix.Animation
 
-  use Effect
+  use Animation
 
   import RGBMatrix.Utils, only: [mod: 2]
 
   defmodule Config do
-    use RGBMatrix.Effect.Config
+    use RGBMatrix.Animation.Config
   end
 
   defmodule State do

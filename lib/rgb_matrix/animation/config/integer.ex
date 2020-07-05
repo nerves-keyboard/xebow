@@ -1,4 +1,4 @@
-defmodule RGBMatrix.Effect.Config.Integer do
+defmodule RGBMatrix.Animation.Config.Integer do
   @enforce_keys [:default, :min, :max]
   defstruct [:default, :min, :max, step: 1]
 

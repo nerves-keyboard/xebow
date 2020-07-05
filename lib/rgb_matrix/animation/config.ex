@@ -1,23 +1,23 @@
-defmodule RGBMatrix.Effect.Config do
+defmodule RGBMatrix.Animation.Config do
   @callback schema() :: keyword(any)
   @callback new(%{optional(atom) => any}) :: struct
   @callback update(struct, %{optional(atom) => any}) :: struct
 
   @types %{
-    integer: RGBMatrix.Effect.Config.Integer,
-    option: RGBMatrix.Effect.Config.Option
+    integer: RGBMatrix.Animation.Config.Integer,
+    option: RGBMatrix.Animation.Config.Option
   }
 
   defmacro __using__(_) do
     quote do
-      import RGBMatrix.Effect.Config
+      import RGBMatrix.Animation.Config
 
       Module.register_attribute(__MODULE__, :fields,
         accumulate: true,
         persist: false
       )
 
-      @before_compile RGBMatrix.Effect.Config
+      @before_compile RGBMatrix.Animation.Config
     end
   end
 
@@ -36,17 +36,17 @@ defmodule RGBMatrix.Effect.Config do
     schema = Macro.escape(schema)
 
     quote do
-      @behaviour RGBMatrix.Effect.Config
+      @behaviour RGBMatrix.Animation.Config
 
       @enforce_keys unquote(keys)
       defstruct unquote(keys)
 
-      @impl RGBMatrix.Effect.Config
+      @impl RGBMatrix.Animation.Config
       def schema do
         unquote(schema)
       end
 
-      @impl RGBMatrix.Effect.Config
+      @impl RGBMatrix.Animation.Config
       def new(params \\ %{}) do
         schema()
         |> Map.new(fn {key, %mod{} = type} ->
@@ -60,7 +60,7 @@ defmodule RGBMatrix.Effect.Config do
         |> (&struct!(__MODULE__, &1)).()
       end
 
-      @impl RGBMatrix.Effect.Config
+      @impl RGBMatrix.Animation.Config
       def update(config, params) do
         schema = schema()
 

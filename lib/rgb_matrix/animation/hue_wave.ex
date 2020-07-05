@@ -1,18 +1,18 @@
-defmodule RGBMatrix.Effect.HueWave do
+defmodule RGBMatrix.Animation.HueWave do
   @moduledoc """
   Creates a wave of shifting hue that moves across the matrix.
   """
 
   alias Chameleon.HSV
   alias Layout.LED
-  alias RGBMatrix.Effect
+  alias RGBMatrix.Animation
 
-  use Effect
+  use Animation
 
   import RGBMatrix.Utils, only: [mod: 2]
 
   defmodule Config do
-    use RGBMatrix.Effect.Config
+    use RGBMatrix.Animation.Config
 
     @doc name: "Speed",
          description: """

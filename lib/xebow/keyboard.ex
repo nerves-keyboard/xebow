@@ -17,7 +17,7 @@ defmodule Xebow.Keyboard do
   use GenServer
 
   alias Circuits.GPIO
-  alias RGBMatrix.{Effect, Engine}
+  alias RGBMatrix.{Animation, Engine}
 
   # maps the physical GPIO pins to key IDs
   @gpio_pins %{
@@ -74,9 +74,9 @@ defmodule Xebow.Keyboard do
       k001: AFK.Keycode.MFA.new({__MODULE__, :flash, ["red"]}),
       k002: AFK.Keycode.Transparent.new(),
       k003: AFK.Keycode.MFA.new({__MODULE__, :flash, ["green"]}),
-      k004: AFK.Keycode.MFA.new({__MODULE__, :previous_effect, []}),
+      k004: AFK.Keycode.MFA.new({__MODULE__, :previous_animation, []}),
       k005: AFK.Keycode.Transparent.new(),
-      k006: AFK.Keycode.MFA.new({__MODULE__, :next_effect, []}),
+      k006: AFK.Keycode.MFA.new({__MODULE__, :next_animation, []}),
       k007: AFK.Keycode.Transparent.new(),
       k008: AFK.Keycode.Transparent.new(),
       k009: AFK.Keycode.Transparent.new(),
@@ -94,19 +94,19 @@ defmodule Xebow.Keyboard do
   end
 
   @doc """
-  Cycle to the next effect
+  Cycle to the next animation
   """
-  @spec next_effect() :: :ok
-  def next_effect do
-    GenServer.cast(__MODULE__, :next_effect)
+  @spec next_animation() :: :ok
+  def next_animation do
+    GenServer.cast(__MODULE__, :next_animation)
   end
 
   @doc """
-  Cycle to the previous effect
+  Cycle to the previous animation
   """
-  @spec previous_effect() :: :ok
-  def previous_effect do
-    GenServer.cast(__MODULE__, :previous_effect)
+  @spec previous_animation() :: :ok
+  def previous_animation do
+    GenServer.cast(__MODULE__, :previous_animation)
   end
 
   # Server
@@ -138,47 +138,47 @@ defmodule Xebow.Keyboard do
       pins: pins,
       keyboard_state: keyboard_state,
       hid: hid,
-      effect_types: Effect.types(),
-      current_effect_index: 0
+      animation_types: Animation.types(),
+      current_animation_index: 0
     }
 
     {:ok, state}
   end
 
   @impl GenServer
-  def handle_cast(:next_effect, state) do
-    next_index = state.current_effect_index + 1
+  def handle_cast(:next_animation, state) do
+    next_index = state.current_animation_index + 1
 
     next_index =
-      case next_index < Enum.count(state.effect_types) do
+      case next_index < Enum.count(state.animation_types) do
         true -> next_index
         _ -> 0
       end
 
-    effect_type = Enum.at(state.effect_types, next_index)
+    animation_type = Enum.at(state.animation_types, next_index)
 
-    RGBMatrix.Engine.set_effect(effect_type)
+    RGBMatrix.Engine.set_animation(animation_type)
 
-    state = %{state | current_effect_index: next_index}
+    state = %{state | current_animation_index: next_index}
 
     {:noreply, state}
   end
 
   @impl GenServer
-  def handle_cast(:previous_effect, state) do
-    previous_index = state.current_effect_index - 1
+  def handle_cast(:previous_animation, state) do
+    previous_index = state.current_animation_index - 1
 
     previous_index =
       case previous_index < 0 do
-        true -> Enum.count(state.effect_types) - 1
+        true -> Enum.count(state.animation_types) - 1
         _ -> previous_index
       end
 
-    effect_type = Enum.at(state.effect_types, previous_index)
+    animation_type = Enum.at(state.animation_types, previous_index)
 
-    RGBMatrix.Engine.set_effect(effect_type)
+    RGBMatrix.Engine.set_animation(animation_type)
 
-    state = %{state | current_effect_index: previous_index}
+    state = %{state | current_animation_index: previous_index}
 
     {:noreply, state}
   end

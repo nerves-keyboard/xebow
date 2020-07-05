@@ -1,15 +1,15 @@
-defmodule RGBMatrix.Effect.Breathing do
+defmodule RGBMatrix.Animation.Breathing do
   @moduledoc """
   Single hue brightness cycling.
   """
 
   alias Chameleon.HSV
-  alias RGBMatrix.Effect
+  alias RGBMatrix.Animation
 
-  use Effect
+  use Animation
 
   defmodule Config do
-    use RGBMatrix.Effect.Config
+    use RGBMatrix.Animation.Config
   end
 
   defmodule State do

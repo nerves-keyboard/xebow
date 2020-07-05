@@ -18,19 +18,19 @@ defmodule RGBMatrix.Effect.HueWave do
          description: """
          Controls the speed at which the wave moves across the matrix.
          """
-    field(:speed, :integer, default: 4, min: 0, max: 32)
+    field :speed, :integer, default: 4, min: 0, max: 32
 
     @doc name: "Width",
          description: """
          The rate of change of the wave, higher values means it's more spread out.
          """
-    field(:width, :integer, default: 20, min: 10, max: 100, step: 10)
+    field :width, :integer, default: 20, min: 10, max: 100, step: 10
 
     @doc name: "Direction",
          description: """
          The direction the wave travels across the matrix.
          """
-    field(:direction, :option,
+    field :direction, :option,
       default: :right,
       options: [
         :right,
@@ -38,7 +38,6 @@ defmodule RGBMatrix.Effect.HueWave do
         :up,
         :down
       ]
-    )
   end
 
   defmodule State do

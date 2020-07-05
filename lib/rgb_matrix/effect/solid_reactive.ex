@@ -17,26 +17,25 @@ defmodule RGBMatrix.Effect.SolidReactive do
          description: """
          The speed at which the hue shifts back to base.
          """
-    field(:speed, :integer, default: 4, min: 0, max: 32)
+    field :speed, :integer, default: 4, min: 0, max: 32
 
     @doc name: "Distance",
          description: """
          The distance that the hue shifts on key-press.
          """
-    field(:distance, :integer, default: 180, min: 0, max: 360, step: 10)
+    field :distance, :integer, default: 180, min: 0, max: 360, step: 10
 
     @doc name: "Direction",
          description: """
          The direction (through the color wheel) that the hue shifts on key-press.
          """
-    field(:direction, :option,
+    field :direction, :option,
       default: :random,
       options: [
         :random,
         :negative,
         :positive
       ]
-    )
   end
 
   defmodule State do

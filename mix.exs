@@ -52,7 +52,8 @@ defmodule Xebow.MixProject do
     [
       dialyzer: "do cmd mkdir -p _build/#{Mix.target()}_#{Mix.env()}/plt, dialyzer",
       "docs.show": "do docs, cmd xdg-open doc/index.html",
-      loadconfig: [&bootstrap/1]
+      loadconfig: [&bootstrap/1],
+      upload: "cmd ./upload.sh"
     ]
   end
 

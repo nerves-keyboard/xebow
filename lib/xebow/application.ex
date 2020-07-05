@@ -6,8 +6,7 @@ defmodule Xebow.Application do
   use Application
 
   @leds Xebow.layout() |> Layout.leds()
-  @animation_type RGBMatrix.Animation.types() |> List.first()
-  @animation RGBMatrix.Animation.new(type: @animation_type)
+  @effect_type RGBMatrix.Effect.types() |> List.first()
 
   def start(_type, _args) do
     # See https://hexdocs.pm/elixir/Supervisor.html
@@ -40,7 +39,7 @@ defmodule Xebow.Application do
       # {Xebow.Worker, arg},
       Xebow.HIDGadget,
       Xebow.LEDs,
-      {RGBMatrix.Engine, {@leds, @animation, [Xebow.LEDs]}},
+      {RGBMatrix.Engine, {@leds, @effect_type, [Xebow.LEDs]}},
       Xebow.Keyboard
     ]
   end

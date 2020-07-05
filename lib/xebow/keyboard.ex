@@ -17,7 +17,7 @@ defmodule Xebow.Keyboard do
   use GenServer
 
   alias Circuits.GPIO
-  alias RGBMatrix.{Animation, Frame}
+  alias RGBMatrix.Effect
 
   # maps the physical GPIO pins to key IDs
   # TODO: re-number these keys so they map to the keyboard in X/Y natural order,
@@ -74,7 +74,7 @@ defmodule Xebow.Keyboard do
     # Layer 2:
     %{
       k001: AFK.Keycode.MFA.new({__MODULE__, :flash, ["red"]}),
-      k002: AFK.Keycode.MFA.new({__MODULE__, :previous_animation, []}),
+      k002: AFK.Keycode.MFA.new({__MODULE__, :previous_effect, []}),
       k003: AFK.Keycode.Transparent.new(),
       k004: AFK.Keycode.Transparent.new(),
       k005: AFK.Keycode.Transparent.new(),
@@ -82,7 +82,7 @@ defmodule Xebow.Keyboard do
       k007: AFK.Keycode.Transparent.new(),
       k008: AFK.Keycode.Transparent.new(),
       k009: AFK.Keycode.MFA.new({__MODULE__, :flash, ["green"]}),
-      k010: AFK.Keycode.MFA.new({__MODULE__, :next_animation, []}),
+      k010: AFK.Keycode.MFA.new({__MODULE__, :next_effect, []}),
       k011: AFK.Keycode.Transparent.new(),
       k012: AFK.Keycode.Transparent.new()
     }
@@ -96,19 +96,19 @@ defmodule Xebow.Keyboard do
   end
 
   @doc """
-  Cycle to the next animation
+  Cycle to the next effect
   """
-  @spec next_animation() :: :ok
-  def next_animation do
-    GenServer.cast(__MODULE__, :next_animation)
+  @spec next_effect() :: :ok
+  def next_effect do
+    GenServer.cast(__MODULE__, :next_effect)
   end
 
   @doc """
-  Cycle to the previous animation
+  Cycle to the previous effect
   """
-  @spec previous_animation() :: :ok
-  def previous_animation do
-    GenServer.cast(__MODULE__, :previous_animation)
+  @spec previous_effect() :: :ok
+  def previous_effect do
+    GenServer.cast(__MODULE__, :previous_effect)
   end
 
   # Server
@@ -136,54 +136,51 @@ defmodule Xebow.Keyboard do
     poll_timer_ms = 15
     :timer.send_interval(poll_timer_ms, self(), :update_pin_values)
 
-    animations =
-      Animation.types()
-      |> Enum.map(&Animation.new(type: &1))
+    state = %{
+      pins: pins,
+      keyboard_state: keyboard_state,
+      hid: hid,
+      effect_types: Effect.types(),
+      current_effect_index: 0
+    }
 
-    {:ok,
-     %{
-       pins: pins,
-       keyboard_state: keyboard_state,
-       hid: hid,
-       animations: animations,
-       current_animation_index: 0
-     }}
+    {:ok, state}
   end
 
   @impl GenServer
-  def handle_cast(:next_animation, state) do
-    next_index = state.current_animation_index + 1
+  def handle_cast(:next_effect, state) do
+    next_index = state.current_effect_index + 1
 
     next_index =
-      case next_index < Enum.count(state.animations) do
+      case next_index < Enum.count(state.effect_types) do
         true -> next_index
         _ -> 0
       end
 
-    animation = Enum.at(state.animations, next_index)
+    effect_type = Enum.at(state.effect_types, next_index)
 
-    RGBMatrix.Engine.play_animation(animation)
+    RGBMatrix.Engine.set_effect(effect_type)
 
-    state = %{state | current_animation_index: next_index}
+    state = %{state | current_effect_index: next_index}
 
     {:noreply, state}
   end
 
   @impl GenServer
-  def handle_cast(:previous_animation, state) do
-    previous_index = state.current_animation_index - 1
+  def handle_cast(:previous_effect, state) do
+    previous_index = state.current_effect_index - 1
 
     previous_index =
       case previous_index < 0 do
-        true -> Enum.count(state.animations) - 1
+        true -> Enum.count(state.effect_types) - 1
         _ -> previous_index
       end
 
-    animation = Enum.at(state.animations, previous_index)
+    effect_type = Enum.at(state.effect_types, previous_index)
 
-    RGBMatrix.Engine.play_animation(animation)
+    RGBMatrix.Engine.set_effect(effect_type)
 
-    state = %{state | current_animation_index: previous_index}
+    state = %{state | current_effect_index: previous_index}
 
     {:noreply, state}
   end
@@ -228,12 +225,6 @@ defmodule Xebow.Keyboard do
   # Custom Key Functions
 
   def flash(color) do
-    pixels = Xebow.Utils.pixels()
-    color = Chameleon.Keyword.new(color)
-    frame = Frame.solid_color(pixels, color)
-
-    animation = Animation.new(type: Animation.Static, frames: [frame], delay_ms: 250, loop: 1)
-
-    RGBMatrix.Engine.play_animation(animation, async: false)
+    Logger.info("TODO: flash color #{IO.inspect(color)}")
   end
 end

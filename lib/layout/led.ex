@@ -3,8 +3,10 @@ defmodule Layout.LED do
   Describes a physical LED location.
   """
 
+  @type id :: atom
+
   @type t :: %__MODULE__{
-          id: atom,
+          id: id,
           x: float,
           y: float
         }

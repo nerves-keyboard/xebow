@@ -3,8 +3,10 @@ defmodule Layout.Key do
   Describes a physical key and its location.
   """
 
+  @type id :: atom
+
   @type t :: %__MODULE__{
-          id: atom,
+          id: id,
           x: float,
           y: float,
           width: float,

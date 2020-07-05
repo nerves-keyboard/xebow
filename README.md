@@ -72,6 +72,26 @@ Remove the MicroSD card and insert it into the keybow. Plug the keybow into the
 computer and wait for it to boot. Once booted, the keypad should begin cycling
 all keys through a rainbow of colors.
 
+## Updating the firmware
+
+The firmware can be updated while the Keybow is attached to your computer as
+long as the Xebow firmware is running on it.
+
+First, generate a firmware package from the current source code:
+
+    $ mix firmware
+
+Then upload the firmware to the device over SSH:
+
+    $ mix upload
+
+Notes
+- The upload needs to be run on a computer with the same SSH public key that was
+  used when burning the SD card or else it won't be able to connect to the Keybow.
+- If the `xebow.local` hostname can't be resolved, try unplugging the Keybow
+  from the USB port, wait for the computer's USB disconnect notification, then
+  plug the Keybow back in and try again after it's booted back up.
+
 # Keyboard Layout
 
 The xebow firmware sets up the keybow as a 10-key numpad. Turn the keypad so the

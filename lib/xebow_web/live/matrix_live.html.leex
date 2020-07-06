@@ -1,0 +1,22 @@
+<hr>
+
+<div class="screen">
+  <%= for led <- @leds do %>
+    <span
+      class="<%= led.class %>"
+      <%= if led.class == "key" do %>
+      phx-click="key_pressed"
+      phx-value-key-id="<%= led.id %>"
+      <% end %>
+      style="
+        left: <%= led.x %>px;
+        top: <%= led.y %>px;
+        width: <%= led.width %>px;
+        height: <%= led.height %>px;
+        background-color: <%= led.color %>
+      "
+    ></span>
+  <% end %>
+</div>
+
+<hr>

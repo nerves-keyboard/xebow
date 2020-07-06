@@ -1,0 +1,3 @@
+<%= for {name, %mod{} = type} <- @schema do %>
+  <%= live_component @socket, component_for(mod), id: name, schema: type, value: Map.fetch!(@config, name) %>
+<% end %>

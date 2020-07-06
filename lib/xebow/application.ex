@@ -40,7 +40,11 @@ defmodule Xebow.Application do
       Xebow.HIDGadget,
       Xebow.LEDs,
       {RGBMatrix.Engine, {@leds, @animation_type, [Xebow.LEDs]}},
-      Xebow.Keyboard
+      Xebow.Keyboard,
+      # Phoenix:
+      XebowWeb.Telemetry,
+      {Phoenix.PubSub, name: Xebow.PubSub},
+      XebowWeb.Endpoint
     ]
   end
 

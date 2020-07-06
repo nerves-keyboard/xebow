@@ -72,6 +72,10 @@ defmodule RGBMatrix.Engine do
     GenServer.cast(__MODULE__, {:interact, led})
   end
 
+  def register_paintable_fun(fun) do
+    GenServer.cast(__MODULE__, {:register_paintable_fun, fun})
+  end
+
   # Server
 
   @impl GenServer
@@ -170,6 +174,12 @@ defmodule RGBMatrix.Engine do
     state = %State{state | animation: animation}
 
     {:noreply, %State{state | animation: animation}}
+  end
+
+  @impl GenServer
+  def handle_cast({:register_paintable_fun, fun}, state) do
+    paintables = Map.put(state.paintables, fun, fun)
+    {:noreply, %State{state | paintables: paintables}}
   end
 
   @impl GenServer

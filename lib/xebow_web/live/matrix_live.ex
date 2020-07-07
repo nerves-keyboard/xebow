@@ -14,14 +14,25 @@ defmodule XebowWeb.MatrixLive do
   @impl true
   def mount(_params, _session, socket) do
     if connected?(socket) do
-      pid = self()
-
-      Engine.register_paintable_fun(fn frame ->
-        send(pid, {:render, frame})
-      end)
+      register_with_engine!()
     end
 
     {:ok, assign(socket, leds: make_view_leds(@black_frame))}
+  end
+
+  defp register_with_engine! do
+    pid = self()
+
+    paint_fn = fn frame ->
+      if Process.alive?(pid) do
+        send(pid, {:render, frame})
+        :ok
+      else
+        :unregister
+      end
+    end
+
+    :ok = Engine.register_paintable(pid, paint_fn)
   end
 
   defp make_view_leds(frame) do
@@ -99,6 +110,11 @@ defmodule XebowWeb.MatrixLive do
     end
 
     {:noreply, socket}
+  end
+
+  @impl true
+  def terminate(_reason, _socket) do
+    Engine.unregister_paintable(self())
   end
 
   # def handle_event("update_config", %{"_target" => [field_str]} = params, socket) do

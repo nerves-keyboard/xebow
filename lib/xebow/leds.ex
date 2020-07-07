@@ -5,15 +5,14 @@ defmodule Xebow.LEDs do
   GenServer that interacts with the SPI device that controls the RGB LEDs on the
   Keybow.
 
-  It also implements the RGBMatrix.Paintable behavior so that the RGBMatrix
-  animations can be painted onto the keybow's RGB LEDs.
+  It registers itself to RGBMatrix.Engine on init so the animations can be
+  painted onto the keybow's RGB LEDs.
   """
-
-  @behaviour RGBMatrix.Paintable
 
   use GenServer
 
   alias Circuits.SPI
+  alias RGBMatrix.Engine
 
   defmodule State do
     @moduledoc false
@@ -47,11 +46,6 @@ defmodule Xebow.LEDs do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
-  @impl RGBMatrix.Paintable
-  def get_paint_fn do
-    GenServer.call(__MODULE__, :get_paint_fn)
-  end
-
   # Server
 
   @impl GenServer
@@ -61,15 +55,26 @@ defmodule Xebow.LEDs do
         speed_hz: @spi_speed_hz
       )
 
+    register_with_engine!(spidev)
+
     state = %State{spidev: spidev}
 
     {:ok, state}
   end
 
-  @impl GenServer
-  def handle_call(:get_paint_fn, _from, state) do
-    paint_fn = fn frame -> paint(state.spidev, frame) end
-    {:reply, paint_fn, state}
+  defp register_with_engine!(spidev) do
+    pid = self()
+
+    paint_fn = fn frame ->
+      if Process.alive?(pid) do
+        paint(spidev, frame)
+        :ok
+      else
+        :unregister
+      end
+    end
+
+    :ok = Engine.register_paintable(pid, paint_fn)
   end
 
   defp paint(spidev, frame) do
@@ -84,5 +89,11 @@ defmodule Xebow.LEDs do
       end) <> @eof
 
     SPI.transfer(spidev, data)
+  end
+
+  @impl GenServer
+  def terminate(_reason, state) do
+    SPI.close(state.spidev)
+    Engine.unregister_paintable(self())
   end
 end

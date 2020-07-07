@@ -1,7 +1,7 @@
 defmodule XebowWeb.MatrixLive do
   use XebowWeb, :live_view
 
-  alias RGBMatrix.Engine
+  alias RGBMatrix.{Animation, Engine}
 
   @layout Xebow.layout()
   @black Chameleon.HSV.new(0, 0, 0)
@@ -11,13 +11,97 @@ defmodule XebowWeb.MatrixLive do
                  {led.id, @black}
                end)
 
-  @impl true
+  @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
     if connected?(socket) do
       register_with_engine!()
     end
 
-    {:ok, assign(socket, leds: make_view_leds(@black_frame))}
+    {config, config_schema} = Engine.get_animation_config()
+
+    initial_assigns = [
+      leds: make_view_leds(@black_frame),
+      config: config,
+      config_schema: config_schema,
+      animation_types: Animation.types(),
+      current_animation_index: 0
+    ]
+
+    {:ok, assign(socket, initial_assigns)}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_info({:render, frame}, socket) do
+    {:noreply, assign(socket, leds: make_view_leds(frame))}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_info({:render_config, {config, config_schema}}, socket) do
+    {:noreply, assign(socket, config: config, config_schema: config_schema)}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("key_pressed", %{"key-id" => id_str}, socket) do
+    key_id = String.to_existing_atom(id_str)
+
+    case Layout.led_for_key(@layout, key_id) do
+      nil -> :noop
+      led -> Engine.interact(led)
+    end
+
+    {:noreply, socket}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("update_config", %{"_target" => [field_str]} = params, socket) do
+    value = Map.fetch!(params, field_str)
+
+    Engine.update_animation_config(%{field_str => value})
+
+    {:noreply, socket}
+  end
+
+  # TODO: the following two are duplicated between `Keyboard` and here.
+
+  @impl Phoenix.LiveView
+  def handle_event("next_animation", %{}, socket) do
+    next_index = socket.assigns.current_animation_index + 1
+
+    next_index =
+      case next_index < Enum.count(socket.assigns.animation_types) do
+        true -> next_index
+        _ -> 0
+      end
+
+    animation_type = Enum.at(socket.assigns.animation_types, next_index)
+
+    RGBMatrix.Engine.set_animation(animation_type)
+
+    {:noreply, assign(socket, current_animation_index: next_index)}
+  end
+
+  @impl Phoenix.LiveView
+  def handle_event("previous_animation", %{}, socket) do
+    previous_index = socket.assigns.current_animation_index - 1
+
+    previous_index =
+      case previous_index < 0 do
+        true -> Enum.count(socket.assigns.animation_types) - 1
+        _ -> previous_index
+      end
+
+    animation_type = Enum.at(socket.assigns.animation_types, previous_index)
+
+    RGBMatrix.Engine.set_animation(animation_type)
+
+    {:noreply, assign(socket, current_animation_index: previous_index)}
+  end
+
+  @impl Phoenix.LiveView
+  def terminate(_reason, _socket) do
+    pid = self()
+    Engine.unregister_paintable(pid)
+    Engine.unregister_configurable(pid)
   end
 
   defp register_with_engine! do
@@ -32,7 +116,17 @@ defmodule XebowWeb.MatrixLive do
       end
     end
 
+    config_fn = fn config ->
+      if Process.alive?(pid) do
+        send(pid, {:render_config, config})
+        :ok
+      else
+        :unregister
+      end
+    end
+
     :ok = Engine.register_paintable(pid, paint_fn)
+    :ok = Engine.register_configurable(pid, config_fn)
   end
 
   defp make_view_leds(frame) do
@@ -94,42 +188,4 @@ defmodule XebowWeb.MatrixLive do
       color: "#" <> color_hex
     }
   end
-
-  @impl true
-  def handle_info({:render, frame}, socket) do
-    {:noreply, assign(socket, leds: make_view_leds(frame))}
-  end
-
-  @impl true
-  def handle_event("key_pressed", %{"key-id" => id_str}, socket) do
-    key_id = String.to_existing_atom(id_str)
-
-    case Layout.led_for_key(@layout, key_id) do
-      nil -> :noop
-      led -> Engine.interact(led)
-    end
-
-    {:noreply, socket}
-  end
-
-  @impl true
-  def terminate(_reason, _socket) do
-    Engine.unregister_paintable(self())
-  end
-
-  # def handle_event("update_config", %{"_target" => [field_str]} = params, socket) do
-  #   field = String.to_existing_atom(field_str)
-  #   %config_mod{} = config = socket.assigns.state.effect.config
-  #   %type_mod{} = type = Keyword.fetch!(config_mod.schema(), field)
-  #   value = Map.fetch!(params, field_str)
-  #   {:ok, value} = type_mod.cast(type, value)
-
-  #   new_config = config_mod.update(config, %{field => value})
-
-  #   effect = socket.assigns.state.effect
-  #   new_effect = %{effect | config: new_config}
-  #   new_state = %{socket.assigns.state | effect: new_effect}
-
-  #   {:noreply, assign(socket, state: new_state, config: new_config)}
-  # end
 end

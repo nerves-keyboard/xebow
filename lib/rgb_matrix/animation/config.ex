@@ -65,7 +65,11 @@ defmodule RGBMatrix.Animation.Config do
         schema = schema()
 
         Enum.reduce(params, config, fn {key, value}, config ->
+          # TODO: better key casting
+          key = String.to_existing_atom(key)
           %mod{} = type = Keyword.fetch!(schema, key)
+          # TODO: better value casting
+          {:ok, value} = mod.cast(type, value)
           if mod.validate(type, value) == :error, do: value_error!(value, key)
 
           Map.put(config, key, value)

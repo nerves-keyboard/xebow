@@ -22,7 +22,8 @@ defmodule Xebow.MixProject do
         test: :host,
         dialyzer: :keybow,
         docs: :keybow,
-        firmware: :keybow
+        firmware: :keybow,
+        upload: :keybow
       ],
       dialyzer: [
         ignore_warnings: "dialyzer.ignore.exs",
@@ -59,7 +60,7 @@ defmodule Xebow.MixProject do
     [
       "docs.show": "do docs, cmd xdg-open doc/index.html",
       loadconfig: [&bootstrap/1],
-      upload: "cmd ./upload.sh"
+      upload: "upload xebow.local"
     ]
   end
 

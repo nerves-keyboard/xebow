@@ -77,8 +77,6 @@ defmodule Xebow.MixProject do
       {:dialyxir, "~> 1.0.0", only: :dev, runtime: false},
       {:ex_doc, "~> 0.22.1", only: :dev, runtime: false},
       {:mox, "~> 0.5", only: :test},
-      {:nerves_firmware_ssh,
-       github: "nerves-project/nerves_firmware_ssh", ref: "main", override: true},
 
       # Dependencies for all targets except :host
       {:nerves_runtime, "~> 0.11", targets: @all_targets, override: true},

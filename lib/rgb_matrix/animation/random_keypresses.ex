@@ -9,10 +9,12 @@ defmodule RGBMatrix.Animation.RandomKeypresses do
   use Animation
 
   defmodule Config do
+    @moduledoc false
     use RGBMatrix.Animation.Config
   end
 
   defmodule State do
+    @moduledoc false
     defstruct [:led_ids, :dirty]
   end
 
@@ -38,7 +40,7 @@ defmodule RGBMatrix.Animation.RandomKeypresses do
         id -> [{id, random_color()}]
       end
 
-    {colors, :never, state}
+    {:never, colors, state}
   end
 
   defp random_color do

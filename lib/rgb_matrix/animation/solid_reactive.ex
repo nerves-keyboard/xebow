@@ -11,6 +11,7 @@ defmodule RGBMatrix.Animation.SolidReactive do
   import RGBMatrix.Utils, only: [mod: 2]
 
   defmodule Config do
+    @moduledoc false
     use RGBMatrix.Animation.Config
 
     @doc name: "Speed",
@@ -39,6 +40,7 @@ defmodule RGBMatrix.Animation.SolidReactive do
   end
 
   defmodule State do
+    @moduledoc false
     defstruct [:first_render, :paused, :tick, :color, :leds, :hits]
   end
 
@@ -91,7 +93,7 @@ defmodule RGBMatrix.Animation.SolidReactive do
         this_color != color
       end)
 
-    {colors, @delay_ms, %{state | tick: tick + 1, hits: hits, paused: hits == %{}}}
+    {@delay_ms, colors, %{state | tick: tick + 1, hits: hits, paused: hits == %{}}}
   end
 
   @impl true

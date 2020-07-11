@@ -1,5 +1,3 @@
-require Logger
-
 defmodule RGBMatrix.Engine do
   @moduledoc """
   Renders [`Animation`](`RGBMatrix.Animation`)s and outputs colors to be
@@ -33,8 +31,7 @@ defmodule RGBMatrix.Engine do
     dynamically, set this to an empty list `[]`.
   """
   @spec start_link(
-          {leds :: [LED.t()], initial_animation_type :: Animation.type(),
-           paintables :: list(module)}
+          {leds :: [LED.t()], initial_animation_type :: Animation.type(), paintables :: [module]}
         ) ::
           GenServer.on_start()
   def start_link({leds, initial_animation_type, paintables}) do
@@ -85,7 +82,7 @@ defmodule RGBMatrix.Engine do
       Enum.reduce(paintables, initial_state, fn paintable, state ->
         add_paintable(paintable, state)
       end)
-      |> set_animation(initial_animation_type)
+      |> init_and_set_animation(initial_animation_type)
 
     {:ok, state}
   end
@@ -100,7 +97,7 @@ defmodule RGBMatrix.Engine do
     %State{state | paintables: paintables}
   end
 
-  defp set_animation(state, animation_type) do
+  defp init_and_set_animation(state, animation_type) do
     {render_in, animation} = Animation.new(animation_type, state.leds)
 
     state = schedule_next_render(state, render_in)
@@ -159,7 +156,7 @@ defmodule RGBMatrix.Engine do
 
   @impl GenServer
   def handle_cast({:set_animation, animation_type}, state) do
-    state = set_animation(state, animation_type)
+    state = init_and_set_animation(state, animation_type)
     {:noreply, state}
   end
 

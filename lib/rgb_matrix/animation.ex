@@ -71,10 +71,10 @@ defmodule RGBMatrix.Animation do
   """
   @spec render(animation :: t) :: {list(RGBMatrix.any_color_model()), render_in, t}
   def render(animation) do
-    {colors, render_in, animation_state} =
+    {render_in, colors, animation_state} =
       animation.type.render(animation.state, animation.config)
 
-    {colors, render_in, %{animation | state: animation_state}}
+    {render_in, colors, %{animation | state: animation_state}}
   end
 
   @doc """

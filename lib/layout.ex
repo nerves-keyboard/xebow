@@ -8,8 +8,8 @@ defmodule Layout do
   @type t :: %__MODULE__{
           keys: [Key.t()],
           leds: [LED.t()],
-          leds_by_keys: %{atom => LED.t()},
-          keys_by_leds: %{atom => Key.t()}
+          leds_by_keys: %{Key.id() => LED.t()},
+          keys_by_leds: %{LED.id() => Key.t()}
         }
   defstruct [:keys, :leds, :leds_by_keys, :keys_by_leds]
 

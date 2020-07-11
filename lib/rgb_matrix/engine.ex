@@ -44,7 +44,7 @@ defmodule RGBMatrix.Engine do
   @doc """
   Sets the given animation as the currently active animation.
   """
-  @spec set_animation(animation_type :: Animation.type(), opts :: keyword()) :: :ok
+  @spec set_animation(animation_type :: Animation.type()) :: :ok
   def set_animation(animation_type) do
     GenServer.cast(__MODULE__, {:set_animation, animation_type})
   end
@@ -135,7 +135,7 @@ defmodule RGBMatrix.Engine do
 
   @impl true
   def handle_info(:render, state) do
-    {new_colors, render_in, animation} = Animation.render(state.animation)
+    {render_in, new_colors, animation} = Animation.render(state.animation)
 
     frame = update_frame(state.last_frame, new_colors)
 

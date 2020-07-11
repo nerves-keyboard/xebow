@@ -1,16 +1,17 @@
 defmodule RGBMatrix.Engine do
   @moduledoc """
-  Renders [`Animation`](`RGBMatrix.Animation`)s and outputs
-  [`Frame`](`RGBMatrix.Frame`)s to be displayed.
+  Renders [`Animation`](`RGBMatrix.Animation`)s and outputs colors to be
+  displayed by [`Paintable`](`RGBMatrix.Paintable`)s.
   """
 
   use GenServer
 
+  alias Layout.LED
   alias RGBMatrix.Animation
 
   defmodule State do
     @moduledoc false
-    defstruct [:animation, :paintables]
+    defstruct [:leds, :animation, :paintables, :last_frame, :timer]
   end
 
   # Client
@@ -18,37 +19,31 @@ defmodule RGBMatrix.Engine do
   @doc """
   Start the engine.
 
-  This module registers its process globally and is expected to be started by
-  a supervisor.
+  This module registers its process globally and is expected to be started by a
+  supervisor.
 
   This function accepts the following arguments as a tuple:
-  - `initial_animation` - The animation that plays when the engine starts.
-  - `paintables` - A list of modules to output `RGBMatrix.Frame` to that implement
-      the `RGBMatrix.Paintable` behavior. If you want to register your paintables
-      dynamically, set this to an empty list `[]`.
+  - `leds` - The list of LEDs to be painted on.
+  - `initial_animation` - The Animation type to initialize and play when the
+    engine starts.
+  - `paintables` - A list of modules to output colors to that implement the
+    `RGBMatrix.Paintable` behavior. If you want to register your paintables
+    dynamically, set this to an empty list `[]`.
   """
-  @spec start_link({initial_animation :: Animation.t(), paintables :: list(module)}) ::
+  @spec start_link(
+          {leds :: [LED.t()], initial_animation_type :: Animation.type(), paintables :: [module]}
+        ) ::
           GenServer.on_start()
-  def start_link({initial_animation, paintables}) do
-    GenServer.start_link(__MODULE__, {initial_animation, paintables}, name: __MODULE__)
+  def start_link({leds, initial_animation_type, paintables}) do
+    GenServer.start_link(__MODULE__, {leds, initial_animation_type, paintables}, name: __MODULE__)
   end
 
   @doc """
-  Play the given animation.
-
-  Note that the animation can be played synchronously by passing `:false` for the `:async` option. However, only
-  looping (animations with `:loop` >= 1) animations may be played this way. This is to ensure that the caller is not
-  blocked forever.
+  Sets the given animation as the currently active animation.
   """
-  @spec play_animation(animation :: Animation.t(), opts :: keyword()) :: :ok
-  def play_animation(animation, opts \\ []) do
-    async? = Keyword.get(opts, :async, true)
-
-    if async? do
-      GenServer.cast(__MODULE__, {:play_animation, animation})
-    else
-      GenServer.call(__MODULE__, {:play_animation, animation})
-    end
+  @spec set_animation(animation_type :: Animation.type()) :: :ok
+  def set_animation(animation_type) do
+    GenServer.cast(__MODULE__, {:set_animation, animation_type})
   end
 
   @doc """
@@ -61,27 +56,33 @@ defmodule RGBMatrix.Engine do
   end
 
   @doc """
-  Unregister a `RGBMatrix.Paintable` so the engine no longer paints pixels to it.
-  This function is idempotent.
+  Unregister a `RGBMatrix.Paintable` so the engine no longer paints pixels to
+  it. This function is idempotent.
   """
   @spec unregister_paintable(paintable :: module) :: :ok
   def unregister_paintable(paintable) do
     GenServer.call(__MODULE__, {:unregister_paintable, paintable})
   end
 
+  @spec interact(led :: LED.t()) :: :ok
+  def interact(led) do
+    GenServer.cast(__MODULE__, {:interact, led})
+  end
+
   # Server
 
   @impl GenServer
-  def init({initial_animation, paintables}) do
-    send(self(), :get_next_frame)
+  def init({leds, initial_animation_type, paintables}) do
+    black = Chameleon.HSV.new(0, 0, 0)
+    frame = Map.new(leds, &{&1.id, black})
 
-    initial_state = %State{paintables: %{}}
+    initial_state = %State{leds: leds, last_frame: frame, paintables: %{}}
 
     state =
       Enum.reduce(paintables, initial_state, fn paintable, state ->
         add_paintable(paintable, state)
       end)
-      |> set_animation(initial_animation)
+      |> init_and_set_animation(initial_animation_type)
 
     {:ok, state}
   end
@@ -96,64 +97,76 @@ defmodule RGBMatrix.Engine do
     %State{state | paintables: paintables}
   end
 
-  defp set_animation(state, animation) do
+  defp init_and_set_animation(state, animation_type) do
+    {render_in, animation} = Animation.new(animation_type, state.leds)
+
+    state = schedule_next_render(state, render_in)
+
     %State{state | animation: animation}
   end
 
-  @impl GenServer
-  def handle_info(:get_next_frame, state) do
-    animation = Animation.next_frame(state.animation)
+  defp schedule_next_render(state, :ignore) do
+    state
+  end
+
+  defp schedule_next_render(state, :never) do
+    cancel_timer(state)
+  end
+
+  defp schedule_next_render(state, 0) do
+    send(self(), :render)
+    cancel_timer(state)
+  end
+
+  defp schedule_next_render(state, ms) when is_integer(ms) and ms > 0 do
+    state = cancel_timer(state)
+    %{state | timer: Process.send_after(self(), :render, ms)}
+  end
+
+  defp cancel_timer(%{timer: nil} = state), do: state
+
+  defp cancel_timer(state) do
+    Process.cancel_timer(state.timer)
+    %{state | timer: nil}
+  end
+
+  @impl true
+  def handle_info(:render, state) do
+    {render_in, new_colors, animation} = Animation.render(state.animation)
+
+    frame = update_frame(state.last_frame, new_colors)
 
     state.paintables
     |> Map.values()
     |> Enum.each(fn paint_fn ->
-      paint_fn.(animation.next_frame)
+      paint_fn.(frame)
     end)
 
-    Process.send_after(self(), :get_next_frame, animation.delay_ms)
-    {:noreply, set_animation(state, animation)}
+    state = schedule_next_render(state, render_in)
+    state = %State{state | animation: animation, last_frame: frame}
+
+    {:noreply, state}
+  end
+
+  defp update_frame(frame, new_colors) do
+    Enum.reduce(new_colors, frame, fn {led_id, color}, frame ->
+      Map.put(frame, led_id, color)
+    end)
   end
 
   @impl GenServer
-  def handle_info({:reset_animation, reset_animation}, state) do
-    {:noreply, set_animation(state, reset_animation)}
-  end
-
-  @impl GenServer
-  def handle_info({:reply, from, reset_animation}, state) do
-    GenServer.reply(from, :ok)
-
-    {:noreply, set_animation(state, reset_animation)}
-  end
-
-  @impl GenServer
-  def handle_cast({:play_animation, %{loop: loop} = animation}, state)
-      when is_integer(loop) and loop >= 1 do
-    current_animation = state.animation
-    expected_duration = Animation.duration(animation)
-    Process.send_after(self(), {:reset_animation, current_animation}, expected_duration)
-
-    {:noreply, set_animation(state, animation)}
-  end
-
-  @impl GenServer
-  def handle_cast({:play_animation, %{loop: 0} = _animation}, state) do
+  def handle_cast({:set_animation, animation_type}, state) do
+    state = init_and_set_animation(state, animation_type)
     {:noreply, state}
   end
 
   @impl GenServer
-  def handle_cast({:play_animation, animation}, state) do
-    {:noreply, set_animation(state, animation)}
-  end
+  def handle_cast({:interact, led}, state) do
+    {render_in, animation} = Animation.interact(state.animation, led)
+    state = schedule_next_render(state, render_in)
+    state = %State{state | animation: animation}
 
-  @impl GenServer
-  def handle_call({:play_animation, %{loop: loop} = animation}, from, state)
-      when is_integer(loop) and loop >= 1 do
-    current_animation = state.animation
-    duration = Animation.duration(animation)
-    Process.send_after(self(), {:reply, from, current_animation}, duration)
-
-    {:noreply, set_animation(state, animation)}
+    {:noreply, %State{state | animation: animation}}
   end
 
   @impl GenServer

@@ -17,24 +17,22 @@ defmodule Xebow.Keyboard do
   use GenServer
 
   alias Circuits.GPIO
-  alias RGBMatrix.{Animation, Frame}
+  alias RGBMatrix.{Animation, Engine}
 
   # maps the physical GPIO pins to key IDs
-  # TODO: re-number these keys so they map to the keyboard in X/Y natural order,
-  # rather than keybow hardware order.
   @gpio_pins %{
+    6 => :k004,
+    5 => :k009,
+    27 => :k011,
+    26 => :k003,
+    24 => :k008,
+    23 => :k012,
+    22 => :k007,
     20 => :k001,
-    6 => :k002,
-    22 => :k003,
-    17 => :k004,
-    16 => :k005,
-    12 => :k006,
-    24 => :k007,
-    27 => :k008,
-    26 => :k009,
-    13 => :k010,
-    5 => :k011,
-    23 => :k012
+    17 => :k010,
+    16 => :k002,
+    13 => :k006,
+    12 => :k005
   }
 
   # this file exists because `Xebow.HIDGadget` set it up during boot.
@@ -44,45 +42,45 @@ defmodule Xebow.Keyboard do
     # Layer 0:
     %{
       k001: AFK.Keycode.Key.new(:"7"),
-      k002: AFK.Keycode.Key.new(:"4"),
-      k003: AFK.Keycode.Key.new(:"1"),
-      k004: AFK.Keycode.Key.new(:"0"),
-      k005: AFK.Keycode.Key.new(:"8"),
-      k006: AFK.Keycode.Key.new(:"5"),
-      k007: AFK.Keycode.Key.new(:"2"),
-      k008: AFK.Keycode.Layer.new(:hold, 1),
-      k009: AFK.Keycode.Key.new(:"9"),
-      k010: AFK.Keycode.Key.new(:"6"),
-      k011: AFK.Keycode.Key.new(:"3"),
+      k002: AFK.Keycode.Key.new(:"8"),
+      k003: AFK.Keycode.Key.new(:"9"),
+      k004: AFK.Keycode.Key.new(:"4"),
+      k005: AFK.Keycode.Key.new(:"5"),
+      k006: AFK.Keycode.Key.new(:"6"),
+      k007: AFK.Keycode.Key.new(:"1"),
+      k008: AFK.Keycode.Key.new(:"2"),
+      k009: AFK.Keycode.Key.new(:"3"),
+      k010: AFK.Keycode.Key.new(:"0"),
+      k011: AFK.Keycode.Layer.new(:hold, 1),
       k012: AFK.Keycode.Layer.new(:hold, 2)
     },
     # Layer 1:
     %{
       k001: AFK.Keycode.Transparent.new(),
-      k002: AFK.Keycode.Transparent.new(),
-      k003: AFK.Keycode.Transparent.new(),
+      k002: AFK.Keycode.Key.new(:mute),
+      k003: AFK.Keycode.Key.new(:volume_up),
       k004: AFK.Keycode.Transparent.new(),
-      k005: AFK.Keycode.Key.new(:mute),
-      k006: AFK.Keycode.Transparent.new(),
+      k005: AFK.Keycode.Transparent.new(),
+      k006: AFK.Keycode.Key.new(:volume_down),
       k007: AFK.Keycode.Transparent.new(),
-      k008: AFK.Keycode.None.new(),
-      k009: AFK.Keycode.Key.new(:volume_up),
-      k010: AFK.Keycode.Key.new(:volume_down),
-      k011: AFK.Keycode.Transparent.new(),
+      k008: AFK.Keycode.Transparent.new(),
+      k009: AFK.Keycode.Transparent.new(),
+      k010: AFK.Keycode.Transparent.new(),
+      k011: AFK.Keycode.None.new(),
       k012: AFK.Keycode.Transparent.new()
     },
     # Layer 2:
     %{
       k001: AFK.Keycode.MFA.new({__MODULE__, :flash, ["red"]}),
-      k002: AFK.Keycode.MFA.new({__MODULE__, :previous_animation, []}),
-      k003: AFK.Keycode.Transparent.new(),
-      k004: AFK.Keycode.Transparent.new(),
+      k002: AFK.Keycode.Transparent.new(),
+      k003: AFK.Keycode.MFA.new({__MODULE__, :flash, ["green"]}),
+      k004: AFK.Keycode.MFA.new({__MODULE__, :previous_animation, []}),
       k005: AFK.Keycode.Transparent.new(),
-      k006: AFK.Keycode.Transparent.new(),
+      k006: AFK.Keycode.MFA.new({__MODULE__, :next_animation, []}),
       k007: AFK.Keycode.Transparent.new(),
       k008: AFK.Keycode.Transparent.new(),
-      k009: AFK.Keycode.MFA.new({__MODULE__, :flash, ["green"]}),
-      k010: AFK.Keycode.MFA.new({__MODULE__, :next_animation, []}),
+      k009: AFK.Keycode.Transparent.new(),
+      k010: AFK.Keycode.Transparent.new(),
       k011: AFK.Keycode.Transparent.new(),
       k012: AFK.Keycode.Transparent.new()
     }
@@ -136,18 +134,15 @@ defmodule Xebow.Keyboard do
     poll_timer_ms = 15
     :timer.send_interval(poll_timer_ms, self(), :update_pin_values)
 
-    animations =
-      Animation.types()
-      |> Enum.map(&Animation.new(type: &1))
+    state = %{
+      pins: pins,
+      keyboard_state: keyboard_state,
+      hid: hid,
+      animation_types: Animation.types(),
+      current_animation_index: 0
+    }
 
-    {:ok,
-     %{
-       pins: pins,
-       keyboard_state: keyboard_state,
-       hid: hid,
-       animations: animations,
-       current_animation_index: 0
-     }}
+    {:ok, state}
   end
 
   @impl GenServer
@@ -155,14 +150,14 @@ defmodule Xebow.Keyboard do
     next_index = state.current_animation_index + 1
 
     next_index =
-      case next_index < Enum.count(state.animations) do
+      case next_index < Enum.count(state.animation_types) do
         true -> next_index
         _ -> 0
       end
 
-    animation = Enum.at(state.animations, next_index)
+    animation_type = Enum.at(state.animation_types, next_index)
 
-    RGBMatrix.Engine.play_animation(animation)
+    RGBMatrix.Engine.set_animation(animation_type)
 
     state = %{state | current_animation_index: next_index}
 
@@ -175,13 +170,13 @@ defmodule Xebow.Keyboard do
 
     previous_index =
       case previous_index < 0 do
-        true -> Enum.count(state.animations) - 1
+        true -> Enum.count(state.animation_types) - 1
         _ -> previous_index
       end
 
-    animation = Enum.at(state.animations, previous_index)
+    animation_type = Enum.at(state.animation_types, previous_index)
 
-    RGBMatrix.Engine.play_animation(animation)
+    RGBMatrix.Engine.set_animation(animation_type)
 
     state = %{state | current_animation_index: previous_index}
 
@@ -218,6 +213,7 @@ defmodule Xebow.Keyboard do
       0 ->
         Logger.debug("key pressed #{key_id}")
         AFK.State.press_key(keyboard_state, key_id)
+        rgb_matrix_interact(key_id)
 
       1 ->
         Logger.debug("key released #{key_id}")
@@ -225,15 +221,16 @@ defmodule Xebow.Keyboard do
     end
   end
 
+  defp rgb_matrix_interact(key_id) do
+    case Layout.led_for_key(Xebow.layout(), key_id) do
+      nil -> :noop
+      led -> Engine.interact(led)
+    end
+  end
+
   # Custom Key Functions
 
   def flash(color) do
-    pixels = Xebow.Utils.pixels()
-    color = Chameleon.Keyword.new(color)
-    frame = Frame.solid_color(pixels, color)
-
-    animation = Animation.new(type: Animation.Static, frames: [frame], delay_ms: 250, loop: 1)
-
-    RGBMatrix.Engine.play_animation(animation, async: false)
+    Logger.info("TODO: flash color #{IO.inspect(color)}")
   end
 end

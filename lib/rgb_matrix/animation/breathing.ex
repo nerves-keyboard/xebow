@@ -1,14 +1,12 @@
-defmodule RGBMatrix.Animation.CycleAll do
+defmodule RGBMatrix.Animation.Breathing do
   @moduledoc """
-  Cycles the hue of all LEDs at the same time.
+  Single hue brightness cycling.
   """
 
   alias Chameleon.HSV
   alias RGBMatrix.Animation
 
   use Animation
-
-  import RGBMatrix.Utils, only: [mod: 2]
 
   defmodule Config do
     @moduledoc false
@@ -17,24 +15,25 @@ defmodule RGBMatrix.Animation.CycleAll do
 
   defmodule State do
     @moduledoc false
-    defstruct [:tick, :speed, :led_ids]
+    defstruct [:color, :tick, :speed, :led_ids]
   end
 
   @delay_ms 17
 
   @impl true
   def new(leds, _config) do
+    # TODO: configurable base color
+    color = HSV.new(40, 100, 100)
     led_ids = Enum.map(leds, & &1.id)
-    {0, %State{tick: 0, speed: 100, led_ids: led_ids}}
+    {0, %State{color: color, tick: 0, speed: 100, led_ids: led_ids}}
   end
 
   @impl true
   def render(state, _config) do
-    %{tick: tick, speed: speed, led_ids: led_ids} = state
+    %{color: base_color, tick: tick, speed: speed, led_ids: led_ids} = state
 
-    time = div(tick * speed, 100)
-    hue = mod(time, 360)
-    color = HSV.new(hue, 100, 100)
+    value = trunc(abs(:math.sin(tick * speed / 5_000)) * base_color.v)
+    color = HSV.new(base_color.h, base_color.s, value)
 
     colors = Enum.map(led_ids, fn id -> {id, color} end)
 

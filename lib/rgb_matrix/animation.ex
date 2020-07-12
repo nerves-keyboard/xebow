@@ -38,6 +38,7 @@ defmodule RGBMatrix.Animation do
           | __MODULE__.SolidColor
           | __MODULE__.Breathing
           | __MODULE__.SolidReactive
+          | __MODULE__.Simon
 
   @doc """
   Returns a list of the available types of animations.
@@ -52,7 +53,8 @@ defmodule RGBMatrix.Animation do
       __MODULE__.RandomKeypresses,
       __MODULE__.SolidColor,
       __MODULE__.Breathing,
-      __MODULE__.SolidReactive
+      __MODULE__.SolidReactive,
+      __MODULE__.Simon
     ]
   end
 

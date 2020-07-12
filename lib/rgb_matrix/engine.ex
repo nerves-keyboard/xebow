@@ -60,7 +60,7 @@ defmodule RGBMatrix.Engine do
   end
 
   @doc """
-  Sends an interaction events to the engine. Animations may or may not respond
+  Sends interaction events to the engine. Animations may or may not respond
   to these interaction events.
   """
   @spec interact(led :: LED.t()) :: :ok
@@ -249,7 +249,7 @@ defmodule RGBMatrix.Engine do
     Enum.reduce(state.configurables, state, fn {key, config_fn}, state ->
       case config_fn.(config) do
         :ok -> state
-        :unregister -> remove_paintable(key, state)
+        :unregister -> remove_configurable(key, state)
       end
     end)
   end

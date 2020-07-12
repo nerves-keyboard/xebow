@@ -88,4 +88,4 @@ config :xebow, XebowWeb.Endpoint,
   url: [host: "xebow.local", port: 80],
   code_reloader: false
 
-#import_config "#{Mix.env()}.exs"
+import_config "#{Mix.env()}.exs"

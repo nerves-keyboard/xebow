@@ -61,7 +61,7 @@ defmodule RGBMatrix.Animation do
   """
   @spec new(animation_type :: type, leds :: [LED.t()]) :: {render_in, t}
   def new(animation_type, leds) do
-    config_module = Module.concat([animation_type, Config])
+    config_module = Module.concat([animation_type, "Config"])
     animation_config = config_module.new()
     {render_in, animation_state} = animation_type.new(leds, animation_config)
 
@@ -92,5 +92,28 @@ defmodule RGBMatrix.Animation do
   def interact(animation, led) do
     {render_in, animation_state} = animation.type.interact(animation.state, animation.config, led)
     {render_in, %{animation | state: animation_state}}
+  end
+
+  @doc """
+  Gets the current configuration and the configuration schema from an animation.
+  """
+  @spec get_config(animation :: t) :: {struct, keyword(struct)}
+  def get_config(animation) do
+    %config_module{} = config = animation.config
+    config_schema = config_module.schema()
+
+    {config, config_schema}
+  end
+
+  @doc """
+  Updates the configuration of an animation.
+  """
+  @spec update_config(animation :: t, params :: map) :: t
+  def update_config(animation, params) do
+    %config_module{} = config = animation.config
+
+    config = config_module.update(config, params)
+
+    %{animation | config: config}
   end
 end

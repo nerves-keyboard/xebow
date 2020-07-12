@@ -43,9 +43,13 @@ defmodule Xebow.Application do
       # Starts a worker by calling: Xebow.Worker.start_link(arg)
       # {Xebow.Worker, arg},
       Xebow.HIDGadget,
+      {RGBMatrix.Engine, {@leds, @animation_type}},
       Xebow.LEDs,
-      {RGBMatrix.Engine, {@leds, @animation_type, [Xebow.LEDs]}},
-      Xebow.Keyboard
+      Xebow.Keyboard,
+      # Phoenix:
+      XebowWeb.Telemetry,
+      {Phoenix.PubSub, name: Xebow.PubSub},
+      XebowWeb.Endpoint
     ]
   end
 

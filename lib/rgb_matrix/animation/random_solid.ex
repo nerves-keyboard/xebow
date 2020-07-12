@@ -9,10 +9,12 @@ defmodule RGBMatrix.Animation.RandomSolid do
   use Animation
 
   defmodule Config do
+    @moduledoc false
     use RGBMatrix.Animation.Config
   end
 
   defmodule State do
+    @moduledoc false
     defstruct [:led_ids]
   end
 
@@ -29,7 +31,7 @@ defmodule RGBMatrix.Animation.RandomSolid do
 
     colors = Enum.map(led_ids, fn id -> {id, color} end)
 
-    {colors, :never, state}
+    {:never, colors, state}
   end
 
   defp random_color do

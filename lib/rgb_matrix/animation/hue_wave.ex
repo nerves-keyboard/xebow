@@ -12,6 +12,7 @@ defmodule RGBMatrix.Animation.HueWave do
   import RGBMatrix.Utils, only: [mod: 2]
 
   defmodule Config do
+    @moduledoc false
     use RGBMatrix.Animation.Config
 
     @doc name: "Speed",
@@ -41,6 +42,7 @@ defmodule RGBMatrix.Animation.HueWave do
   end
 
   defmodule State do
+    @moduledoc false
     defstruct [:tick, :leds, :steps]
   end
 
@@ -64,7 +66,7 @@ defmodule RGBMatrix.Animation.HueWave do
 
     colors = render_colors(leds, steps, time, direction)
 
-    {colors, @delay_ms, %{state | tick: tick + 1}}
+    {@delay_ms, colors, %{state | tick: tick + 1}}
   end
 
   defp render_colors(leds, steps, time, :right) do

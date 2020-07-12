@@ -12,10 +12,12 @@ defmodule RGBMatrix.Animation.Pinwheel do
   import RGBMatrix.Utils, only: [mod: 2]
 
   defmodule Config do
+    @moduledoc false
     use RGBMatrix.Animation.Config
   end
 
   defmodule State do
+    @moduledoc false
     defstruct [:tick, :speed, :leds, :center]
   end
 
@@ -52,7 +54,7 @@ defmodule RGBMatrix.Animation.Pinwheel do
         {id, HSV.new(hue, 100, 100)}
       end
 
-    {colors, @delay_ms, %{state | tick: tick + 1}}
+    {@delay_ms, colors, %{state | tick: tick + 1}}
   end
 
   defp atan2_8(x, y) do

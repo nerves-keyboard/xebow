@@ -1,11 +1,20 @@
 defmodule RGBMatrix.Animation.Config do
+  @moduledoc """
+  Provides a behaviour and macros for defining animation configurations.
+  """
+
+  # An animation config is a struct, but we don't know ahead of time all the
+  # concrete types of struct it might be. (e.g.:
+  # RGBMatrix.Animation.HueWave.Config.t)
+  @type t :: struct
+
   @callback schema() :: keyword(any)
-  @callback new(%{optional(atom) => any}) :: struct
-  @callback update(struct, %{optional(atom) => any}) :: struct
+  @callback new(%{optional(atom) => any}) :: t
+  @callback update(t, %{optional(atom) => any}) :: t
 
   @types %{
-    integer: RGBMatrix.Animation.Config.Integer,
-    option: RGBMatrix.Animation.Config.Option
+    integer: RGBMatrix.Animation.Config.FieldType.Integer,
+    option: RGBMatrix.Animation.Config.FieldType.Option
   }
 
   defmacro __using__(_) do

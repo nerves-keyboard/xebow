@@ -1,5 +1,3 @@
-require Logger
-
 defmodule RGBMatrix.Engine do
   @moduledoc """
   Renders [`Animation`](`RGBMatrix.Animation`)s and outputs colors to be
@@ -38,7 +36,7 @@ defmodule RGBMatrix.Engine do
   @doc """
   Sets the given animation as the currently active animation.
   """
-  @spec set_animation(animation_type :: Animation.type(), opts :: keyword()) :: :ok
+  @spec set_animation(animation_type :: Animation.type()) :: :ok
   def set_animation(animation_type) do
     GenServer.cast(__MODULE__, {:set_animation, animation_type})
   end
@@ -103,7 +101,7 @@ defmodule RGBMatrix.Engine do
 
     state =
       %State{leds: leds, last_frame: frame, paintables: %{}, configurables: %{}}
-      |> set_animation(initial_animation_type)
+      |> init_and_set_animation(initial_animation_type)
 
     {:ok, state}
   end
@@ -118,7 +116,7 @@ defmodule RGBMatrix.Engine do
     %State{state | paintables: paintables}
   end
 
-  defp set_animation(state, animation_type) do
+  defp init_and_set_animation(state, animation_type) do
     {render_in, animation} = Animation.new(animation_type, state.leds)
 
     state = %State{state | animation: animation}
@@ -155,7 +153,7 @@ defmodule RGBMatrix.Engine do
 
   @impl true
   def handle_info(:render, state) do
-    {new_colors, render_in, animation} = Animation.render(state.animation)
+    {render_in, new_colors, animation} = Animation.render(state.animation)
 
     frame = update_frame(state.last_frame, new_colors)
 
@@ -183,7 +181,7 @@ defmodule RGBMatrix.Engine do
 
   @impl GenServer
   def handle_cast({:set_animation, animation_type}, state) do
-    state = set_animation(state, animation_type)
+    state = init_and_set_animation(state, animation_type)
     {:noreply, state}
   end
 

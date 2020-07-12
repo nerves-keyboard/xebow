@@ -33,5 +33,6 @@ defmodule Xebow do
 
   @layout Layout.new(@keys, @leds)
 
+  @spec layout() :: Layout.t()
   def layout, do: @layout
 end

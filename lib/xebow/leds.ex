@@ -1,5 +1,3 @@
-require Logger
-
 defmodule Xebow.LEDs do
   @moduledoc """
   GenServer that interacts with the SPI device that controls the RGB LEDs on the

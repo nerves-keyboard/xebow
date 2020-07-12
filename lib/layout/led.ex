@@ -13,10 +13,10 @@ defmodule Layout.LED do
   defstruct [:id, :x, :y]
 
   def new(id, x, y) do
-    struct!(__MODULE__,
+    %__MODULE__{
       id: id,
       x: x,
       y: y
-    )
+    }
   end
 end

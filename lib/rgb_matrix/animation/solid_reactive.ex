@@ -59,11 +59,11 @@ defmodule RGBMatrix.Animation.SolidReactive do
 
     colors = Enum.map(leds, &{&1.id, color})
 
-    {colors, :never, %{state | first_render: false, paused: true}}
+    {:never, colors, %{state | first_render: false, paused: true}}
   end
 
   def render(%{paused: true} = state, _config),
-    do: {[], :never, state}
+    do: {:never, [], state}
 
   def render(state, config) do
     %{tick: tick, color: color, leds: leds, hits: hits} = state

@@ -81,8 +81,11 @@ config :mdns_lite,
     }
   ]
 
-# Import target specific config. This must remain at the bottom
-# of this file so it overrides the configuration defined above.
-# Uncomment to use target specific configurations
+# Phoenix config:
+# Configures the endpoint
+config :xebow, XebowWeb.Endpoint,
+  http: [port: 80, ip: {0, 0, 0, 0}],
+  url: [host: "xebow.local", port: 80],
+  code_reloader: false
 
-# import_config "#{Mix.target()}.exs"
+import_config "#{Mix.env()}.exs"

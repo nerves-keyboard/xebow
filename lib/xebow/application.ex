@@ -29,6 +29,10 @@ defmodule Xebow.Application do
       # Children that only run on the host
       # Starts a worker by calling: Xebow.Worker.start_link(arg)
       # {Xebow.Worker, arg},
+      {RGBMatrix.Engine, {@leds, @animation_type}},
+      XebowWeb.Telemetry,
+      {Phoenix.PubSub, name: Xebow.PubSub},
+      XebowWeb.Endpoint
     ]
   end
 

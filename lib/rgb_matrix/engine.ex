@@ -215,7 +215,7 @@ defmodule RGBMatrix.Engine do
       %State{state | animation: animation}
       |> schedule_next_render(render_in)
 
-    {:noreply, %State{state | animation: animation}}
+    {:noreply, state}
   end
 
   @impl GenServer

@@ -13,10 +13,6 @@ defmodule XebowWeb.MatrixLive do
 
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
-    if connected?(socket) do
-      register_with_engine!()
-    end
-
     {config, config_schema} = Engine.get_animation_config()
 
     initial_assigns = [
@@ -26,6 +22,15 @@ defmodule XebowWeb.MatrixLive do
       animation_types: Animation.types(),
       current_animation_index: 0
     ]
+
+    initial_assigns =
+      if connected?(socket) do
+        {paint_fn, config_fn} = register_with_engine!()
+
+        Keyword.merge(initial_assigns, paint_fn: paint_fn, config_fn: config_fn)
+      else
+        initial_assigns
+      end
 
     {:ok, assign(socket, initial_assigns)}
   end
@@ -98,35 +103,35 @@ defmodule XebowWeb.MatrixLive do
   end
 
   @impl Phoenix.LiveView
-  def terminate(_reason, _socket) do
-    pid = self()
-    Engine.unregister_paintable(pid)
-    Engine.unregister_configurable(pid)
+  def terminate(_reason, socket) do
+    Engine.unregister_paintable(socket.assigns.paint_fn)
+    Engine.unregister_configurable(socket.assigns.config_fn)
   end
 
   defp register_with_engine! do
     pid = self()
 
-    paint_fn = fn frame ->
-      if Process.alive?(pid) do
-        send(pid, {:render, frame})
-        :ok
-      else
-        :unregister
-      end
-    end
+    {:ok, paint_fn} =
+      Engine.register_paintable(fn frame ->
+        if Process.alive?(pid) do
+          send(pid, {:render, frame})
+          :ok
+        else
+          :unregister
+        end
+      end)
 
-    config_fn = fn config ->
-      if Process.alive?(pid) do
-        send(pid, {:render_config, config})
-        :ok
-      else
-        :unregister
-      end
-    end
+    {:ok, config_fn} =
+      Engine.register_configurable(fn config ->
+        if Process.alive?(pid) do
+          send(pid, {:render_config, config})
+          :ok
+        else
+          :unregister
+        end
+      end)
 
-    :ok = Engine.register_paintable(pid, paint_fn)
-    :ok = Engine.register_configurable(pid, config_fn)
+    {paint_fn, config_fn}
   end
 
   defp make_view_leds(frame) do

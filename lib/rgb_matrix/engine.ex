@@ -42,21 +42,24 @@ defmodule RGBMatrix.Engine do
   end
 
   @doc """
-  Register a paint function for the engine to send frames to. This function is
-  idempotent.
+  Register a paint function for the engine to send frames to.
+
+  This function is idempotent.
   """
-  @spec register_paintable(key :: any, paint_fn :: function) :: :ok
-  def register_paintable(key, paint_fn) do
-    GenServer.call(__MODULE__, {:register_paintable, {key, paint_fn}})
+  @spec register_paintable(paint_fn :: function) :: {:ok, function}
+  def register_paintable(paint_fn) do
+    :ok = GenServer.call(__MODULE__, {:register_paintable, paint_fn})
+    {:ok, paint_fn}
   end
 
   @doc """
-  Unregister a paint function so the engine no longer sends frames to it. This
-  function is idempotent.
+  Unregister a paint function so the engine no longer sends frames to it.
+
+  This function is idempotent.
   """
-  @spec unregister_paintable(key :: any) :: :ok
-  def unregister_paintable(key) do
-    GenServer.call(__MODULE__, {:unregister_paintable, key})
+  @spec unregister_paintable(paint_fn :: function) :: :ok
+  def unregister_paintable(paint_fn) do
+    GenServer.call(__MODULE__, {:unregister_paintable, paint_fn})
   end
 
   @doc """
@@ -84,12 +87,27 @@ defmodule RGBMatrix.Engine do
     GenServer.call(__MODULE__, {:update_animation_config, params})
   end
 
-  def register_configurable(key, config_fn) do
-    GenServer.call(__MODULE__, {:register_configurable, {key, config_fn}})
+  @doc """
+  Register a config function for the engine to send animation configuration to
+  when it changes.
+
+  This function is idempotent.
+  """
+  @spec register_configurable(config_fn :: function) :: {:ok, function}
+  def register_configurable(config_fn) do
+    :ok = GenServer.call(__MODULE__, {:register_configurable, config_fn})
+    {:ok, config_fn}
   end
 
-  def unregister_configurable(key) do
-    GenServer.call(__MODULE__, {:unregister_configurable, key})
+  @doc """
+  Unregister a config function so the engine no longer sends animation
+  configuration to it.
+
+  This function is idempotent.
+  """
+  @spec unregister_configurable(config_fn :: function) :: :ok
+  def unregister_configurable(config_fn) do
+    GenServer.call(__MODULE__, {:unregister_configurable, config_fn})
   end
 
   # Server
@@ -100,30 +118,33 @@ defmodule RGBMatrix.Engine do
     frame = Map.new(leds, &{&1.id, black})
 
     state =
-      %State{leds: leds, last_frame: frame, paintables: %{}, configurables: %{}}
+      %State{
+        leds: leds,
+        last_frame: frame,
+        paintables: MapSet.new(),
+        configurables: MapSet.new()
+      }
       |> init_and_set_animation(initial_animation_type)
 
     {:ok, state}
   end
 
-  defp add_paintable({key, paint_fn}, state) do
-    paintables = Map.put(state.paintables, key, paint_fn)
+  defp add_paintable(paint_fn, state) do
+    paintables = MapSet.put(state.paintables, paint_fn)
     %State{state | paintables: paintables}
   end
 
-  defp remove_paintable(key, state) do
-    paintables = Map.delete(state.paintables, key)
+  defp remove_paintable(paint_fn, state) do
+    paintables = MapSet.delete(state.paintables, paint_fn)
     %State{state | paintables: paintables}
   end
 
   defp init_and_set_animation(state, animation_type) do
     {render_in, animation} = Animation.new(animation_type, state.leds)
 
-    state = %State{state | animation: animation}
-    state = schedule_next_render(state, render_in)
-    state = inform_all_configurables(state)
-
-    state
+    %State{state | animation: animation}
+    |> schedule_next_render(render_in)
+    |> inform_configurables()
   end
 
   defp schedule_next_render(state, :ignore) do
@@ -157,9 +178,10 @@ defmodule RGBMatrix.Engine do
 
     frame = update_frame(state.last_frame, new_colors)
 
-    state = paint_all_paintables(state, frame)
-    state = schedule_next_render(state, render_in)
-    state = %State{state | animation: animation, last_frame: frame}
+    state =
+      %State{state | animation: animation, last_frame: frame}
+      |> paint(frame)
+      |> schedule_next_render(render_in)
 
     {:noreply, state}
   end
@@ -170,11 +192,11 @@ defmodule RGBMatrix.Engine do
     end)
   end
 
-  defp paint_all_paintables(state, frame) do
-    Enum.reduce(state.paintables, state, fn {key, paint_fn}, state ->
+  defp paint(state, frame) do
+    Enum.reduce(state.paintables, state, fn paint_fn, state ->
       case paint_fn.(frame) do
         :ok -> state
-        :unregister -> remove_paintable(key, state)
+        :unregister -> remove_paintable(paint_fn, state)
       end
     end)
   end
@@ -188,15 +210,17 @@ defmodule RGBMatrix.Engine do
   @impl GenServer
   def handle_cast({:interact, led}, state) do
     {render_in, animation} = Animation.interact(state.animation, led)
-    state = schedule_next_render(state, render_in)
-    state = %State{state | animation: animation}
+
+    state =
+      %State{state | animation: animation}
+      |> schedule_next_render(render_in)
 
     {:noreply, %State{state | animation: animation}}
   end
 
   @impl GenServer
-  def handle_call({:register_paintable, paintable}, _from, state) do
-    state = add_paintable(paintable, state)
+  def handle_call({:register_paintable, paint_fn}, _from, state) do
+    state = add_paintable(paint_fn, state)
     {:reply, :ok, state}
   end
 
@@ -215,41 +239,42 @@ defmodule RGBMatrix.Engine do
   def handle_call({:update_animation_config, params}, _from, state) do
     animation = Animation.update_config(state.animation, params)
 
-    state = %State{state | animation: animation}
-    state = inform_all_configurables(state)
+    state =
+      %State{state | animation: animation}
+      |> inform_configurables()
 
     {:reply, :ok, state}
   end
 
   @impl GenServer
-  def handle_call({:register_configurable, configurable}, _from, state) do
-    state = add_configurable(configurable, state)
+  def handle_call({:register_configurable, config_fn}, _from, state) do
+    state = add_configurable(config_fn, state)
     {:reply, :ok, state}
   end
 
   @impl GenServer
-  def handle_call({:unregister_configurable, key}, _from, state) do
-    state = remove_configurable(key, state)
+  def handle_call({:unregister_configurable, config_fn}, _from, state) do
+    state = remove_configurable(config_fn, state)
     {:reply, :ok, state}
   end
 
-  defp add_configurable({key, paint_fn}, state) do
-    configurables = Map.put(state.configurables, key, paint_fn)
+  defp add_configurable(config_fn, state) do
+    configurables = MapSet.put(state.configurables, config_fn)
     %State{state | configurables: configurables}
   end
 
-  defp remove_configurable(key, state) do
-    configurables = Map.delete(state.configurables, key)
+  defp remove_configurable(config_fn, state) do
+    configurables = MapSet.delete(state.configurables, config_fn)
     %State{state | configurables: configurables}
   end
 
-  defp inform_all_configurables(state) do
+  defp inform_configurables(state) do
     config = Animation.get_config(state.animation)
 
-    Enum.reduce(state.configurables, state, fn {key, config_fn}, state ->
+    Enum.reduce(state.configurables, state, fn config_fn, state ->
       case config_fn.(config) do
         :ok -> state
-        :unregister -> remove_configurable(key, state)
+        :unregister -> remove_configurable(config_fn, state)
       end
     end)
   end

@@ -14,7 +14,7 @@ defmodule Xebow.LEDs do
 
   defmodule State do
     @moduledoc false
-    defstruct [:spidev]
+    defstruct [:spidev, :paint_fn]
   end
 
   @spi_device "spidev0.0"
@@ -53,9 +53,9 @@ defmodule Xebow.LEDs do
         speed_hz: @spi_speed_hz
       )
 
-    register_with_engine!(spidev)
+    paint_fn = register_with_engine!(spidev)
 
-    state = %State{spidev: spidev}
+    state = %State{spidev: spidev, paint_fn: paint_fn}
 
     {:ok, state}
   end
@@ -63,16 +63,17 @@ defmodule Xebow.LEDs do
   defp register_with_engine!(spidev) do
     pid = self()
 
-    paint_fn = fn frame ->
-      if Process.alive?(pid) do
-        paint(spidev, frame)
-        :ok
-      else
-        :unregister
-      end
-    end
+    {:ok, paint_fn} =
+      Engine.register_paintable(fn frame ->
+        if Process.alive?(pid) do
+          paint(spidev, frame)
+          :ok
+        else
+          :unregister
+        end
+      end)
 
-    :ok = Engine.register_paintable(pid, paint_fn)
+    paint_fn
   end
 
   defp paint(spidev, frame) do
@@ -92,6 +93,6 @@ defmodule Xebow.LEDs do
   @impl GenServer
   def terminate(_reason, state) do
     SPI.close(state.spidev)
-    Engine.unregister_paintable(self())
+    Engine.unregister_paintable(state.paint_fn)
   end
 end

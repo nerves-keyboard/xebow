@@ -17,8 +17,7 @@ defmodule XebowWeb.Router do
   scope "/", XebowWeb do
     pipe_through :browser
 
-    live "/", PageLive, :index
-    live "/matrix", MatrixLive, :index
+    live "/", MatrixLive, :index
   end
 
   # Other scopes may use custom stacks.
@@ -38,7 +37,7 @@ defmodule XebowWeb.Router do
 
     scope "/" do
       pipe_through :browser
-      live_dashboard "/dashboard", metrics: XebowWeb.Telemetry
+      live_dashboard "/telemetry", metrics: XebowWeb.Telemetry
     end
   end
 end

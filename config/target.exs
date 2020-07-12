@@ -83,11 +83,10 @@ config :mdns_lite,
 
 # Phoenix config:
 # Configures the endpoint
-# FIXME: uncomment the following 4 lines once Phoenix is brought in
-# config :xebow, XebowWeb.Endpoint,
-#   http: [port: 80, ip: {0, 0, 0, 0}],
-#   url: [host: "xebow.local", port: 80],
-#   code_reloader: false
+config :xebow, XebowWeb.Endpoint,
+  http: [port: 80, ip: {0, 0, 0, 0}],
+  url: [host: "xebow.local", port: 80],
+  code_reloader: false
 
 # Import target specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

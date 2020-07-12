@@ -25,17 +25,15 @@ config :logger, backends: [RingLogger]
 
 # Phoenix config:
 # Common config between host and targets
-# FIXME: uncomment the following 6 lines to configure Phoenix
-# config :xebow, XebowWeb.Endpoint,
-#   server: true,
-#   secret_key_base: "M6xyyGOeCywsLjrSclRl8aNucNyqPe6JV2g3nZIs2+S+NZ2TujWfIL8T69qwYC+G",
-#   render_errors: [view: XebowWeb.ErrorView, accepts: ~w(html json), layout: false],
-#   pubsub_server: Xebow.PubSub,
-#   live_view: [signing_salt: "JbJukpOp"],
+config :xebow, XebowWeb.Endpoint,
+  server: true,
+  secret_key_base: "M6xyyGOeCywsLjrSclRl8aNucNyqPe6JV2g3nZIs2+S+NZ2TujWfIL8T69qwYC+G",
+  render_errors: [view: XebowWeb.ErrorView, accepts: ~w(html json), layout: false],
+  pubsub_server: Xebow.PubSub,
+  live_view: [signing_salt: "JbJukpOp"]
 
 # Use Jason for JSON parsing in Phoenix
-# FIXME: uncomment the following line to configure Phoenix
-# config :phoenix, :json_library, Jason
+config :phoenix, :json_library, Jason
 
 if Mix.target() != :host do
   import_config "target.exs"

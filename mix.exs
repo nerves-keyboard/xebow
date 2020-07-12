@@ -11,6 +11,7 @@ defmodule Xebow.MixProject do
       version: @version,
       elixir: "~> 1.10",
       archives: [nerves_bootstrap: "~> 1.8"],
+      compilers: [:phoenix] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       build_embedded: true,
       aliases: aliases(),
@@ -52,7 +53,7 @@ defmodule Xebow.MixProject do
   def application do
     [
       mod: {Xebow.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :os_mon]
     ]
   end
 
@@ -60,7 +61,8 @@ defmodule Xebow.MixProject do
     [
       "docs.show": "do docs, cmd xdg-open doc/index.html",
       loadconfig: [&bootstrap/1],
-      upload: "upload xebow.local"
+      upload: "upload xebow.local",
+      setup: ["deps.get", "cmd npm install --prefix assets"]
     ]
   end
 
@@ -77,6 +79,18 @@ defmodule Xebow.MixProject do
       {:dialyxir, "~> 1.0.0", only: :dev, runtime: false},
       {:ex_doc, "~> 0.22.1", only: :dev, runtime: false},
       {:mox, "~> 0.5", only: :test},
+
+      # phoenix + live-view:
+      {:floki, ">= 0.0.0", only: :test},
+      {:jason, "~> 1.0"},
+      {:phoenix_html, "~> 2.11"},
+      {:phoenix_live_dashboard, "~> 0.2.0"},
+      {:phoenix_live_reload, "~> 1.2", only: :dev},
+      {:phoenix_live_view, "~> 0.13.0"},
+      {:phoenix, "~> 1.5.3"},
+      {:plug_cowboy, "~> 2.0"},
+      {:telemetry_metrics, "~> 0.4"},
+      {:telemetry_poller, "~> 0.4"},
 
       # Dependencies for all targets except :host
       {:nerves_runtime, "~> 0.11", targets: @all_targets, override: true},

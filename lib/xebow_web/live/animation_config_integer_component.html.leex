@@ -1,0 +1,20 @@
+<div class="row">
+  <div class="column column-10">
+    <button class="button button-clear"><%= @id %>:</button>
+  </div>
+  <div class="column column-10">
+    <%= @value %>
+  </div>
+  <div class="column column-80">
+    <form action="#" phx-change="update_config">
+      <input
+        name="<%= @id %>"
+        type="range"
+        min="<%= @schema.min %>"
+        max="<%= @schema.max %>"
+        step="<%= @schema.step %>"
+        value="<%= @value %>"
+      >
+    </form>
+  </div>
+</div>

@@ -23,6 +23,21 @@ config :nerves, source_date_epoch: "1581654358"
 
 config :logger, backends: [RingLogger]
 
+# Phoenix config:
+
+# Configures the endpoint
+config :xebow, XebowWeb.Endpoint,
+  http: [port: 80, ip: {0, 0, 0, 0}],
+  url: [host: "xebow.local", port: 80],
+  server: true,
+  secret_key_base: "M6xyyGOeCywsLjrSclRl8aNucNyqPe6JV2g3nZIs2+S+NZ2TujWfIL8T69qwYC+G",
+  render_errors: [view: XebowWeb.ErrorView, accepts: ~w(html json), layout: false],
+  pubsub_server: Xebow.PubSub,
+  live_view: [signing_salt: "JbJukpOp"]
+
+# Use Jason for JSON parsing in Phoenix
+config :phoenix, :json_library, Jason
+
 if Mix.target() != :host do
   import_config "target.exs"
 end

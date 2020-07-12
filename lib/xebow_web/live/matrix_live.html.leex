@@ -1,0 +1,34 @@
+<div class="row">
+  <div class="column column-10">
+    <button class="button button-clear">Animations:</button>
+  </div>
+  <div class="column column-90">
+    <button phx-click="previous_animation">← previous</button>
+    <button phx-click="next_animation">next →</button>
+  </div>
+</div>
+
+<hr>
+
+<div class="screen">
+  <%= for led <- @leds do %>
+    <span
+      class="<%= led.class %>"
+      <%= if led.class == "key" do %>
+      phx-click="key_pressed"
+      phx-value-key-id="<%= led.id %>"
+      <% end %>
+      style="
+        left: <%= led.x %>px;
+        top: <%= led.y %>px;
+        width: <%= led.width %>px;
+        height: <%= led.height %>px;
+        background-color: <%= led.color %>
+      "
+    ></span>
+  <% end %>
+</div>
+
+<hr>
+
+<%= live_component @socket, XebowWeb.AnimationConfigComponent, schema: @config_schema, config: @config %>

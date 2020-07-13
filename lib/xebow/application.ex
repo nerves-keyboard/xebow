@@ -18,6 +18,11 @@ defmodule Xebow.Application do
         # Children for all targets
         # Starts a worker by calling: Xebow.Worker.start_link(arg)
         # {Xebow.Worker, arg},
+        {RGBMatrix.Engine, {@leds, @animation_type}},
+        # Phoenix:
+        XebowWeb.Telemetry,
+        {Phoenix.PubSub, name: Xebow.PubSub},
+        XebowWeb.Endpoint
       ] ++ children(target())
 
     Supervisor.start_link(children, opts)
@@ -29,10 +34,6 @@ defmodule Xebow.Application do
       # Children that only run on the host
       # Starts a worker by calling: Xebow.Worker.start_link(arg)
       # {Xebow.Worker, arg},
-      {RGBMatrix.Engine, {@leds, @animation_type}},
-      XebowWeb.Telemetry,
-      {Phoenix.PubSub, name: Xebow.PubSub},
-      XebowWeb.Endpoint
     ]
   end
 
@@ -42,13 +43,8 @@ defmodule Xebow.Application do
       # Starts a worker by calling: Xebow.Worker.start_link(arg)
       # {Xebow.Worker, arg},
       Xebow.HIDGadget,
-      {RGBMatrix.Engine, {@leds, @animation_type}},
       Xebow.LEDs,
-      Xebow.Keyboard,
-      # Phoenix:
-      XebowWeb.Telemetry,
-      {Phoenix.PubSub, name: Xebow.PubSub},
-      XebowWeb.Endpoint
+      Xebow.Keyboard
     ]
   end
 

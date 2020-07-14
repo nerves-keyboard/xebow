@@ -17,12 +17,6 @@ config :nerves, :firmware, rootfs_overlay: "rootfs_overlay"
 
 config :nerves, source_date_epoch: "1581654358"
 
-# Use Ringlogger as the logger backend and remove :console.
-# See https://hexdocs.pm/ring_logger/readme.html for more information on
-# configuring ring_logger.
-
-config :logger, backends: [RingLogger]
-
 # Phoenix config:
 # Common config between host and targets
 config :xebow, XebowWeb.Endpoint,

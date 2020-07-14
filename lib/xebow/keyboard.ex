@@ -14,6 +14,9 @@ defmodule Xebow.Keyboard do
      `Xebow.HIDGadget`
   """
 
+  if Mix.target() == :host,
+    do: @compile({:no_warn_undefined, Circuits.GPIO})
+
   use GenServer
 
   alias Circuits.GPIO

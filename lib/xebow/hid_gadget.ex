@@ -5,6 +5,9 @@ defmodule Xebow.HIDGadget do
   This sets up a composite USB device with ethernet (ecm + rndis) and HID.
   """
 
+  if Mix.target() == :host,
+    do: @compile({:no_warn_undefined, USBGadget})
+
   use GenServer, restart: :temporary
 
   require Logger

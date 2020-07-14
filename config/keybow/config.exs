@@ -81,6 +81,12 @@ config :mdns_lite,
     }
   ]
 
+# Use Ringlogger as the logger backend and remove :console.
+# See https://hexdocs.pm/ring_logger/readme.html for more information on
+# configuring ring_logger.
+
+config :logger, backends: [RingLogger]
+
 # Phoenix config:
 # Configures the endpoint
 config :xebow, XebowWeb.Endpoint,

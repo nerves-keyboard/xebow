@@ -25,9 +25,28 @@ defmodule RGBMatrix.Animation.Simon do
   def new(leds, _config) do
     state =
       %State{leds: leds}
+      |> init_colors()
       |> init_sequence()
 
     {0, state}
+  end
+
+@impl true
+  def render(%{state: :start_sequence} = state, _config) do
+    colors = state.leds |> Enum.map(&{&1.id, @black})
+
+    state = %{state | state: {:playing_sequence, state.simon_sequence}}
+
+    {1_000, colors, state}
+  end
+
+  @impl true
+  def render(%{state: {:black_flash, current_sequence}} = state, _config) do
+    colors = state.leds |> Enum.map(&{&1.id, @black})
+
+    state = %{state | state: {:playing_sequence, current_sequence}}
+
+    {150, colors, state}
   end
 
   @impl true
@@ -47,9 +66,9 @@ defmodule RGBMatrix.Animation.Simon do
         other_led -> {other_led.id, @black}
       end)
 
-    state = %{state | state: {:playing_sequence, rest}}
+    state = %{state | state: {:black_flash, rest}}
 
-    {1_000, colors, state}
+    {850, colors, state}
   end
 
   @impl true
@@ -66,7 +85,7 @@ defmodule RGBMatrix.Animation.Simon do
         rest -> %{state | state: {:expecting_input, rest}}
       end
 
-    {500, colors, state}
+    {850, colors, state}
   end
 
   @impl true
@@ -114,21 +133,26 @@ defmodule RGBMatrix.Animation.Simon do
     HSV.new((:rand.uniform() * 360) |> trunc(), 100, 100)
   end
 
+  defp init_colors() do
+    colors = for led <- state.leds, into: %{}, do: {led.id, random_color()}
+    %{state | colors: colors}
+  end
+
   defp init_sequence(state) do
     led = Enum.random(state.leds)
-    color = random_color()
-    %State{state | simon_sequence: [{led, color}], state: {:playing_sequence, [{led, color}]}}
+    color = state.colors[led.id]
+    %State{state | simon_sequence: [{led, color}], state: :start_sequence}
   end
 
   defp extend_sequence(state) do
     led = Enum.random(state.leds)
-    color = random_color()
+    color = state.colors[led.id]
     sequence = state.simon_sequence ++ [{led, color}]
 
     %{
       state
       | simon_sequence: sequence,
-        state: {:playing_sequence, sequence}
+        state: :start_sequence
     }
   end
 end

@@ -139,12 +139,12 @@ defmodule Xebow.HIDGadget do
     # (non-Windows-compatible) device.
     # Since Linux supports both with ECM being more reliable, we set usb1 (ECM)
     # as the primary, meaning that it will be used if both are available.
-    :os.cmd('ip link set bond0 down')
+    System.cmd("ip", ["link", "set", "bond0", "down"])
     File.write("/sys/class/net/bond0/bonding/mode", "active-backup")
     File.write("/sys/class/net/bond0/bonding/miimon", "100")
     File.write("/sys/class/net/bond0/bonding/slaves", "+usb0")
     File.write("/sys/class/net/bond0/bonding/slaves", "+usb1")
     File.write("/sys/class/net/bond0/bonding/primary", "usb1")
-    :os.cmd('ip link set bond0 up')
+    System.cmd("ip", ["link", "set", "bond0", "up"])
   end
 end

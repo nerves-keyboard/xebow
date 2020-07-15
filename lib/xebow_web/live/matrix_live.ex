@@ -1,4 +1,6 @@
 defmodule XebowWeb.MatrixLive do
+  @moduledoc false
+
   use XebowWeb, :live_view
 
   alias RGBMatrix.{Animation, Engine}

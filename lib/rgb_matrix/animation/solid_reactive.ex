@@ -68,28 +68,40 @@ defmodule RGBMatrix.Animation.SolidReactive do
     %{tick: tick, color: color, leds: leds, hits: hits} = state
     %{speed: _speed, distance: distance} = config
 
-    {colors, hits} =
-      Enum.map_reduce(leds, hits, fn led, hits ->
-        case hits do
-          %{^led => {hit_tick, direction_modifier}} ->
-            if tick - hit_tick >= distance do
-              {{led.id, color}, Map.delete(hits, led)}
-            else
-              hue = mod(color.h + (tick - hit_tick - distance) * direction_modifier, 360)
-              {{led.id, HSV.new(hue, color.s, color.v)}, hits}
-            end
+    colors =
+      Enum.map(leds, fn
+        led when is_map_key(hits, led) ->
+          {hit_tick, direction_modifier} = hits[led]
 
-          _else ->
-            {{led.id, color}, hits}
+          if tick - hit_tick >= distance do
+            {led.id, color}
+          else
+            hue_shift = (tick - hit_tick - distance) * direction_modifier
+            hue = mod(color.h + hue_shift, 360)
+            {led.id, HSV.new(hue, color.s, color.v)}
+          end
+
+        led ->
+          {led.id, color}
+      end)
+
+    updated_hits =
+      Enum.reduce(hits, hits, fn {led, {hit_tick, _direction_modifier}}, hits_acc ->
+        if tick - hit_tick >= distance do
+          Map.delete(hits_acc, led)
+        else
+          hits_acc
         end
       end)
 
-    colors =
-      Enum.filter(colors, fn {_id, this_color} ->
-        this_color != color
-      end)
+    state = %{
+      state
+      | tick: tick + 1,
+        hits: updated_hits,
+        paused: updated_hits == %{}
+    }
 
-    {@delay_ms, colors, %{state | tick: tick + 1, hits: hits, paused: hits == %{}}}
+    {@delay_ms, colors, state}
   end
 
   @impl true

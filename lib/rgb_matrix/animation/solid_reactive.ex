@@ -48,7 +48,6 @@ defmodule RGBMatrix.Animation.SolidReactive do
 
   @impl true
   def new(leds, _config) do
-    # TODO: configurable base color
     color = HSV.new(190, 100, 100)
     {0, %State{first_render: true, paused: false, tick: 0, color: color, leds: leds, hits: %{}}}
   end
@@ -73,7 +72,6 @@ defmodule RGBMatrix.Animation.SolidReactive do
       Enum.map_reduce(leds, hits, fn led, hits ->
         case hits do
           %{^led => {hit_tick, direction_modifier}} ->
-            # TODO: take speed into account
             if tick - hit_tick >= distance do
               {{led.id, color}, Map.delete(hits, led)}
             else
@@ -86,8 +84,6 @@ defmodule RGBMatrix.Animation.SolidReactive do
         end
       end)
 
-    # FIXME: leaves color 1 away from base
-    # TODO: we can optimize this by rewriting the above instead of filtering here:
     colors =
       Enum.filter(colors, fn {_id, this_color} ->
         this_color != color

@@ -5,7 +5,6 @@ defmodule Layout do
 
   alias __MODULE__.{Key, LED}
 
-  # FIXME: what's wrong with this type?
   # @type t :: %__MODULE__{
   #         keys: [Key.t()],
   #         leds: [LED.t()],

@@ -20,7 +20,6 @@ defmodule RGBMatrix.Animation.SolidColor do
 
   @impl true
   def new(leds, _config) do
-    # TODO: configurable base color
     color = HSV.new(120, 100, 100)
     {0, %State{color: color, led_ids: Enum.map(leds, & &1.id)}}
   end

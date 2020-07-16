@@ -15,7 +15,7 @@ defmodule RGBMatrix.Animation.Simon do
 
   defmodule State do
     @moduledoc false
-    defstruct [:leds, :simon_sequence, :state]
+    defstruct [:leds, :simon_sequence, :state, :colors]
   end
 
   @black Chameleon.RGB.new(0, 0, 0)
@@ -31,7 +31,7 @@ defmodule RGBMatrix.Animation.Simon do
     {0, state}
   end
 
-@impl true
+  @impl true
   def render(%{state: :start_sequence} = state, _config) do
     colors = state.leds |> Enum.map(&{&1.id, @black})
 
@@ -85,7 +85,7 @@ defmodule RGBMatrix.Animation.Simon do
         rest -> %{state | state: {:expecting_input, rest}}
       end
 
-    {850, colors, state}
+    {500, colors, state}
   end
 
   @impl true
@@ -133,7 +133,7 @@ defmodule RGBMatrix.Animation.Simon do
     HSV.new((:rand.uniform() * 360) |> trunc(), 100, 100)
   end
 
-  defp init_colors() do
+  defp init_colors(state) do
     colors = for led <- state.leds, into: %{}, do: {led.id, random_color()}
     %{state | colors: colors}
   end

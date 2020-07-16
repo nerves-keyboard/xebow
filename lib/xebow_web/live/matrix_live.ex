@@ -37,7 +37,12 @@ defmodule XebowWeb.MatrixLive do
 
   @impl Phoenix.LiveView
   def handle_info({:render, frame}, socket) do
-    colors = for led <- make_view_leds(frame), into: %{}, do: {led.id, led.color}
+    colors =
+      frame
+      |> make_view_leds()
+      |> Enum.map(fn led -> {led.id, led.color} end)
+      |> Enum.into(%{})
+
     {:noreply, push_event(socket, "ACU", colors)}
   end
 

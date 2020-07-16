@@ -13,17 +13,19 @@
 <div class="screen">
   <%= for led <- @leds do %>
     <span
+      id="<%= led.id %>"
       class="<%= led.class %>"
       <%= if led.class == "key" do %>
       phx-click="key_pressed"
       phx-value-key-id="<%= led.id %>"
       <% end %>
+      phx-hook="AnimationColorUpdate"
       style="
         left: <%= led.x %>px;
         top: <%= led.y %>px;
         width: <%= led.width %>px;
         height: <%= led.height %>px;
-        background-color: <%= led.color %>
+        background-color: #<%= led.color %>
       "
     ></span>
   <% end %>

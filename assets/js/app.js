@@ -18,7 +18,18 @@ import NProgress from "nprogress"
 import {LiveSocket} from "phoenix_live_view"
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
-let liveSocket = new LiveSocket("/live", Socket, {params: {_csrf_token: csrfToken}})
+
+let Hooks = {}
+Hooks.AnimationColorUpdate = {
+  mounted() {
+    this.handleEvent("ACU", colors => {
+      const color = colors[this.el.id]
+      this.el.style.backgroundColor = `#${color}`
+    })
+  }
+}
+
+let liveSocket = new LiveSocket("/live", Socket, {params: {_csrf_token: csrfToken}, hooks: Hooks})
 
 // Show progress bar on live navigation and form submits
 window.addEventListener("phx:page-loading-start", info => NProgress.start())

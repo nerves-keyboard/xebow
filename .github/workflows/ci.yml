@@ -21,8 +21,8 @@ jobs:
       - name: Check code formatting
         run: mix format --check-formatted
 
-  credo:
-    name: Credo Code Style
+  static_analysis:
+    name: Static Analysis
     runs-on: ubuntu-18.04
     steps:
       - name: Set up Elixir

@@ -86,13 +86,11 @@ defmodule RGBMatrix.Animation.SolidReactive do
       end)
 
     updated_hits =
-      Enum.reduce(hits, hits, fn {led, {hit_tick, _direction_modifier}}, hits_acc ->
-        if tick - hit_tick >= distance do
-          Map.delete(hits_acc, led)
-        else
-          hits_acc
-        end
+      hits
+      |> Enum.reject(fn {_led, {hit_tick, _direction_modifier}} ->
+        tick - hit_tick >= distance
       end)
+      |> Enum.into(%{})
 
     state = %{
       state

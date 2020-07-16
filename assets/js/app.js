@@ -19,8 +19,8 @@ import {LiveSocket} from "phoenix_live_view"
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 
-let Hooks = {}
-Hooks.AnimationColorUpdate = {
+const Hooks = {
+  AnimationColorUpdate: {
   mounted() {
     this.handleEvent("ACU", colors => {
       const color = colors[this.el.id]

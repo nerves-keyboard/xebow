@@ -91,6 +91,19 @@ Notes
   from the USB port, wait for the computer's USB disconnect notification, then
   plug the Keybow back in and try again after it's booted back up.
 
+## Web Interface
+
+The following instructions are for running the Xebow web interface on your
+computer for a faster development cycle.
+
+If this is your first time running the web interface, set up the web app with:
+
+    $ mix setup
+
+Start the web interface, which will be available at `http://localhost:4000`:
+
+    $ mix phx.server
+
 # Keyboard Layout
 
 The xebow firmware sets up the keybow as a 10-key numpad. Turn the keypad so the

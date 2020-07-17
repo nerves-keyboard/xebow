@@ -21,11 +21,12 @@ let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("
 
 const Hooks = {
   AnimationColorUpdate: {
-  mounted() {
-    this.handleEvent("ACU", colors => {
-      const color = colors[this.el.id]
-      this.el.style.backgroundColor = `#${color}`
-    })
+    mounted() {
+      this.handleEvent("draw", colors => {
+        const color = colors[this.el.id]
+        this.el.style.backgroundColor = `#${color}`
+      })
+    }
   }
 }
 

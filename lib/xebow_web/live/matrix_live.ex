@@ -43,7 +43,7 @@ defmodule XebowWeb.MatrixLive do
       |> Enum.map(fn led -> {led.id, led.color} end)
       |> Enum.into(%{})
 
-    {:noreply, push_event(socket, "ACU", colors)}
+    {:noreply, push_event(socket, "draw", colors)}
   end
 
   @impl Phoenix.LiveView

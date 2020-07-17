@@ -7,6 +7,9 @@ defmodule Xebow.LEDs do
   painted onto the keybow's RGB LEDs.
   """
 
+  if Mix.target() == :host,
+    do: @compile({:no_warn_undefined, Circuits.SPI})
+
   use GenServer
 
   alias Circuits.SPI

@@ -77,13 +77,12 @@ all keys through a rainbow of colors.
 The firmware can be updated while the Keybow is attached to your computer as
 long as the Xebow firmware is running on it.
 
-First, generate a firmware package from the current source code:
+Build the firmware and upload it via SSH by running:
 
-    $ mix firmware
+    $ mix firmware.upload
 
-Then upload the firmware to the device over SSH:
-
-    $ mix upload
+If you would like to perform these steps individually, use `mix firmware`
+and `mix upload`.
 
 Notes
 - The upload needs to be run on a computer with the same SSH public key that was
@@ -91,6 +90,19 @@ Notes
 - If the `xebow.local` hostname can't be resolved, try unplugging the Keybow
   from the USB port, wait for the computer's USB disconnect notification, then
   plug the Keybow back in and try again after it's booted back up.
+
+## Web Interface
+
+The following instructions are for running the Xebow web interface on your
+computer for a faster development cycle.
+
+If this is your first time running the web interface, set up the web app with:
+
+    $ mix setup
+
+Start the web interface, which will be available at `http://localhost:4000`:
+
+    $ mix phx.server
 
 # Keyboard Layout
 

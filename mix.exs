@@ -24,6 +24,7 @@ defmodule Xebow.MixProject do
         dialyzer: :keybow,
         docs: :keybow,
         firmware: :keybow,
+        "firmware.upload": :keybow,
         upload: :keybow
       ],
       dialyzer: [
@@ -62,6 +63,7 @@ defmodule Xebow.MixProject do
       "compile.assets": "cmd npm run deploy --prefix ./assets",
       "docs.show": "do docs, cmd xdg-open doc/index.html",
       firmware: ["compile.assets", "firmware"],
+      "firmware.upload": ["firmware", "upload"],
       loadconfig: [&bootstrap/1],
       upload: "upload xebow.local",
       setup: ["deps.get", "cmd npm install --prefix assets"]
@@ -87,7 +89,7 @@ defmodule Xebow.MixProject do
       {:jason, "~> 1.0"},
       {:phoenix_html, "~> 2.11"},
       {:phoenix_live_dashboard, "~> 0.2.0"},
-      {:phoenix_live_reload, "~> 1.2", only: :dev},
+      {:phoenix_live_reload, "~> 1.2", only: :dev, targets: :host},
       {:phoenix_live_view, "~> 0.13.0"},
       {:phoenix, "~> 1.5.3"},
       {:plug_cowboy, "~> 2.0"},

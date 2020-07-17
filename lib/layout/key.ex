@@ -7,10 +7,10 @@ defmodule Layout.Key do
 
   @type t :: %__MODULE__{
           id: id,
-          x: float,
-          y: float,
-          width: float,
-          height: float,
+          x: number,
+          y: number,
+          width: number,
+          height: number,
           led: atom
         }
   defstruct [:id, :x, :y, :width, :height, :led]

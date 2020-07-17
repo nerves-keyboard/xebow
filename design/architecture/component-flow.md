@@ -69,6 +69,10 @@ A key on a keyboard.
 Notes:
 - This sounds generic and may be in the wrong place. AFK candidate?
 
+#### Keyboard
+
+The logical functionality of a keyboard. It accepts physical or emulated events of keys being pressed/released, handles keyboard state, and outputs keyboard events (like triggering HID reports).
+
 #### KeyMatrix
 
 The Keybow's key matrix.

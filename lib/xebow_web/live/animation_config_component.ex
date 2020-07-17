@@ -1,4 +1,5 @@
 defmodule XebowWeb.AnimationConfigComponent do
+  @moduledoc false
   use XebowWeb, :live_component
 
   @mapping %{

@@ -1,4 +1,6 @@
 defmodule Xebow do
+  @moduledoc false
+
   alias Layout.{Key, LED}
 
   @leds [

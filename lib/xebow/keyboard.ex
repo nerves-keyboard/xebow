@@ -234,6 +234,6 @@ defmodule Xebow.Keyboard do
   # Custom Key Functions
 
   def flash(color) do
-    Logger.info("TODO: flash color #{IO.inspect(color)}")
+    Logger.info("TODO: flash color #{inspect(color)}")
   end
 end

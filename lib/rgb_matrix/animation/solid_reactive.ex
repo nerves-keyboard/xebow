@@ -48,7 +48,6 @@ defmodule RGBMatrix.Animation.SolidReactive do
 
   @impl true
   def new(leds, _config) do
-    # TODO: configurable base color
     color = HSV.new(190, 100, 100)
     {0, %State{first_render: true, paused: false, tick: 0, color: color, leds: leds, hits: %{}}}
   end
@@ -69,31 +68,38 @@ defmodule RGBMatrix.Animation.SolidReactive do
     %{tick: tick, color: color, leds: leds, hits: hits} = state
     %{speed: _speed, distance: distance} = config
 
-    {colors, hits} =
-      Enum.map_reduce(leds, hits, fn led, hits ->
-        case hits do
-          %{^led => {hit_tick, direction_modifier}} ->
-            # TODO: take speed into account
-            if tick - hit_tick >= distance do
-              {{led.id, color}, Map.delete(hits, led)}
-            else
-              hue = mod(color.h + (tick - hit_tick - distance) * direction_modifier, 360)
-              {{led.id, HSV.new(hue, color.s, color.v)}, hits}
-            end
-
-          _else ->
-            {{led.id, color}, hits}
-        end
-      end)
-
-    # FIXME: leaves color 1 away from base
-    # TODO: we can optimize this by rewriting the above instead of filtering here:
     colors =
-      Enum.filter(colors, fn {_id, this_color} ->
-        this_color != color
+      Enum.map(leds, fn
+        led when is_map_key(hits, led) ->
+          {hit_tick, direction_modifier} = hits[led]
+
+          if tick - hit_tick >= distance do
+            {led.id, color}
+          else
+            hue_shift = (tick - hit_tick - distance) * direction_modifier
+            hue = mod(color.h + hue_shift, 360)
+            {led.id, HSV.new(hue, color.s, color.v)}
+          end
+
+        led ->
+          {led.id, color}
       end)
 
-    {@delay_ms, colors, %{state | tick: tick + 1, hits: hits, paused: hits == %{}}}
+    updated_hits =
+      hits
+      |> Enum.reject(fn {_led, {hit_tick, _direction_modifier}} ->
+        tick - hit_tick >= distance
+      end)
+      |> Enum.into(%{})
+
+    state = %{
+      state
+      | tick: tick + 1,
+        hits: updated_hits,
+        paused: updated_hits == %{}
+    }
+
+    {@delay_ms, colors, state}
   end
 
   @impl true

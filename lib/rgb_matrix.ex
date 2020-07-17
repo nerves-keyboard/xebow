@@ -1,4 +1,6 @@
 defmodule RGBMatrix do
+  @moduledoc false
+
   @type any_color_model ::
           Chameleon.Color.RGB.t()
           | Chameleon.Color.CMYK.t()

@@ -59,7 +59,6 @@ defmodule RGBMatrix.Animation.HueWave do
     %{tick: tick, leds: leds, steps: _steps} = state
     %{speed: speed, direction: direction} = config
 
-    # TODO: fixme
     steps = 360 / config.width
 
     time = div(tick * speed, 5)

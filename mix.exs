@@ -83,6 +83,7 @@ defmodule Xebow.MixProject do
       {:dialyxir, "~> 1.0.0", only: :dev, runtime: false},
       {:ex_doc, "~> 0.22.1", only: :dev, runtime: false},
       {:mox, "~> 0.5", only: :test},
+      {:credo, "~> 1.4", only: [:dev, :test], runtime: false, targets: [:host]},
 
       # phoenix + live-view:
       {:floki, ">= 0.0.0", only: :test},

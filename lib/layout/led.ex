@@ -7,8 +7,8 @@ defmodule Layout.LED do
 
   @type t :: %__MODULE__{
           id: id,
-          x: float,
-          y: float
+          x: number,
+          y: number
         }
   defstruct [:id, :x, :y]
 

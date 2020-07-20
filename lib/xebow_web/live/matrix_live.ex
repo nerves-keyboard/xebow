@@ -39,7 +39,13 @@ defmodule XebowWeb.MatrixLive do
 
   @impl Phoenix.LiveView
   def handle_info({:render, frame}, socket) do
-    {:noreply, assign(socket, leds: make_view_leds(frame))}
+    colors =
+      frame
+      |> make_view_leds()
+      |> Enum.map(fn led -> {led.id, led.color} end)
+      |> Enum.into(%{})
+
+    {:noreply, push_event(socket, "draw", colors)}
   end
 
   @impl Phoenix.LiveView
@@ -173,7 +179,7 @@ defmodule XebowWeb.MatrixLive do
       y: y,
       width: width,
       height: height,
-      color: "#" <> color_hex
+      color: color_hex
     }
   end
 
@@ -190,7 +196,7 @@ defmodule XebowWeb.MatrixLive do
       y: y,
       width: width,
       height: height,
-      color: "#" <> color_hex
+      color: color_hex
     }
   end
 end

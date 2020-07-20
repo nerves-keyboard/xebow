@@ -1,4 +1,6 @@
 defmodule XebowWeb.MatrixLive do
+  @moduledoc false
+
   use XebowWeb, :live_view
 
   alias RGBMatrix.{Animation, Engine}
@@ -71,8 +73,6 @@ defmodule XebowWeb.MatrixLive do
 
     {:noreply, socket}
   end
-
-  # TODO: the following two are duplicated between `Keyboard` and here.
 
   @impl Phoenix.LiveView
   def handle_event("next_animation", %{}, socket) do

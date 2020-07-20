@@ -81,20 +81,21 @@ defmodule Xebow.MixProject do
       {:chameleon, "~> 2.2"},
       {:afk, "~> 0.3"},
       {:dialyxir, "~> 1.0.0", only: :dev, runtime: false},
-      {:ex_doc, "~> 0.22.1", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.22", only: :dev, runtime: false},
       {:mox, "~> 0.5", only: :test},
+      {:credo, "~> 1.4", only: [:dev, :test], runtime: false, targets: [:host]},
 
       # phoenix + live-view:
       {:floki, ">= 0.0.0", only: :test},
       {:jason, "~> 1.0"},
-      {:phoenix_html, "~> 2.11"},
-      {:phoenix_live_dashboard, "~> 0.2.0"},
+      {:phoenix_html, "~> 2.14"},
+      {:phoenix_live_dashboard, "~> 0.2"},
       {:phoenix_live_reload, "~> 1.2", only: :dev, targets: :host},
-      {:phoenix_live_view, "~> 0.14.1"},
+      {:phoenix_live_view, "~> 0.14"},
       {:phoenix, "~> 1.5.3"},
-      {:plug_cowboy, "~> 2.0"},
-      {:telemetry_metrics, "~> 0.4"},
-      {:telemetry_poller, "~> 0.4"},
+      {:plug_cowboy, "~> 2.3"},
+      {:telemetry_metrics, "~> 0.5"},
+      {:telemetry_poller, "~> 0.5"},
 
       # Dependencies for all targets except :host
       {:nerves_runtime, "~> 0.11", targets: @all_targets, override: true},

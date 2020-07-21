@@ -60,10 +60,10 @@ defmodule Xebow.MixProject do
 
   defp aliases do
     [
-      "compile.assets": "cmd npm run deploy --prefix ./assets",
+      "assets.compile": "cmd npm run deploy --prefix ./assets",
       "assets.install": "cmd npm install --prefix ./assets",
       "docs.show": "do docs, cmd xdg-open doc/index.html",
-      firmware: ["compile.assets", "firmware"],
+      firmware: ["assets.compile", "firmware"],
       "firmware.upload": ["firmware", "upload"],
       loadconfig: [&bootstrap/1],
       upload: "upload xebow.local",

@@ -60,13 +60,14 @@ defmodule Xebow.MixProject do
 
   defp aliases do
     [
-      "compile.assets": "cmd npm run deploy --prefix ./assets",
+      "assets.compile": assets_compile(),
+      "assets.install": "cmd npm install --prefix ./assets",
       "docs.show": "do docs, cmd xdg-open doc/index.html",
-      firmware: ["compile.assets", "firmware"],
+      firmware: ["assets.compile", "firmware"],
       "firmware.upload": ["firmware", "upload"],
       loadconfig: [&bootstrap/1],
       upload: "upload xebow.local",
-      setup: ["deps.get", "cmd npm install --prefix assets"]
+      setup: ["deps.get", "assets.install"]
     ]
   end
 
@@ -122,5 +123,15 @@ defmodule Xebow.MixProject do
       steps: [&Nerves.Release.init/1, :assemble],
       strip_beams: Mix.env() == :prod
     ]
+  end
+
+  defp assets_compile do
+    compile_command = "cmd npm run deploy --prefix ./assets"
+
+    if File.dir?("./assets/node_modules") do
+      compile_command
+    else
+      ["assets.install", compile_command]
+    end
   end
 end

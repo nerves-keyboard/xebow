@@ -24,7 +24,7 @@ defmodule Xebow.HIDGadget do
     # Set up gadget devices using configfs
     hid_device_name = "hidg"
 
-    with :ok <- create_ncm_ecm_rndis_hid(hid_device_name),
+    with :ok <- create_ncm_rndis_hid(hid_device_name),
          :ok <- USBGadget.disable_device(hid_device_name),
          :ok <- USBGadget.enable_device(hid_device_name),
          :ok <- setup_bond0() do
@@ -44,7 +44,7 @@ defmodule Xebow.HIDGadget do
   #   GenServer.call(__MODULE__, :status)
   # end
 
-  defp create_ncm_ecm_rndis_hid(name) do
+  defp create_ncm_rndis_hid(name) do
     device_settings = %{
       "bcdUSB" => "0x0200",
       "bDeviceClass" => "0xEF",
@@ -105,12 +105,12 @@ defmodule Xebow.HIDGadget do
       "MaxPower" => "500",
       "strings" => %{
         "0x409" => %{
-          "configuration" => "NCM, ECM, and RNDIS Ethernet with HID Keyboard"
+          "configuration" => "NCM and RNDIS Ethernet with HID Keyboard"
         }
       }
     }
 
-    function_list = ["rndis.usb0", "ncm.usb1", "ecm.usb2", "hid.usb3"]
+    function_list = ["rndis.usb0", "ncm.usb1", "hid.usb2"]
 
     with {:create_device, :ok} <-
            {:create_device, USBGadget.create_device(name, device_settings)},
@@ -118,10 +118,8 @@ defmodule Xebow.HIDGadget do
            {:create_rndis, USBGadget.create_function(name, "rndis.usb0", rndis_settings)},
          {:create_ncm, :ok} <-
            {:create_ncm, USBGadget.create_function(name, "ncm.usb1", %{})},
-         {:create_ecm, :ok} <-
-           {:create_ecm, USBGadget.create_function(name, "ecm.usb2", %{})},
          {:create_hid, :ok} <-
-           {:create_hid, USBGadget.create_function(name, "hid.usb3", hid_settings)},
+           {:create_hid, USBGadget.create_function(name, "hid.usb2", hid_settings)},
          {:create_config, :ok} <-
            {:create_config, USBGadget.create_config(name, "c.1", config1_settings)},
          {:link_functions, :ok} <-
@@ -149,7 +147,6 @@ defmodule Xebow.HIDGadget do
          :ok <- write_file(bond0_sys_directory, "miimon", "100"),
          :ok <- write_file(bond0_sys_directory, "slaves", "+usb0"),
          :ok <- write_file(bond0_sys_directory, "slaves", "+usb1"),
-         :ok <- write_file(bond0_sys_directory, "slaves", "+usb2"),
          :ok <- write_file(bond0_sys_directory, "primary", "usb1"),
          {_, ^exit_success} <- set_bond0_link_state(:up) do
       :ok

@@ -105,15 +105,13 @@ defmodule Xebow.MixProject do
       {:circuits_gpio, "~> 0.4", targets: @all_targets},
       {:circuits_spi, "~> 0.1", targets: @all_targets},
       {:usb_gadget, github: "nerves-project/usb_gadget", ref: "master", targets: @all_targets},
-      {:observer_cli, "~> 1.5"},
 
       # Dependencies for specific targets
-      {:nerves_system_keybow, path: "../nerves_system_keybow", runtime: false, targets: :keybow}
-      # {:nerves_system_keybow,
-      #  github: "ElixirSeattle/nerves_system_keybow",
-      #  ref: "v1.12.1+keybow.2",
-      #  runtime: false,
-      #  targets: :keybow}
+      {:nerves_system_keybow,
+       github: "ElixirSeattle/nerves_system_keybow",
+       ref: "v1.12.1+keybow.2",
+       runtime: false,
+       targets: :keybow}
     ]
   end
 

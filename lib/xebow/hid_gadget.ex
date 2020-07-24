@@ -108,14 +108,14 @@ defmodule Xebow.HIDGadget do
       }
     }
 
-    function_list = ["rndis.usb0", "ecm.usb1", "hid.usb2"]
+    function_list = ["rndis.usb0", "ncm.usb1", "hid.usb2"]
 
     with {:create_device, :ok} <-
            {:create_device, USBGadget.create_device(name, device_settings)},
          {:create_rndis, :ok} <-
            {:create_rndis, USBGadget.create_function(name, "rndis.usb0", rndis_settings)},
-         {:create_ecm, :ok} <-
-           {:create_ecm, USBGadget.create_function(name, "ecm.usb1", %{})},
+         {:create_ncm, :ok} <-
+           {:create_ncm, USBGadget.create_function(name, "ncm.usb1", %{})},
          {:create_hid, :ok} <-
            {:create_hid, USBGadget.create_function(name, "hid.usb2", hid_settings)},
          {:create_config, :ok} <-
@@ -145,7 +145,7 @@ defmodule Xebow.HIDGadget do
          :ok <- write_file(bond0_sys_directory, "miimon", "100"),
          :ok <- write_file(bond0_sys_directory, "slaves", "+usb0"),
          :ok <- write_file(bond0_sys_directory, "slaves", "+usb1"),
-         :ok <- write_file(bond0_sys_directory, "primary", "usb1"),
+         :ok <- write_file(bond0_sys_directory, "primary", "usb0"),
          {_, ^exit_success} = set_bond0_link_state(:up) do
       :ok
     else

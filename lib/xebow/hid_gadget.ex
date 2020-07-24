@@ -144,14 +144,14 @@ defmodule Xebow.HIDGadget do
     bond0_sys_directory = "/sys/class/net/bond0/bonding"
     exit_success = 0
 
-    with {_, ^exit_success} = set_bond0_link_state(:down),
+    with {_, ^exit_success} <- set_bond0_link_state(:down),
          :ok <- write_file(bond0_sys_directory, "mode", "active-backup"),
          :ok <- write_file(bond0_sys_directory, "miimon", "100"),
          :ok <- write_file(bond0_sys_directory, "slaves", "+usb0"),
          :ok <- write_file(bond0_sys_directory, "slaves", "+usb1"),
          :ok <- write_file(bond0_sys_directory, "slaves", "+usb2"),
          :ok <- write_file(bond0_sys_directory, "primary", "usb1"),
-         {_, ^exit_success} = set_bond0_link_state(:up) do
+         {_, ^exit_success} <- set_bond0_link_state(:up) do
       :ok
     else
       {:error, reason} -> {:error, reason}

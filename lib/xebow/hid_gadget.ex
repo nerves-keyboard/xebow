@@ -22,9 +22,11 @@ defmodule Xebow.HIDGadget do
     # :os.cmd('mount -t configfs none /sys/kernel/config')
 
     # Set up gadget devices using configfs
-    with :ok <- create_rndis_ecm_hid("hidg"),
-         :ok <- USBGadget.disable_device("hidg"),
-         :ok <- USBGadget.enable_device("hidg"),
+    hid_device_name = "hidg"
+
+    with :ok <- create_ncm_ecm_rndis_hid(hid_device_name),
+         :ok <- USBGadget.disable_device(hid_device_name),
+         :ok <- USBGadget.enable_device(hid_device_name),
          :ok <- setup_bond0() do
       {:ok, :ok}
     else
@@ -42,7 +44,7 @@ defmodule Xebow.HIDGadget do
   #   GenServer.call(__MODULE__, :status)
   # end
 
-  defp create_rndis_ecm_hid(name) do
+  defp create_ncm_ecm_rndis_hid(name) do
     device_settings = %{
       "bcdUSB" => "0x0200",
       "bDeviceClass" => "0xEF",
@@ -103,12 +105,12 @@ defmodule Xebow.HIDGadget do
       "MaxPower" => "500",
       "strings" => %{
         "0x409" => %{
-          "configuration" => "RNDIS and ECM Ethernet with HID Keyboard"
+          "configuration" => "NCM, ECM, and RNDIS Ethernet with HID Keyboard"
         }
       }
     }
 
-    function_list = ["rndis.usb0", "ncm.usb1", "hid.usb2"]
+    function_list = ["rndis.usb0", "ncm.usb1", "ecm.usb2", "hid.usb3"]
 
     with {:create_device, :ok} <-
            {:create_device, USBGadget.create_device(name, device_settings)},
@@ -116,8 +118,10 @@ defmodule Xebow.HIDGadget do
            {:create_rndis, USBGadget.create_function(name, "rndis.usb0", rndis_settings)},
          {:create_ncm, :ok} <-
            {:create_ncm, USBGadget.create_function(name, "ncm.usb1", %{})},
+         {:create_ecm, :ok} <-
+           {:create_ecm, USBGadget.create_function(name, "ecm.usb2", %{})},
          {:create_hid, :ok} <-
-           {:create_hid, USBGadget.create_function(name, "hid.usb2", hid_settings)},
+           {:create_hid, USBGadget.create_function(name, "hid.usb3", hid_settings)},
          {:create_config, :ok} <-
            {:create_config, USBGadget.create_config(name, "c.1", config1_settings)},
          {:link_functions, :ok} <-
@@ -131,12 +135,12 @@ defmodule Xebow.HIDGadget do
   end
 
   defp setup_bond0 do
-    # Set up the bond0 interface across usb0 and usb1.
+    # Set up the bond0 interface across usb0, usb1, and usb2.
     # In the rndis_ecm_acm pre-defined device being used here, usb0 is the
-    # RNDIS (Windows-compatible) device and usb1 is the ECM
-    # (non-Windows-compatible) device.
-    # Since Linux supports both with ECM being more reliable, we set usb1 (ECM)
-    # as the primary, meaning that it will be used if both are available.
+    # RNDIS (Windows-compatible) device, usb1 is the NCM (Mac OS Catalina-compatible)
+    # device, and usb2 is the ECM device (neither of which is Windows-compatible).
+    # Since Linux supports all three with NCM and ECM being more reliable, we set
+    # usb1 (NCM) as the primary, meaning that it will be used if all are available.
     bond0_sys_directory = "/sys/class/net/bond0/bonding"
     exit_success = 0
 
@@ -145,7 +149,8 @@ defmodule Xebow.HIDGadget do
          :ok <- write_file(bond0_sys_directory, "miimon", "100"),
          :ok <- write_file(bond0_sys_directory, "slaves", "+usb0"),
          :ok <- write_file(bond0_sys_directory, "slaves", "+usb1"),
-         :ok <- write_file(bond0_sys_directory, "primary", "usb0"),
+         :ok <- write_file(bond0_sys_directory, "slaves", "+usb2"),
+         :ok <- write_file(bond0_sys_directory, "primary", "usb1"),
          {_, ^exit_success} = set_bond0_link_state(:up) do
       :ok
     else

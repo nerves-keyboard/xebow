@@ -133,11 +133,10 @@ defmodule Xebow.HIDGadget do
   end
 
   defp setup_bond0 do
-    # Set up the bond0 interface across usb0, usb1, and usb2.
-    # In the rndis_ecm_acm pre-defined device being used here, usb0 is the
-    # RNDIS (Windows-compatible) device, usb1 is the NCM (Mac OS Catalina-compatible)
-    # device, and usb2 is the ECM device (neither of which is Windows-compatible).
-    # Since Linux supports all three with NCM and ECM being more reliable, we set
+    # Set up the bond0 interface across usb0 and usb1.
+    # In the pre-defined device being used here, usb0 is the
+    # RNDIS (Windows-compatible) device, usb1 is the NCM (Mac OS Catalina-compatible).
+    # Since Linux supports both, with NCM being more reliable, we set
     # usb1 (NCM) as the primary, meaning that it will be used if all are available.
     bond0_sys_directory = "/sys/class/net/bond0/bonding"
     exit_success = 0

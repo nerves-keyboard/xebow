@@ -109,7 +109,7 @@ defmodule Xebow.MixProject do
       # Dependencies for specific targets
       {:nerves_system_keybow,
        github: "ElixirSeattle/nerves_system_keybow",
-       ref: "v1.12.1+keybow.1",
+       ref: "v1.12.1+keybow.2",
        runtime: false,
        targets: :keybow}
     ]

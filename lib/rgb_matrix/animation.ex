@@ -114,6 +114,8 @@ defmodule RGBMatrix.Animation do
 
     config = config_module.update(config, params)
 
-    %{animation | config: config}
+    animation = %{animation | config: config}
+    :ok = Xebow.update_animation_config(animation)
+    animation
   end
 end

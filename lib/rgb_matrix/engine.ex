@@ -129,14 +129,6 @@ defmodule RGBMatrix.Engine do
     %State{state | paintables: paintables}
   end
 
-  #  defp set_animation(state, animation) do
-  #    # {render_in, animation} = Animation.new(animation_type, state.leds)
-  #
-  #    %State{state | animation: animation}
-  #    |> schedule_next_render(0)
-  #    |> inform_configurables()
-  #  end
-
   defp schedule_next_render(state, :ignore) do
     state
   end

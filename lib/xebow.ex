@@ -1,5 +1,8 @@
 defmodule Xebow do
-  @moduledoc false
+  @moduledoc """
+  Xebow is an Elixir-based firmware for keyboards. Currently, it is working on the Raspberry Pi0
+  Keybow kit.
+  """
 
   alias Layout.{Key, LED}
 
@@ -47,16 +50,37 @@ defmodule Xebow do
     GenServer.start_link(__MODULE__, RGBMatrix.Animation.types(), name: __MODULE__)
   end
 
+  @doc """
+  Gets the current animation configuration. This retrievs current values, which
+  allows for changes to be made with `update_animation_config/2`
+  """
+  @spec get_animation_config() :: RGBMatrix.Animation.Config.t()
+  def get_animation_config do
+    GenServer.call(__MODULE__, :get_animation_config)
+  end
+
+  @doc """
+  Switches to the next active animation
+  """
+  @spec next_animation() :: :ok
   def next_animation do
     GenServer.cast(__MODULE__, :next_animation)
   end
 
+  @doc """
+  Switches to the previous active animation
+  """
+  @spec previous_animation() :: :ok
   def previous_animation do
     GenServer.cast(__MODULE__, :previous_animation)
   end
 
-  def get_animation_config do
-    GenServer.call(__MODULE__, :get_animation_config)
+  @doc """
+  Updates the animation configuration for the current animation
+  """
+  @spec update_animation_config(RGBMatrix.Animation.type()) :: :ok | :error
+  def update_animation_config(animation_with_config) do
+    GenServer.call(__MODULE__, {:update_animation_config, animation_with_config})
   end
 
   # Server Implementations:
@@ -78,6 +102,12 @@ defmodule Xebow do
   def handle_call(:get_animation_config, _caller, state) do
     {[current | _rest], _previous} = state
     {:reply, RGBMatrix.Animation.get_config(current), state}
+  end
+
+  @impl GenServer
+  def handle_call({:update_animation_config, animation_with_config}, _caller, state) do
+    {[_current | rest], previous} = state
+    {:reply, :ok, {[animation_with_config | rest], previous}}
   end
 
   @impl GenServer

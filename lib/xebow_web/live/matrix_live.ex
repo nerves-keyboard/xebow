@@ -3,7 +3,7 @@ defmodule XebowWeb.MatrixLive do
 
   use XebowWeb, :live_view
 
-  alias RGBMatrix.{Animation, Engine}
+  alias RGBMatrix.Engine
 
   @layout Xebow.layout()
   @black Chameleon.HSV.new(0, 0, 0)
@@ -15,14 +15,12 @@ defmodule XebowWeb.MatrixLive do
 
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
-    {config, config_schema} = Engine.get_animation_config()
+    {config, config_schema} = Xebow.get_animation_config()
 
     initial_assigns = [
       leds: make_view_leds(@black_frame),
       config: config,
       config_schema: config_schema,
-      animation_types: Animation.types(),
-      current_animation_index: 0
     ]
 
     initial_assigns =
@@ -76,36 +74,40 @@ defmodule XebowWeb.MatrixLive do
 
   @impl Phoenix.LiveView
   def handle_event("next_animation", %{}, socket) do
-    next_index = socket.assigns.current_animation_index + 1
+    Xebow.next_animation()
+    {:noreply, socket}
+    # next_index = socket.assigns.current_animation_index + 1
 
-    next_index =
-      case next_index < Enum.count(socket.assigns.animation_types) do
-        true -> next_index
-        _ -> 0
-      end
+    # next_index =
+      # case next_index < Enum.count(socket.assigns.animation_types) do
+        # true -> next_index
+        # _ -> 0
+      # end
 
-    animation_type = Enum.at(socket.assigns.animation_types, next_index)
+    # animation_type = Enum.at(socket.assigns.animation_types, next_index)
 
-    RGBMatrix.Engine.set_animation(animation_type)
+    # RGBMatrix.Engine.set_animation(animation_type)
 
-    {:noreply, assign(socket, current_animation_index: next_index)}
+    # {:noreply, assign(socket, current_animation_index: next_index)}
   end
 
   @impl Phoenix.LiveView
   def handle_event("previous_animation", %{}, socket) do
-    previous_index = socket.assigns.current_animation_index - 1
+    Xebow.previous_animation()
+    {:noreply, socket}
+    # previous_index = socket.assigns.current_animation_index - 1
 
-    previous_index =
-      case previous_index < 0 do
-        true -> Enum.count(socket.assigns.animation_types) - 1
-        _ -> previous_index
-      end
+    # previous_index =
+      # case previous_index < 0 do
+        # true -> Enum.count(socket.assigns.animation_types) - 1
+        # _ -> previous_index
+      # end
 
-    animation_type = Enum.at(socket.assigns.animation_types, previous_index)
+    # animation_type = Enum.at(socket.assigns.animation_types, previous_index)
 
-    RGBMatrix.Engine.set_animation(animation_type)
+    # RGBMatrix.Engine.set_animation(animation_type)
 
-    {:noreply, assign(socket, current_animation_index: previous_index)}
+    # {:noreply, assign(socket, current_animation_index: previous_index)}
   end
 
   @impl Phoenix.LiveView

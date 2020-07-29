@@ -63,7 +63,7 @@ defmodule RGBMatrix.Animation do
   def new(animation_type, leds) do
     config_module = Module.concat([animation_type, "Config"])
     animation_config = config_module.new()
-    {render_in, animation_state} = animation_type.new(leds, animation_config)
+    {0, animation_state} = animation_type.new(leds, animation_config)
 
     animation = %__MODULE__{
       type: animation_type,
@@ -71,7 +71,7 @@ defmodule RGBMatrix.Animation do
       state: animation_state
     }
 
-    {render_in, animation}
+    animation
   end
 
   @doc """

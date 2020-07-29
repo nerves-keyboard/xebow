@@ -37,4 +37,78 @@ defmodule Xebow do
 
   @spec layout() :: Layout.t()
   def layout, do: @layout
+
+  use GenServer
+
+  # Client Implementations:
+
+  @spec start_link([]) :: GenServer.on_start()
+  def start_link([]) do
+    GenServer.start_link(__MODULE__, RGBMatrix.Animation.types(), name: __MODULE__)
+  end
+
+  def next_animation do
+    GenServer.cast(__MODULE__, :next_animation)
+  end
+
+  def previous_animation do
+    GenServer.cast(__MODULE__, :previous_animation)
+  end
+
+  def get_animation_config do
+    GenServer.call(__MODULE__, :get_animation_config)
+  end
+
+  # Server Implementations:
+
+  @impl GenServer
+  def init(types) do
+    active_animations =
+      types
+      |> Enum.map(&initialize_animation/1)
+
+    [current | _] = active_animations
+    RGBMatrix.Engine.set_animation(current)
+    state = {active_animations, []}
+
+    {:ok, state}
+  end
+
+  @impl GenServer
+  def handle_call(:get_animation_config, _caller, state) do
+    {[current | _rest], _previous} = state
+    {:reply, RGBMatrix.Animation.get_config(current), state}
+  end
+
+  @impl GenServer
+  def handle_cast(:next_animation, state) do
+    case state do
+      {[current | []], previous} ->
+        remaining_next = Enum.reverse([current | previous])
+        RGBMatrix.Engine.set_animation(hd(remaining_next))
+        {:noreply, {remaining_next, []}}
+
+      {[current | remaining_next], previous} ->
+        RGBMatrix.Engine.set_animation(hd(remaining_next))
+        {:noreply, {remaining_next, [current | previous]}}
+    end
+  end
+
+  @impl GenServer
+  def handle_cast(:previous_animation, state) do
+    case state do
+      {remaining_next, []} ->
+        [next | remaining_previous] = Enum.reverse(remaining_next)
+        RGBMatrix.Engine.set_animation(next)
+        {:noreply, {[next], remaining_previous}}
+
+      {remaining_next, [next | remaining_previous]} ->
+        RGBMatrix.Engine.set_animation(next)
+        {:noreply, {[next | remaining_next], remaining_previous}}
+    end
+  end
+
+  defp initialize_animation(animation_type) do
+    RGBMatrix.Animation.new(animation_type, @leds)
+  end
 end

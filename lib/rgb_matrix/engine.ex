@@ -27,10 +27,10 @@ defmodule RGBMatrix.Engine do
   - `initial_animation` - The Animation type to initialize and play when the
     engine starts.
   """
-  @spec start_link({leds :: [LED.t()], initial_animation_type :: Animation.type()}) ::
+  @spec start_link(leds :: [LED.t()]) ::
           GenServer.on_start()
-  def start_link({leds, initial_animation_type}) do
-    GenServer.start_link(__MODULE__, {leds, initial_animation_type}, name: __MODULE__)
+  def start_link(leds) do
+    GenServer.start_link(__MODULE__, leds, name: __MODULE__)
   end
 
   @doc """
@@ -113,18 +113,16 @@ defmodule RGBMatrix.Engine do
   # Server
 
   @impl GenServer
-  def init({leds, initial_animation_type}) do
+  def init(leds) do
     black = Chameleon.HSV.new(0, 0, 0)
     frame = Map.new(leds, &{&1.id, black})
 
-    state =
-      %State{
-        leds: leds,
-        last_frame: frame,
-        paintables: MapSet.new(),
-        configurables: MapSet.new()
-      }
-      |> init_and_set_animation(initial_animation_type)
+    state = %State{
+      leds: leds,
+      last_frame: frame,
+      paintables: MapSet.new(),
+      configurables: MapSet.new()
+    }
 
     {:ok, state}
   end
@@ -139,13 +137,13 @@ defmodule RGBMatrix.Engine do
     %State{state | paintables: paintables}
   end
 
-  defp init_and_set_animation(state, animation_type) do
-    {render_in, animation} = Animation.new(animation_type, state.leds)
-
-    %State{state | animation: animation}
-    |> schedule_next_render(render_in)
-    |> inform_configurables()
-  end
+  #  defp set_animation(state, animation) do
+  #    # {render_in, animation} = Animation.new(animation_type, state.leds)
+  #
+  #    %State{state | animation: animation}
+  #    |> schedule_next_render(0)
+  #    |> inform_configurables()
+  #  end
 
   defp schedule_next_render(state, :ignore) do
     state
@@ -202,8 +200,13 @@ defmodule RGBMatrix.Engine do
   end
 
   @impl GenServer
-  def handle_cast({:set_animation, animation_type}, state) do
-    state = init_and_set_animation(state, animation_type)
+  def handle_cast({:set_animation, animation}, state) do
+    # state = set_animation(state, animation_type)
+    state =
+      %State{state | animation: animation}
+      |> schedule_next_render(0)
+      |> inform_configurables()
+
     {:noreply, state}
   end
 
@@ -228,11 +231,6 @@ defmodule RGBMatrix.Engine do
   def handle_call({:unregister_paintable, key}, _from, state) do
     state = remove_paintable(key, state)
     {:reply, :ok, state}
-  end
-
-  @impl GenServer
-  def handle_call(:get_animation_config, _from, state) do
-    {:reply, Animation.get_config(state.animation), state}
   end
 
   @impl GenServer

@@ -6,31 +6,23 @@ defmodule XebowWeb.MatrixLive do
   alias RGBMatrix.Engine
 
   @layout Xebow.layout()
-  @black Chameleon.HSV.new(0, 0, 0)
-  @black_frame @layout
-               |> Layout.leds()
-               |> Map.new(fn led ->
-                 {led.id, @black}
-               end)
 
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
     {config, config_schema} = Xebow.get_animation_config()
+    {paint_fn, config_fn, frame} = register_with_engine!()
 
     initial_assigns = [
-      leds: make_view_leds(@black_frame),
+      leds: make_view_leds(frame),
       config: config,
       config_schema: config_schema
     ]
 
     initial_assigns =
       if connected?(socket) do
-        {paint_fn, config_fn, frame} = register_with_engine!()
-
         Keyword.merge(initial_assigns,
           paint_fn: paint_fn,
-          config_fn: config_fn,
-          leds: make_view_leds(frame)
+          config_fn: config_fn
         )
       else
         initial_assigns

@@ -41,15 +41,17 @@ defmodule RGBMatrix.Engine do
     GenServer.cast(__MODULE__, {:set_animation, animation_type})
   end
 
+  @typep frame :: %{LED.t() => RGBMatrix.any_color_model()}
+
   @doc """
   Register a paint function for the engine to send frames to.
 
   This function is idempotent.
   """
-  @spec register_paintable(paint_fn :: function) :: {:ok, function}
+  @spec register_paintable(paint_fn :: function) :: {:ok, function, frame}
   def register_paintable(paint_fn) do
-    :ok = GenServer.call(__MODULE__, {:register_paintable, paint_fn})
-    {:ok, paint_fn}
+    {:ok, frame} = GenServer.call(__MODULE__, {:register_paintable, paint_fn})
+    {:ok, paint_fn, frame}
   end
 
   @doc """
@@ -185,7 +187,6 @@ defmodule RGBMatrix.Engine do
 
   @impl GenServer
   def handle_cast({:set_animation, animation}, state) do
-    # state = set_animation(state, animation_type)
     state =
       %State{state | animation: animation}
       |> schedule_next_render(0)
@@ -208,7 +209,7 @@ defmodule RGBMatrix.Engine do
   @impl GenServer
   def handle_call({:register_paintable, paint_fn}, _from, state) do
     state = add_paintable(paint_fn, state)
-    {:reply, :ok, state}
+    {:reply, {:ok, state.last_frame}, state}
   end
 
   @impl GenServer
@@ -225,7 +226,7 @@ defmodule RGBMatrix.Engine do
       %State{state | animation: animation}
       |> inform_configurables()
 
-    {:reply, :ok, state}
+    {:reply, Xebow.update_animation_config(animation), state}
   end
 
   @impl GenServer

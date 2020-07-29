@@ -65,13 +65,11 @@ defmodule RGBMatrix.Animation do
     animation_config = config_module.new()
     animation_state = animation_type.new(leds, animation_config)
 
-    animation = %__MODULE__{
+    %__MODULE__{
       type: animation_type,
       config: animation_config,
       state: animation_state
     }
-
-    animation
   end
 
   @doc """
@@ -114,8 +112,6 @@ defmodule RGBMatrix.Animation do
 
     config = config_module.update(config, params)
 
-    animation = %{animation | config: config}
-    :ok = Xebow.update_animation_config(animation)
-    animation
+    %{animation | config: config}
   end
 end

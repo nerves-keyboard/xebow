@@ -140,7 +140,7 @@ defmodule Xebow.Keyboard do
     state = %{
       pins: pins,
       keyboard_state: keyboard_state,
-      hid: hid,
+      hid: hid
     }
 
     {:ok, state}

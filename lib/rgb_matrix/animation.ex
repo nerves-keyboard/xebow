@@ -130,10 +130,12 @@ defmodule RGBMatrix.Animation do
       defoverridable interact: 3
 
       @before_compile unquote(__MODULE__.Config)
-      # @after_compile unquote(__MODULE__)
     end
   end
 
+  @doc """
+  Defines a configuration field for an animation.
+  """
   defmacro field(name, type, opts \\ []) when is_list(opts) do
     type =
       __MODULE__.Config.__info__(:attributes)

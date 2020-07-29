@@ -11,35 +11,43 @@ defmodule RGBMatrix.Animation.HueWave do
 
   import RGBMatrix.Utils, only: [mod: 2]
 
-  defmodule Config do
-    @moduledoc false
-    use RGBMatrix.Animation.Config
+  field :speed, :integer,
+    default: 4,
+    min: 0,
+    max: 32,
+    doc: [
+      name: "Speed",
+      description: """
+      Controls the speed at which the wave moves across the matrix.
+      """
+    ]
 
-    @doc name: "Speed",
-         description: """
-         Controls the speed at which the wave moves across the matrix.
-         """
-    field :speed, :integer, default: 4, min: 0, max: 32
+  field :width, :integer,
+    default: 20,
+    min: 10,
+    max: 100,
+    step: 10,
+    doc: [
+      name: "Width",
+      description: """
+      The rate of change of the wave, higher values means it's more spread out.
+      """
+    ]
 
-    @doc name: "Width",
-         description: """
-         The rate of change of the wave, higher values means it's more spread out.
-         """
-    field :width, :integer, default: 20, min: 10, max: 100, step: 10
-
-    @doc name: "Direction",
-         description: """
-         The direction the wave travels across the matrix.
-         """
-    field :direction, :option,
-      default: :right,
-      options: [
-        :right,
-        :left,
-        :up,
-        :down
-      ]
-  end
+  field :direction, :option,
+    default: :right,
+    options: [
+      :right,
+      :left,
+      :up,
+      :down
+    ],
+    doc: [
+      name: "Direction",
+      description: """
+      The direction the wave travels across the matrix.
+      """
+    ]
 
   defmodule State do
     @moduledoc false
@@ -94,10 +102,5 @@ defmodule RGBMatrix.Animation.HueWave do
       hue = mod(trunc(y * steps) - time, 360)
       {id, HSV.new(hue, 100, 100)}
     end
-  end
-
-  @impl true
-  def interact(state, _config, _led) do
-    {:ignore, state}
   end
 end

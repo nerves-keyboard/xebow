@@ -8,11 +8,6 @@ defmodule RGBMatrix.Animation.Breathing do
 
   use Animation
 
-  defmodule Config do
-    @moduledoc false
-    use RGBMatrix.Animation.Config
-  end
-
   defmodule State do
     @moduledoc false
     defstruct [:color, :tick, :speed, :led_ids]
@@ -37,10 +32,5 @@ defmodule RGBMatrix.Animation.Breathing do
     colors = Enum.map(led_ids, fn id -> {id, color} end)
 
     {@delay_ms, colors, %{state | tick: tick + 1}}
-  end
-
-  @impl true
-  def interact(state, _config, _led) do
-    {:ignore, state}
   end
 end

@@ -10,10 +10,11 @@ defmodule RGBMatrix.Animation.Config.FieldType.Integer do
   @type t :: %__MODULE__{
           default: integer,
           min: integer,
-          max: integer
+          max: integer,
+          doc: keyword(String.t()) | []
         }
   @enforce_keys [:default, :min, :max]
-  defstruct [:default, :min, :max, step: 1]
+  defstruct [:default, :min, :max, step: 1, doc: []]
 
   import RGBMatrix.Utils, only: [mod: 2]
 

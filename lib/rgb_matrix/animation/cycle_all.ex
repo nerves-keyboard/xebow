@@ -10,11 +10,6 @@ defmodule RGBMatrix.Animation.CycleAll do
 
   import RGBMatrix.Utils, only: [mod: 2]
 
-  defmodule Config do
-    @moduledoc false
-    use RGBMatrix.Animation.Config
-  end
-
   defmodule State do
     @moduledoc false
     defstruct [:tick, :speed, :led_ids]
@@ -39,10 +34,5 @@ defmodule RGBMatrix.Animation.CycleAll do
     colors = Enum.map(led_ids, fn id -> {id, color} end)
 
     {@delay_ms, colors, %{state | tick: tick + 1}}
-  end
-
-  @impl true
-  def interact(state, _config, _led) do
-    {:ignore, state}
   end
 end

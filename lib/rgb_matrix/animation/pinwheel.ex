@@ -11,11 +11,6 @@ defmodule RGBMatrix.Animation.Pinwheel do
 
   import RGBMatrix.Utils, only: [mod: 2]
 
-  defmodule Config do
-    @moduledoc false
-    use RGBMatrix.Animation.Config
-  end
-
   defmodule State do
     @moduledoc false
     defstruct [:tick, :speed, :leds, :center]

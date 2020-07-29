@@ -8,11 +8,6 @@ defmodule RGBMatrix.Animation.RandomKeypresses do
 
   use Animation
 
-  defmodule Config do
-    @moduledoc false
-    use RGBMatrix.Animation.Config
-  end
-
   defmodule State do
     @moduledoc false
     defstruct [:led_ids, :dirty]

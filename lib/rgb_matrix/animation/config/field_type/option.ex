@@ -9,15 +9,16 @@ defmodule RGBMatrix.Animation.Config.FieldType.Option do
 
   @type t :: %__MODULE__{
           default: atom,
-          options: [atom]
+          options: [atom],
+          doc: keyword(String.t()) | []
         }
   @enforce_keys [:default, :options]
-  defstruct [:default, :options]
+  defstruct [:default, :options, doc: []]
 
   @impl true
   @spec validate(field_type :: t, value :: atom) :: :ok | :error
-  def validate(option, value) do
-    if value in option.options do
+  def validate(%__MODULE__{options: options}, value) do
+    if value in options do
       :ok
     else
       :error

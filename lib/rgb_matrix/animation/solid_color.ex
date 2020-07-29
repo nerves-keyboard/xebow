@@ -8,11 +8,6 @@ defmodule RGBMatrix.Animation.SolidColor do
 
   use Animation
 
-  defmodule Config do
-    @moduledoc false
-    use RGBMatrix.Animation.Config
-  end
-
   defmodule State do
     @moduledoc false
     defstruct [:color, :led_ids]
@@ -31,10 +26,5 @@ defmodule RGBMatrix.Animation.SolidColor do
     colors = Enum.map(led_ids, fn id -> {id, color} end)
 
     {:never, colors, state}
-  end
-
-  @impl true
-  def interact(state, _config, _led) do
-    {:ignore, state}
   end
 end

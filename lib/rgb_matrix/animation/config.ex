@@ -12,32 +12,14 @@ defmodule RGBMatrix.Animation.Config do
   @callback new(%{optional(atom) => any}) :: t
   @callback update(t, %{optional(atom) => any}) :: t
 
-  @types %{
-    integer: RGBMatrix.Animation.Config.FieldType.Integer,
-    option: RGBMatrix.Animation.Config.FieldType.Option
+  @optional_callbacks [new: 1]
+
+  Module.register_attribute(__MODULE__, :field_types, persist: true)
+
+  @field_types %{
+    integer: __MODULE__.FieldType.Integer,
+    option: __MODULE__.FieldType.Option
   }
-
-  defmacro __using__(_) do
-    quote do
-      import RGBMatrix.Animation.Config
-
-      Module.register_attribute(__MODULE__, :fields,
-        accumulate: true,
-        persist: false
-      )
-
-      @before_compile RGBMatrix.Animation.Config
-    end
-  end
-
-  defmacro field(name, type, opts \\ []) do
-    type = Map.fetch!(@types, type)
-    type_schema = Macro.escape(struct!(type, opts))
-
-    quote do
-      @fields {unquote(name), unquote(type_schema)}
-    end
-  end
 
   defmacro __before_compile__(env) do
     schema = Module.get_attribute(env.module, :fields)
@@ -45,49 +27,53 @@ defmodule RGBMatrix.Animation.Config do
     schema = Macro.escape(schema)
 
     quote do
-      @behaviour RGBMatrix.Animation.Config
+      defmodule Config do
+        @moduledoc false
 
-      @enforce_keys unquote(keys)
-      defstruct unquote(keys)
+        @behaviour unquote(__MODULE__)
 
-      @impl RGBMatrix.Animation.Config
-      def schema do
-        unquote(schema)
-      end
+        @enforce_keys unquote(keys)
+        defstruct unquote(keys)
 
-      @impl RGBMatrix.Animation.Config
-      def new(params \\ %{}) do
-        schema()
-        |> Map.new(fn {key, %mod{} = type} ->
-          value = Map.get(params, key, type.default)
+        @impl true
+        def schema do
+          unquote(schema)
+        end
 
-          case mod.validate(type, value) do
-            :ok -> {key, value}
-            :error -> value_error!(value, key)
-          end
-        end)
-        |> (&struct!(__MODULE__, &1)).()
-      end
+        @impl true
+        def new(params \\ %{}) do
+          schema()
+          |> Map.new(fn {key, %mod{} = type} ->
+            value = Map.get(params, key, type.default)
 
-      @impl RGBMatrix.Animation.Config
-      def update(config, params) do
-        schema = schema()
+            case mod.validate(type, value) do
+              :ok -> {key, value}
+              :error -> value_error!(value, key)
+            end
+          end)
+          |> (&struct!(__MODULE__, &1)).()
+        end
 
-        Enum.reduce(params, config, fn {key, value}, config ->
-          key = String.to_existing_atom(key)
-          %mod{} = type = Keyword.fetch!(schema, key)
-          {:ok, value} = mod.cast(type, value)
-          if mod.validate(type, value) == :error, do: value_error!(value, key)
+        @impl true
+        def update(config, params) do
+          schema = schema()
 
-          Map.put(config, key, value)
-        end)
-      end
+          Enum.reduce(params, config, fn {key, value}, config ->
+            key = String.to_existing_atom(key)
+            %mod{} = type = Keyword.fetch!(schema, key)
+            {:ok, value} = mod.cast(type, value)
+            if mod.validate(type, value) == :error, do: value_error!(value, key)
 
-      defp value_error!(value, key) do
-        message =
-          "#{__MODULE__}: value `#{inspect(value)}` is invalid for config option `#{key}`."
+            Map.put(config, key, value)
+          end)
+        end
 
-        raise ArgumentError, message: message
+        defp value_error!(value, key) do
+          message =
+            "#{__MODULE__}: value `#{inspect(value)}` is invalid for config option `#{key}`."
+
+          raise ArgumentError, message: message
+        end
       end
     end
   end

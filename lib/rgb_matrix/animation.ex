@@ -4,7 +4,7 @@ defmodule RGBMatrix.Animation do
   """
 
   alias Layout.LED
-  alias RGBMatrix.Animation.Config
+  alias __MODULE__.Config
 
   @type animation_state :: any
 
@@ -20,12 +20,6 @@ defmodule RGBMatrix.Animation do
               {render_in, [RGBMatrix.any_color_model()], animation_state}
   @callback interact(state :: animation_state, config :: Config.t(), led :: LED.t()) ::
               {render_in, animation_state}
-
-  defmacro __using__(_) do
-    quote do
-      @behaviour RGBMatrix.Animation
-    end
-  end
 
   @type render_in :: non_neg_integer() | :never | :ignore
 
@@ -115,5 +109,42 @@ defmodule RGBMatrix.Animation do
     config = config_module.update(config, params)
 
     %{animation | config: config}
+  end
+
+  defmacro __using__(_) do
+    quote do
+      @behaviour unquote(__MODULE__)
+      import unquote(__MODULE__)
+      import unquote(__MODULE__.Config)
+
+      Module.register_attribute(__MODULE__, :fields,
+        accumulate: true,
+        persist: false
+      )
+
+      @impl true
+      def interact(state, _config, _led) do
+        {:ignore, state}
+      end
+
+      defoverridable interact: 3
+
+      @before_compile unquote(__MODULE__.Config)
+      # @after_compile unquote(__MODULE__)
+    end
+  end
+
+  defmacro field(name, type, opts \\ []) when is_list(opts) do
+    type =
+      __MODULE__.Config.__info__(:attributes)
+      |> Keyword.get(:field_types)
+      |> List.first()
+      |> Map.get(type)
+
+    type_schema = Macro.escape(struct!(type, opts))
+
+    quote bind_quoted: [name: name, type_schema: type_schema] do
+      @fields {name, type_schema}
+    end
   end
 end

@@ -72,14 +72,6 @@ defmodule RGBMatrix.Engine do
   end
 
   @doc """
-  Retrieves the current animation's configuration and configuration schema.
-  """
-  @spec get_animation_config() :: {config :: any, config_schema :: any}
-  def get_animation_config do
-    GenServer.call(__MODULE__, :get_animation_config)
-  end
-
-  @doc """
   Updates the current animation's configuration.
   """
   @spec update_animation_config(params :: map) :: :ok | :error

@@ -22,12 +22,11 @@ defmodule RGBMatrix.Animation.RandomKeypresses do
   def new(leds, _config) do
     led_ids = Enum.map(leds, & &1.id)
 
-    {0,
      %State{
        led_ids: led_ids,
        # NOTE: as to not conflict with possible led ID of `:all`
        dirty: {:all}
-     }}
+     }
   end
 
   @impl true

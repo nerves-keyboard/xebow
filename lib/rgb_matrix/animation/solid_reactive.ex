@@ -49,7 +49,7 @@ defmodule RGBMatrix.Animation.SolidReactive do
   @impl true
   def new(leds, _config) do
     color = HSV.new(190, 100, 100)
-    {0, %State{first_render: true, paused: false, tick: 0, color: color, leds: leds, hits: %{}}}
+    %State{first_render: true, paused: false, tick: 0, color: color, leds: leds, hits: %{}}
   end
 
   @impl true

@@ -9,6 +9,8 @@ defmodule RGBMatrix.Engine do
   alias Layout.LED
   alias RGBMatrix.Animation
 
+  @type frame :: %{LED.t() => RGBMatrix.any_color_model()}
+
   defmodule State do
     @moduledoc false
     defstruct [:leds, :animation, :paintables, :last_frame, :timer, :configurables]
@@ -22,13 +24,10 @@ defmodule RGBMatrix.Engine do
   This module registers its process globally and is expected to be started by a
   supervisor.
 
-  This function accepts the following arguments as a tuple:
+  This function accepts the following argument:
   - `leds` - The list of LEDs to be painted on.
-  - `initial_animation` - The Animation type to initialize and play when the
-    engine starts.
   """
-  @spec start_link(leds :: [LED.t()]) ::
-          GenServer.on_start()
+  @spec start_link(leds :: [LED.t()]) :: GenServer.on_start()
   def start_link(leds) do
     GenServer.start_link(__MODULE__, leds, name: __MODULE__)
   end
@@ -36,12 +35,10 @@ defmodule RGBMatrix.Engine do
   @doc """
   Sets the given animation as the currently active animation.
   """
-  @spec set_animation(animation_type :: Animation.type()) :: :ok
-  def set_animation(animation_type) do
-    GenServer.cast(__MODULE__, {:set_animation, animation_type})
+  @spec set_animation(animation :: Animation.t()) :: :ok
+  def set_animation(animation) do
+    GenServer.cast(__MODULE__, {:set_animation, animation})
   end
-
-  @typep frame :: %{LED.t() => RGBMatrix.any_color_model()}
 
   @doc """
   Register a paint function for the engine to send frames to.
@@ -71,14 +68,6 @@ defmodule RGBMatrix.Engine do
   @spec interact(led :: LED.t()) :: :ok
   def interact(led) do
     GenServer.cast(__MODULE__, {:interact, led})
-  end
-
-  @doc """
-  Updates the current animation's configuration.
-  """
-  @spec update_animation_config(params :: map) :: :ok | :error
-  def update_animation_config(params) do
-    GenServer.call(__MODULE__, {:update_animation_config, params})
   end
 
   @doc """
@@ -216,17 +205,6 @@ defmodule RGBMatrix.Engine do
   def handle_call({:unregister_paintable, key}, _from, state) do
     state = remove_paintable(key, state)
     {:reply, :ok, state}
-  end
-
-  @impl GenServer
-  def handle_call({:update_animation_config, params}, _from, state) do
-    animation = Animation.update_config(state.animation, params)
-
-    state =
-      %State{state | animation: animation}
-      |> inform_configurables()
-
-    {:reply, Xebow.update_animation_config(animation), state}
   end
 
   @impl GenServer

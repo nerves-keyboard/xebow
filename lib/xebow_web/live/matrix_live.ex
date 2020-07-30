@@ -63,7 +63,7 @@ defmodule XebowWeb.MatrixLive do
   def handle_event("update_config", %{"_target" => [field_str]} = params, socket) do
     value = Map.fetch!(params, field_str)
 
-    Engine.update_animation_config(%{field_str => value})
+    Xebow.update_animation_config(%{field_str => value})
 
     {:noreply, socket}
   end

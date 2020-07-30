@@ -42,18 +42,31 @@ defmodule Xebow do
   @spec layout() :: Layout.t()
   def layout, do: @layout
 
+  @type animations :: [Animation.t()]
+  @type animation_params :: %{String.t() => atom | number | String.t()}
+
+  defmodule State do
+    @moduledoc false
+    defstruct [:current_animation, :next_list, :previous_list]
+  end
+
   use GenServer
 
   # Client Implementations:
 
+  @doc """
+  Starts the Xebow application, which manages initialization of animations, as well
+  as switching between active animations. It also maintains animation config state
+  and persists it in memory between animation changes.
+  """
   @spec start_link([]) :: GenServer.on_start()
   def start_link([]) do
     GenServer.start_link(__MODULE__, Animation.types(), name: __MODULE__)
   end
 
   @doc """
-  Gets the current animation configuration. This retrievs current values, which
-  allows for changes to be made with `update_animation_config/2`
+  Gets the animation configuration. This retrievs current values, which allows for
+  changes to be made with `update_animation_config/1`
   """
   @spec get_animation_config() :: {Animation.Config.t(), keyword(Animation.Config.t())}
   def get_animation_config do
@@ -77,11 +90,12 @@ defmodule Xebow do
   end
 
   @doc """
-  Updates the animation configuration for the current animation
+  Updates the configuration for the current animation
   """
-  @spec update_animation_config(Animation.t()) :: :ok | :error
-  def update_animation_config(animation_with_config) do
-    GenServer.call(__MODULE__, {:update_animation_config, animation_with_config})
+  @spec update_animation_config(animation_params) ::
+          :ok
+  def update_animation_config(params) do
+    GenServer.cast(__MODULE__, {:update_animation_config, params})
   end
 
   # Server Implementations:
@@ -92,51 +106,91 @@ defmodule Xebow do
       types
       |> Enum.map(&initialize_animation/1)
 
-    [current | _] = active_animations
+    current = hd(active_animations)
     Engine.set_animation(current)
-    state = {active_animations, []}
+
+    state = %State{
+      current_animation: current,
+      next_list: active_animations,
+      previous_list: []
+    }
 
     {:ok, state}
   end
 
   @impl GenServer
-  def handle_call(:get_animation_config, _caller, state) do
-    {[current | _rest], _previous} = state
-    {:reply, Animation.get_config(current), state}
-  end
-
-  @impl GenServer
-  def handle_call({:update_animation_config, animation_with_config}, _caller, state) do
-    {[_current | rest], previous} = state
-    {:reply, :ok, {[animation_with_config | rest], previous}}
+  def handle_call(:get_animation_config, _from, state) do
+    {:reply, Animation.get_config(state.current_animation), state}
   end
 
   @impl GenServer
   def handle_cast(:next_animation, state) do
-    case state do
-      {[current | []], previous} ->
-        remaining_next = Enum.reverse([current | previous])
-        Engine.set_animation(hd(remaining_next))
-        {:noreply, {remaining_next, []}}
+    case state.next_list do
+      [] ->
+        [new_current | next_list] = Enum.reverse([state.current_animation | state.previous_list])
+        Engine.set_animation(new_current)
 
-      {[current | remaining_next], previous} ->
-        Engine.set_animation(hd(remaining_next))
-        {:noreply, {remaining_next, [current | previous]}}
+        state = %{
+          state
+          | current_animation: new_current,
+            next_list: next_list,
+            previous_list: []
+        }
+
+        {:noreply, state}
+
+      [new_current | next_list] ->
+        Engine.set_animation(new_current)
+
+        state = %{
+          state
+          | current_animation: new_current,
+            next_list: next_list,
+            previous_list: [state.current_animation | state.previous_list]
+        }
+
+        {:noreply, state}
     end
   end
 
   @impl GenServer
   def handle_cast(:previous_animation, state) do
-    case state do
-      {remaining_next, []} ->
-        [next | remaining_previous] = Enum.reverse(remaining_next)
-        Engine.set_animation(next)
-        {:noreply, {[next], remaining_previous}}
+    case state.previous_list do
+      [] ->
+        [new_current | previous_list] = Enum.reverse([state.current_animation | state.next_list])
+        Engine.set_animation(new_current)
 
-      {remaining_next, [next | remaining_previous]} ->
-        Engine.set_animation(next)
-        {:noreply, {[next | remaining_next], remaining_previous}}
+        state = %{
+          state
+          | current_animation: new_current,
+            next_list: [],
+            previous_list: previous_list
+        }
+
+        {:noreply, state}
+
+      [new_current | previous_list] ->
+        Engine.set_animation(new_current)
+
+        state = %{
+          state
+          | current_animation: new_current,
+            next_list: [state.current_animation | state.next_list],
+            previous_list: previous_list
+        }
+
+        {:noreply, state}
     end
+  end
+
+  @impl GenServer
+  def handle_cast({:update_animation_config, params}, state) do
+    updated_animation = Animation.update_config(state.current_animation, params)
+    Engine.set_animation(updated_animation)
+
+    state = %{state | current_animation: updated_animation}
+
+    {:noreply, state}
   end
 
   defp initialize_animation(animation_type) do

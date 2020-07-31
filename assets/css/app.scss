@@ -5,6 +5,8 @@
 
 @import "../node_modules/nprogress/nprogress.css";
 
+@import "./xebow.scss";
+
 /* LiveView specific classes for your customizations */
 .invalid-feedback {
   color: #a94442;
@@ -91,33 +93,4 @@
 }
 .alert:empty {
   display: none;
-}
-
-// my styles
-
-.container {
-  max-width: 120rem;
-  color: white;
-}
-
-body {
-  background-color: #222;
-}
-
-div.screen {
-  position: relative;
-  top: 25px;
-  left: 25px;
-  height: 325px;
-}
-
-span.key,
-span.led {
-  display: inline-block;
-  position: absolute;
-  border: 1px solid #222;
-}
-
-span.led {
-  border-radius: 25px;
 }

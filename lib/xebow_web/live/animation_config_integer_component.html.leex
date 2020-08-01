@@ -1,17 +1,20 @@
-<div class="flex items-center my-6">
-  <div class="capitalize mr-4"><%= @id %>:</div>
-  <div class="mr-4"><%= @value %></div>
-  <div>
-    <form action="#" phx-change="update_config">
-      <input
-        name="<%= @id %>"
-        type="range"
-        min="<%= @schema.min %>"
-        max="<%= @schema.max %>"
-        step="<%= @schema.step %>"
-        value="<%= @value %>"
-        phx-debounce="250"
-      >
-    </form>
+<div class="flex-col items-center my-6">
+  <div class="capitalize mr-4"><%= @id %></div>
+  <div class="flex">
+    <div>
+      <form action="#" phx-change="update_config">
+        <input
+          class="w-56 mr-6"
+          name="<%= @id %>"
+          type="range"
+          min="<%= @schema.min %>"
+          max="<%= @schema.max %>"
+          step="<%= @schema.step %>"
+          value="<%= @value %>"
+          phx-debounce="250"
+        >
+      </form>
+    </div>
+    <div class="text-lg mr-4 mt-1"><%= @value %></div>
   </div>
 </div>

@@ -13,9 +13,10 @@
 @import "./xebow.scss";
 
 body {
-  @apply text-white bg-gray-800;
+  @apply text-white font-light bg-gray-900;
   @apply mx-8;
   font-family: lato, sans-serif;
+  font-size: 1.375rem;
 }
 
 h1 {
@@ -24,7 +25,7 @@ h1 {
 }
 
 .nav {
-  @apply border-b-2 border-gray-700 border-solid;
+  @apply border-b-2 border-gray-800 border-solid;
 
   .svg-inline--fa {
     @apply ml-8;

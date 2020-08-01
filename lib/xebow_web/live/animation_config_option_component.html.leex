@@ -1,8 +1,8 @@
-<div class="flex items-center my-6">
-  <div class="capitalize mr-4"><%= @id %>:</div>
+<div class="flex-col items-center my-6">
+  <div class="capitalize mr-4 mb-1"><%= @id %></div>
   <div>
     <form action="#" phx-change="update_config">
-      <select name="<%= @id %>">
+      <select name="<%= @id %>" class="w-56">
         <%= for option <- @schema.options do %>
           <option value="<%= option %>"><%= option %></option>
         <% end %>

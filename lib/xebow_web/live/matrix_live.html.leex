@@ -1,38 +1,33 @@
-<div class="my-4">
-  <div class="my-2">Animations:</div>
-  <button phx-click="previous_animation">
-    <i class="fas fa-arrow-left mr-2"></i>
-    Previous
-  </button>
-  <button phx-click="next_animation">
-    Next
-    <i class="fas fa-arrow-right ml-2"></i>
-  </button>
+<div class="flex mt-8 w-full">
+  <div>
+    <div class="mb-1">Animation</div>
+    <button class="mr-4 w-24" phx-click="previous_animation">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+    <button class="w-24" phx-click="next_animation">
+      <i class="fas fa-arrow-right"></i>
+    </button>
+    <%= live_component @socket, XebowWeb.AnimationConfigComponent, schema: @config_schema, config: @config %>
+  </div>
+
+  <div class="relative mx-auto my-16">
+    <%= for led <- @leds do %>
+      <span
+        id="<%= led.id %>"
+        class="<%= led.class %>"
+        <%= if led.class == "key" do %>
+        phx-click="key_pressed"
+        phx-value-key-id="<%= led.id %>"
+        <% end %>
+        phx-hook="AnimationColorUpdate"
+        style="
+          left: <%= led.x %>px;
+          top: <%= led.y %>px;
+          width: <%= led.width %>px;
+          height: <%= led.height %>px;
+          background-color: #<%= led.color %>
+        "
+      ></span>
+    <% end %>
+  </div>
 </div>
-
-<hr>
-
-<div class="screen my-4">
-  <%= for led <- @leds do %>
-    <span
-      id="<%= led.id %>"
-      class="<%= led.class %>"
-      <%= if led.class == "key" do %>
-      phx-click="key_pressed"
-      phx-value-key-id="<%= led.id %>"
-      <% end %>
-      phx-hook="AnimationColorUpdate"
-      style="
-        left: <%= led.x %>px;
-        top: <%= led.y %>px;
-        width: <%= led.width %>px;
-        height: <%= led.height %>px;
-        background-color: #<%= led.color %>
-      "
-    ></span>
-  <% end %>
-</div>
-
-<hr>
-
-<%= live_component @socket, XebowWeb.AnimationConfigComponent, schema: @config_schema, config: @config %>

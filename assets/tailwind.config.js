@@ -7,7 +7,15 @@ module.exports = {
     "./js/**/*.js"
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        gray: {
+          600: "#718096",
+          700: "#333333",
+          800: "#202020"
+        }
+      }
+    },
   },
   variants: {},
   plugins: [],

@@ -1,0 +1,8 @@
+<div class="nav flex justify-between items-center w-full py-6">
+  <h1>Xebow Studio</h1>
+  <div>
+    <a href="/telemetry" title="Telemetry" target="_blank">
+      <i class="fas fa-tachometer-alt"></i>
+    </a>
+  </div>
+</div>

@@ -11,3 +11,23 @@
 @import "./live_view.scss";
 @import "./select.scss";
 @import "./xebow.scss";
+
+body {
+  @apply text-white bg-gray-800;
+  @apply mx-8;
+  font-family: lato, sans-serif;
+}
+
+h1 {
+  @apply font-light;
+  font-size: 2.25rem;
+}
+
+.nav {
+  @apply border-b-2 border-gray-700 border-solid;
+
+  .svg-inline--fa {
+    @apply ml-8;
+    font-size: 1.5rem;
+  }
+}

@@ -66,7 +66,7 @@ defmodule Xebow.LEDs do
   defp register_with_engine!(spidev) do
     pid = self()
 
-    {:ok, paint_fn} =
+    {:ok, paint_fn, _frame} =
       Engine.register_paintable(fn frame ->
         if Process.alive?(pid) do
           paint(spidev, frame)

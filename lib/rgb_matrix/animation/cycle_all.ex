@@ -25,7 +25,7 @@ defmodule RGBMatrix.Animation.CycleAll do
   @impl true
   def new(leds, _config) do
     led_ids = Enum.map(leds, & &1.id)
-    {0, %State{tick: 0, speed: 100, led_ids: led_ids}}
+    %State{tick: 0, speed: 100, led_ids: led_ids}
   end
 
   @impl true

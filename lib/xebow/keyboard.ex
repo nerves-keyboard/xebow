@@ -20,7 +20,7 @@ defmodule Xebow.Keyboard do
   use GenServer
 
   alias Circuits.GPIO
-  alias RGBMatrix.{Animation, Engine}
+  alias RGBMatrix.Engine
 
   # maps the physical GPIO pins to key IDs
   @gpio_pins %{
@@ -101,7 +101,7 @@ defmodule Xebow.Keyboard do
   """
   @spec next_animation() :: :ok
   def next_animation do
-    GenServer.cast(__MODULE__, :next_animation)
+    Xebow.next_animation()
   end
 
   @doc """
@@ -109,7 +109,7 @@ defmodule Xebow.Keyboard do
   """
   @spec previous_animation() :: :ok
   def previous_animation do
-    GenServer.cast(__MODULE__, :previous_animation)
+    Xebow.previous_animation()
   end
 
   # Server
@@ -140,50 +140,10 @@ defmodule Xebow.Keyboard do
     state = %{
       pins: pins,
       keyboard_state: keyboard_state,
-      hid: hid,
-      animation_types: Animation.types(),
-      current_animation_index: 0
+      hid: hid
     }
 
     {:ok, state}
-  end
-
-  @impl GenServer
-  def handle_cast(:next_animation, state) do
-    next_index = state.current_animation_index + 1
-
-    next_index =
-      case next_index < Enum.count(state.animation_types) do
-        true -> next_index
-        _ -> 0
-      end
-
-    animation_type = Enum.at(state.animation_types, next_index)
-
-    RGBMatrix.Engine.set_animation(animation_type)
-
-    state = %{state | current_animation_index: next_index}
-
-    {:noreply, state}
-  end
-
-  @impl GenServer
-  def handle_cast(:previous_animation, state) do
-    previous_index = state.current_animation_index - 1
-
-    previous_index =
-      case previous_index < 0 do
-        true -> Enum.count(state.animation_types) - 1
-        _ -> previous_index
-      end
-
-    animation_type = Enum.at(state.animation_types, previous_index)
-
-    RGBMatrix.Engine.set_animation(animation_type)
-
-    state = %{state | current_animation_index: previous_index}
-
-    {:noreply, state}
   end
 
   @impl GenServer

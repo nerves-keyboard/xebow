@@ -3,33 +3,27 @@ defmodule XebowWeb.MatrixLive do
 
   use XebowWeb, :live_view
 
-  alias RGBMatrix.{Animation, Engine}
+  alias RGBMatrix.Engine
 
   @layout Xebow.layout()
-  @black Chameleon.HSV.new(0, 0, 0)
-  @black_frame @layout
-               |> Layout.leds()
-               |> Map.new(fn led ->
-                 {led.id, @black}
-               end)
 
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
-    {config, config_schema} = Engine.get_animation_config()
+    {config, config_schema} = Xebow.get_animation_config()
+    {paint_fn, config_fn, frame} = register_with_engine!()
 
     initial_assigns = [
-      leds: make_view_leds(@black_frame),
+      leds: make_view_leds(frame),
       config: config,
-      config_schema: config_schema,
-      animation_types: Animation.types(),
-      current_animation_index: 0
+      config_schema: config_schema
     ]
 
     initial_assigns =
       if connected?(socket) do
-        {paint_fn, config_fn} = register_with_engine!()
-
-        Keyword.merge(initial_assigns, paint_fn: paint_fn, config_fn: config_fn)
+        Keyword.merge(initial_assigns,
+          paint_fn: paint_fn,
+          config_fn: config_fn
+        )
       else
         initial_assigns
       end
@@ -69,43 +63,21 @@ defmodule XebowWeb.MatrixLive do
   def handle_event("update_config", %{"_target" => [field_str]} = params, socket) do
     value = Map.fetch!(params, field_str)
 
-    Engine.update_animation_config(%{field_str => value})
+    Xebow.update_animation_config(%{field_str => value})
 
     {:noreply, socket}
   end
 
   @impl Phoenix.LiveView
   def handle_event("next_animation", %{}, socket) do
-    next_index = socket.assigns.current_animation_index + 1
-
-    next_index =
-      case next_index < Enum.count(socket.assigns.animation_types) do
-        true -> next_index
-        _ -> 0
-      end
-
-    animation_type = Enum.at(socket.assigns.animation_types, next_index)
-
-    RGBMatrix.Engine.set_animation(animation_type)
-
-    {:noreply, assign(socket, current_animation_index: next_index)}
+    Xebow.next_animation()
+    {:noreply, socket}
   end
 
   @impl Phoenix.LiveView
   def handle_event("previous_animation", %{}, socket) do
-    previous_index = socket.assigns.current_animation_index - 1
-
-    previous_index =
-      case previous_index < 0 do
-        true -> Enum.count(socket.assigns.animation_types) - 1
-        _ -> previous_index
-      end
-
-    animation_type = Enum.at(socket.assigns.animation_types, previous_index)
-
-    RGBMatrix.Engine.set_animation(animation_type)
-
-    {:noreply, assign(socket, current_animation_index: previous_index)}
+    Xebow.previous_animation()
+    {:noreply, socket}
   end
 
   @impl Phoenix.LiveView
@@ -117,7 +89,7 @@ defmodule XebowWeb.MatrixLive do
   defp register_with_engine! do
     pid = self()
 
-    {:ok, paint_fn} =
+    {:ok, paint_fn, frame} =
       Engine.register_paintable(fn frame ->
         if Process.alive?(pid) do
           send(pid, {:render, frame})
@@ -137,7 +109,7 @@ defmodule XebowWeb.MatrixLive do
         end
       end)
 
-    {paint_fn, config_fn}
+    {paint_fn, config_fn, frame}
   end
 
   defp make_view_leds(frame) do

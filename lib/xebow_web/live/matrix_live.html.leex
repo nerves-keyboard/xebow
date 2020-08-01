@@ -1,16 +1,12 @@
-<div class="row">
-  <div class="column column-10">
-    <button class="button button-clear">Animations:</button>
-  </div>
-  <div class="column column-90">
-    <button phx-click="previous_animation">← previous</button>
-    <button phx-click="next_animation">next →</button>
-  </div>
+<div class="my-4">
+  <div class="my-2">Animations:</div>
+  <button phx-click="previous_animation">← Previous</button>
+  <button phx-click="next_animation">Next →</button>
 </div>
 
 <hr>
 
-<div class="screen">
+<div class="screen my-4">
   <%= for led <- @leds do %>
     <span
       id="<%= led.id %>"

@@ -1,11 +1,7 @@
-<div class="row">
-  <div class="column column-10">
-    <button class="button button-clear"><%= @id %>:</button>
-  </div>
-  <div class="column column-10">
-    <%= @value %>
-  </div>
-  <div class="column column-80">
+<div class="flex items-center my-6">
+  <div class="capitalize mr-4"><%= @id %>:</div>
+  <div class="mr-4"><%= @value %></div>
+  <div>
     <form action="#" phx-change="update_config">
       <input
         name="<%= @id %>"

@@ -1,3 +1,17 @@
+.keypad {
+  @apply relative;
+
+  .frame {
+    @apply relative;
+    @apply border border-gray-700 border-solid;
+    border-radius: .625rem;
+    width: 250px;
+    height: 320px;
+    top: -53px;
+    left: -54px;
+  }
+}
+
 .key,
 .led {
   display: inline-block;

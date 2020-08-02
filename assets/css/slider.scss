@@ -44,7 +44,7 @@ input[type=range] {
   }
 
   &:hover::-webkit-slider-runnable-track {
-    @apply bg-gray-600;
+    @apply bg-blue-600;
   }
 
   &::-moz-range-track {
@@ -54,6 +54,6 @@ input[type=range] {
   }
 
   &:hover::-moz-range-track {
-    @apply bg-gray-600;
+    @apply bg-blue-600;
   }
 }

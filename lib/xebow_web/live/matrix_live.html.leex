@@ -10,24 +10,27 @@
     <%= live_component @socket, XebowWeb.AnimationConfigComponent, schema: @config_schema, config: @config %>
   </div>
 
-  <div class="relative mx-auto my-16">
-    <%= for led <- @leds do %>
-      <span
-        id="<%= led.id %>"
-        class="<%= led.class %>"
-        <%= if led.class == "key" do %>
-        phx-click="key_pressed"
-        phx-value-key-id="<%= led.id %>"
-        <% end %>
-        phx-hook="AnimationColorUpdate"
-        style="
-          left: <%= led.x %>px;
-          top: <%= led.y %>px;
-          width: <%= led.width %>px;
-          height: <%= led.height %>px;
-          background-color: #<%= led.color %>
-        "
-      ></span>
-    <% end %>
+  <div class="mx-auto my-24">
+    <div class="keypad">
+      <div class="frame"></div>
+      <%= for led <- @leds do %>
+        <span
+          id="<%= led.id %>"
+          class="<%= led.class %>"
+          <%= if led.class == "key" do %>
+          phx-click="key_pressed"
+          phx-value-key-id="<%= led.id %>"
+          <% end %>
+          phx-hook="AnimationColorUpdate"
+          style="
+            left: <%= led.x * 1.45 %>px;
+            top: <%= led.y * 1.45 %>px;
+            width: <%= led.width * 1.4 %>px;
+            height: <%= led.height * 1.4 %>px;
+            background-color: #<%= led.color %>
+          "
+        ></span>
+      <% end %>
+    </div>
   </div>
 </div>

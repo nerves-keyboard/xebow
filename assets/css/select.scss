@@ -1,10 +1,12 @@
 .select-wrapper {
   @apply relative;
 
-  .svg-inline--fa {
+  &::after {
     @apply absolute;
+    content: "\f078";
+    font-family: "Font Awesome 5 Free";
     font-size: .75rem;
-    top: 1rem;
+    top: .875rem;
     right: .875rem;
     pointer-events: none;
   }

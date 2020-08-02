@@ -3,7 +3,6 @@
   <div>
     <form action="#" phx-change="update_config">
       <div class="select-wrapper w-56">
-        <i class="fas fa-chevron-down"></i>
         <select name="<%= @id %>">
           <%= for option <- @schema.options do %>
             <option value="<%= option %>"><%= option %></option>

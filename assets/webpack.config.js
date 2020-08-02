@@ -18,6 +18,8 @@ module.exports = (env, options) => {
     entry: {
       'app': glob.sync('./vendor/**/*.js')
         .concat([
+          './node_modules/@fortawesome/fontawesome-free/webfonts/fa-solid-900.woff',
+          './node_modules/@fortawesome/fontawesome-free/webfonts/fa-solid-900.woff2',
           './node_modules/lato-font/fonts/lato-light/lato-light.woff',
           './node_modules/lato-font/fonts/lato-light/lato-light.woff2',
           './node_modules/lato-font/fonts/lato-normal/lato-normal.woff',

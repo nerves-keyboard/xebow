@@ -9,4 +9,8 @@ button {
   &:hover {
     @apply bg-gray-600;
   }
+
+  &:focus {
+    @apply outline-none;
+  }
 }

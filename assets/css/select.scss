@@ -1,8 +1,25 @@
-select {
-  @apply bg-blue-800 text-white font-normal py-2 px-4 rounded;
-  font-size: 1.125rem;
+.select-wrapper {
+  @apply relative;
 
-  &:focus {
-    @apply outline-none;
+  .svg-inline--fa {
+    @apply absolute;
+    font-size: .75rem;
+    top: 1rem;
+    right: .875rem;
+    pointer-events: none;
+  }
+
+  select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+
+    @apply bg-blue-800 text-white font-normal py-2 px-4 rounded w-full;
+    @apply cursor-pointer;
+    font-size: 1.125rem;
+
+    &:focus {
+      @apply outline-none;
+    }
   }
 }

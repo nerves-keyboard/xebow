@@ -2,11 +2,14 @@
   <div class="capitalize mr-4 mb-1"><%= @id %></div>
   <div>
     <form action="#" phx-change="update_config">
-      <select name="<%= @id %>" class="w-56">
-        <%= for option <- @schema.options do %>
-          <option value="<%= option %>"><%= option %></option>
-        <% end %>
-      </select>
+      <div class="select-wrapper w-56">
+        <i class="fas fa-chevron-down"></i>
+        <select name="<%= @id %>">
+          <%= for option <- @schema.options do %>
+            <option value="<%= option %>"><%= option %></option>
+          <% end %>
+        </select>
+      </div>
     </form>
   </div>
 </div>

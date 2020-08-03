@@ -6,7 +6,7 @@
     content: "\f078";
     font-family: "Font Awesome 5 Free";
     @apply text-xs;
-    top: .875rem;
+    top: .75rem;
     right: .875rem;
     @apply pointer-events-none;
   }
@@ -16,7 +16,7 @@
     -moz-appearance: none;
     appearance: none;
 
-    @apply text-lg bg-blue-800 text-white font-normal py-2 px-4 rounded w-full;
+    @apply text-lg bg-blue-800 text-white font-normal pt-2 pb-1 px-4 rounded w-full;
     @apply cursor-pointer;
 
     &:focus {

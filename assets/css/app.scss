@@ -20,17 +20,3 @@ body {
   font-family: lato, sans-serif;
   font-size: 1.375rem;
 }
-
-h1 {
-  @apply font-light;
-  font-size: 2.25rem;
-}
-
-.nav {
-  @apply border-b-2 border-gray-800 border-solid;
-
-  .svg-inline--fa {
-    @apply ml-8;
-    font-size: 1.5rem;
-  }
-}

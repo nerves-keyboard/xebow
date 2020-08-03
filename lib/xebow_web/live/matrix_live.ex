@@ -169,8 +169,8 @@ defmodule XebowWeb.MatrixLive do
   defp make_view_led(color_hex, led, nil) do
     width = 25
     height = 25
-    x = led.x * 50 - width / 2
-    y = led.y * 50 - height / 2
+    x = led.x * 72 - width / 2
+    y = led.y * 72 - height / 2
 
     %{
       class: "led",
@@ -184,10 +184,10 @@ defmodule XebowWeb.MatrixLive do
   end
 
   defp make_view_led(color_hex, _led, key) do
-    width = key.width * 50
-    height = key.height * 50
-    x = key.x * 50 - width / 2
-    y = key.y * 50 - height / 2
+    width = key.width * 70
+    height = key.height * 70
+    x = key.x * 72 - width / 2
+    y = key.y * 72 - height / 2
 
     %{
       class: "key",

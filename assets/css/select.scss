@@ -5,10 +5,10 @@
     @apply absolute;
     content: "\f078";
     font-family: "Font Awesome 5 Free";
-    font-size: .75rem;
+    @apply text-xs;
     top: .875rem;
     right: .875rem;
-    pointer-events: none;
+    @apply pointer-events-none;
   }
 
   select {
@@ -16,9 +16,8 @@
     -moz-appearance: none;
     appearance: none;
 
-    @apply bg-blue-800 text-white font-normal py-2 px-4 rounded w-full;
+    @apply text-lg bg-blue-800 text-white font-normal py-2 px-4 rounded w-full;
     @apply cursor-pointer;
-    font-size: 1.125rem;
 
     &:focus {
       @apply outline-none;

@@ -10,9 +10,9 @@
 
 @import "./button.scss";
 @import "./live_view.scss";
+@import "./keypad.scss";
 @import "./select.scss";
 @import "./slider.scss";
-@import "./xebow.scss";
 
 body {
   @apply text-white font-light bg-gray-900;

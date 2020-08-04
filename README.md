@@ -4,9 +4,8 @@ Xebow is a [nerves-based](https://nerves-project.org/) firmware for the
 [Keybow](https://shop.pimoroni.com/products/keybow?variant=21246333190227)
 keypad.
 
-This project is still in **early development** and only functions as a basic
-keypad with the ability to cycle through a few LED animations and control sound
-volume.
+This project is in **early development**. Features and the API may be subject
+to change.
 
 - Join the `#nerves-keyboard` channel on the [elixir-lang Slack](https://elixir-slackin.herokuapp.com/)
 to chat with us and keep up on the latest developments.

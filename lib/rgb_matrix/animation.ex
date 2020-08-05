@@ -134,11 +134,13 @@ defmodule RGBMatrix.Animation do
   end
 
   defmacro __using__(_) do
-    quote do
-      @behaviour unquote(__MODULE__)
+    module = __MODULE__
 
-      import unquote(__MODULE__)
-      import unquote(__MODULE__.Config)
+    quote do
+      @behaviour unquote(module)
+
+      import unquote(module)
+      import unquote(module).Config
 
       Module.register_attribute(__MODULE__, :fields,
         accumulate: true,
@@ -152,7 +154,7 @@ defmodule RGBMatrix.Animation do
 
       defoverridable interact: 3
 
-      @before_compile unquote(__MODULE__.Config)
+      @before_compile unquote(module).Config
     end
   end
 end

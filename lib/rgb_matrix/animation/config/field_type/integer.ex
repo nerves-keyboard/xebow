@@ -5,7 +5,13 @@ defmodule RGBMatrix.Animation.Config.FieldType.Integer do
   Supports defining a minimum and a maximum, as well as a step value.
   """
 
-  use RGBMatrix.Animation.Config.FieldType
+  @behaviour RGBMatrix.Animation.Config.FieldType
+
+  import RGBMatrix.Utils, only: [mod: 2]
+
+  @enforce_keys [:default, :min, :max]
+  @optional_keys [step: 1, doc: []]
+  defstruct @enforce_keys ++ @optional_keys
 
   @type t :: %__MODULE__{
           default: integer,
@@ -13,10 +19,6 @@ defmodule RGBMatrix.Animation.Config.FieldType.Integer do
           max: integer,
           doc: keyword(String.t()) | []
         }
-  @enforce_keys [:default, :min, :max]
-  defstruct [:default, :min, :max, step: 1, doc: []]
-
-  import RGBMatrix.Utils, only: [mod: 2]
 
   @impl true
   @spec validate(field_type :: t, value :: integer) :: :ok | :error

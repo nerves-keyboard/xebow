@@ -9,10 +9,4 @@ defmodule RGBMatrix.Animation.Config.FieldType do
 
   @callback validate(t, any) :: :ok | :error
   @callback cast(t, any) :: {:ok, any} | :error
-
-  defmacro __using__(_) do
-    quote do
-      @behaviour unquote(__MODULE__)
-    end
-  end
 end

@@ -35,12 +35,7 @@ defmodule RGBMatrix.Animation.HueWave do
 
   field :direction, :option,
     default: :right,
-    options: [
-      :right,
-      :left,
-      :up,
-      :down
-    ],
+    options: ~w(right left up down)a,
     doc: [
       name: "Direction",
       description: """

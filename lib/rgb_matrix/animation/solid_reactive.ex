@@ -34,11 +34,7 @@ defmodule RGBMatrix.Animation.SolidReactive do
 
   field :direction, :option,
     default: :random,
-    options: [
-      :random,
-      :negative,
-      :positive
-    ],
+    options: ~w(random negative positive)a,
     doc: [
       name: "Direction",
       description: """

@@ -122,14 +122,20 @@ defmodule RGBMatrix.Animation do
         ]
   """
   defmacro field(name, type, opts \\ []) when is_list(opts) do
-    type =
+    field_type =
       Config.field_types()
       |> Map.get(type)
 
-    type_schema = Macro.escape(struct!(type, opts))
+    opts =
+      Enum.map(opts, fn {key, value} ->
+        {key, Macro.expand(value, __CALLER__)}
+      end)
 
-    quote bind_quoted: [name: name, type_schema: type_schema] do
-      @fields {name, type_schema}
+    quote do
+      @fields {
+        unquote(name),
+        struct!(unquote(field_type), unquote(opts))
+      }
     end
   end
 

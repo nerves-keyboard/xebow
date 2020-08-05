@@ -6,7 +6,7 @@
         <select name="<%= @id %>">
           <%= for option <- @schema.options do %>
             <option value="<%= option %>">
-              <%= option |> to_string() |> String.capitalize() %>
+              <%= option |> to_string() |> String.replace("_", " ") |> String.capitalize() %>
             </option>
           <% end %>
         </select>

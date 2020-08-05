@@ -3,10 +3,9 @@ defmodule RGBMatrix.Animation.CycleAll do
   Cycles the hue of all LEDs at the same time.
   """
 
-  alias Chameleon.HSV
-  alias RGBMatrix.Animation
+  use RGBMatrix.Animation
 
-  use Animation
+  alias Chameleon.HSV
 
   import RGBMatrix.Utils, only: [mod: 2]
 

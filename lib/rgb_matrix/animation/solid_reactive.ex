@@ -3,10 +3,9 @@ defmodule RGBMatrix.Animation.SolidReactive do
   Static single hue, pulses keys hit to shifted hue then fades to current hue.
   """
 
-  alias Chameleon.HSV
-  alias RGBMatrix.Animation
+  use RGBMatrix.Animation
 
-  use Animation
+  alias Chameleon.HSV
 
   import RGBMatrix.Utils, only: [mod: 2]
 

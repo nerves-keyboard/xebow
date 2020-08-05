@@ -32,12 +32,13 @@ defmodule RGBMatrix.Animation.Config do
     schema = Module.get_attribute(env.module, :fields)
     keys = Keyword.keys(schema)
     schema = Macro.escape(schema)
+    config_module = __MODULE__
 
     quote do
       defmodule Config do
         @moduledoc false
 
-        @behaviour unquote(__MODULE__)
+        @behaviour unquote(config_module)
 
         @enforce_keys unquote(keys)
         defstruct unquote(keys)
@@ -50,26 +51,56 @@ defmodule RGBMatrix.Animation.Config do
         @impl true
         def new(params \\ %{}) do
           schema = schema()
-          unquote(__MODULE__).new_config(__MODULE__, schema, params)
+          unquote(config_module).new_config(__MODULE__, schema, params)
         end
 
         @impl true
         def update(config, params) do
           schema = schema()
-          unquote(__MODULE__).update_config(config, schema, params)
+          unquote(config_module).update_config(config, schema, params)
         end
       end
     end
   end
 
-  @spec new_config(module :: module, schema :: any, %{}) :: t
+  @doc """
+  Creates a new %Config{} struct belonging to the provided Animation.<type>.Config
+  module.
+
+  The provided Config must be defined through the `use Animation` and `field`
+  macros in an Animation.<type> module.
+
+  Returns a %Config{} struct.
+
+  Example:
+      iex> RGBMatrix.Animation.Config.new_config(
+      ...>   RGBMatrix.Animation.HueWave.Config,
+      ...>   RGBMatrix.Animation.HueWave.Config.schema(),
+      ...>   %{}
+      ...> )
+      %RGBMatrix.Animation.HueWave.Config{direction: :right, speed: 4, width: 20}
+  """
+  @spec new_config(module :: module, schema :: any, params :: map) :: t
   def new_config(module, schema, params) do
     schema
     |> Map.new(&validate_field(&1, params))
     |> create_struct!(module)
   end
 
-  @spec update_config(config :: t, schema :: any, params :: %{}) :: t
+  @doc """
+  Updates the provided %Config{} struct using the provided schema and params map.
+
+  Returns the updated config.
+
+  Example:
+      iex> RGBMatrix.Animation.Config.update_config(
+      ...>   hue_wave_config,
+      ...>   RGBMatrix.Animation.HueWave.Config.schema(),
+      ...>   %{"direction" => "left"}
+      ...> )
+      %RGBMatrix.Animation.HueWave.Config{direction: :left, speed: 4, width: 20}
+  """
+  @spec update_config(config :: t, schema :: any, params :: map) :: t
   def update_config(config, schema, params) do
     Enum.reduce(params, config, &update_field(&1, &2, schema))
   end

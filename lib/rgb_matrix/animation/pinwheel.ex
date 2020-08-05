@@ -3,11 +3,10 @@ defmodule RGBMatrix.Animation.Pinwheel do
   Cycles hue in a pinwheel pattern.
   """
 
+  use RGBMatrix.Animation
+
   alias Chameleon.HSV
   alias Layout.LED
-  alias RGBMatrix.Animation
-
-  use Animation
 
   import RGBMatrix.Utils, only: [mod: 2]
 

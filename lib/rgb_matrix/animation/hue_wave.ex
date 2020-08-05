@@ -3,11 +3,10 @@ defmodule RGBMatrix.Animation.HueWave do
   Creates a wave of shifting hue that moves across the matrix.
   """
 
+  use RGBMatrix.Animation
+
   alias Chameleon.HSV
   alias Layout.LED
-  alias RGBMatrix.Animation
-
-  use Animation
 
   import RGBMatrix.Utils, only: [mod: 2]
 

@@ -3,10 +3,9 @@ defmodule RGBMatrix.Animation.SolidColor do
   All LEDs are a solid color.
   """
 
-  alias Chameleon.HSV
-  alias RGBMatrix.Animation
+  use RGBMatrix.Animation
 
-  use Animation
+  alias Chameleon.HSV
 
   defmodule State do
     @moduledoc false

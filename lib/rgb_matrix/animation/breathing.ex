@@ -19,7 +19,7 @@ defmodule RGBMatrix.Animation.Breathing do
   def new(leds, _config) do
     color = HSV.new(40, 100, 100)
     led_ids = Enum.map(leds, & &1.id)
-    {0, %State{color: color, tick: 0, speed: 100, led_ids: led_ids}}
+    %State{color: color, tick: 0, speed: 100, led_ids: led_ids}
   end
 
   @impl true

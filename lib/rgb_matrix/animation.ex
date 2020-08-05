@@ -15,7 +15,7 @@ defmodule RGBMatrix.Animation do
         }
   defstruct [:type, :config, :state]
 
-  @callback new(leds :: [LED.t()], config :: Config.t()) :: {render_in, animation_state}
+  @callback new(leds :: [LED.t()], config :: Config.t()) :: animation_state
   @callback render(state :: animation_state, config :: Config.t()) ::
               {render_in, [RGBMatrix.any_color_model()], animation_state}
   @callback interact(state :: animation_state, config :: Config.t(), led :: LED.t()) ::
@@ -53,19 +53,17 @@ defmodule RGBMatrix.Animation do
   @doc """
   Returns an animation's initial state.
   """
-  @spec new(animation_type :: type, leds :: [LED.t()]) :: {render_in, t}
+  @spec new(animation_type :: type, leds :: [LED.t()]) :: t
   def new(animation_type, leds) do
     config_module = Module.concat([animation_type, "Config"])
     animation_config = config_module.new()
-    {render_in, animation_state} = animation_type.new(leds, animation_config)
+    animation_state = animation_type.new(leds, animation_config)
 
-    animation = %__MODULE__{
+    %__MODULE__{
       type: animation_type,
       config: animation_config,
       state: animation_state
     }
-
-    {render_in, animation}
   end
 
   @doc """

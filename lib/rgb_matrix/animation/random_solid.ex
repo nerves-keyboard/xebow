@@ -15,7 +15,7 @@ defmodule RGBMatrix.Animation.RandomSolid do
 
   @impl true
   def new(leds, _config) do
-    {0, %State{led_ids: Enum.map(leds, & &1.id)}}
+    %State{led_ids: Enum.map(leds, & &1.id)}
   end
 
   @impl true

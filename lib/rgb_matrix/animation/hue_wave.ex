@@ -59,7 +59,7 @@ defmodule RGBMatrix.Animation.HueWave do
   @impl true
   def new(leds, config) do
     steps = 360 / config.width
-    {0, %State{tick: 0, leds: leds, steps: steps}}
+    %State{tick: 0, leds: leds, steps: steps}
   end
 
   @impl true

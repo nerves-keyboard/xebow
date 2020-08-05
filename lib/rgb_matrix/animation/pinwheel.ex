@@ -20,7 +20,7 @@ defmodule RGBMatrix.Animation.Pinwheel do
 
   @impl true
   def new(leds, _config) do
-    {0, %State{tick: 0, speed: 100, leds: leds, center: determine_center(leds)}}
+    %State{tick: 0, speed: 100, leds: leds, center: determine_center(leds)}
   end
 
   defp determine_center(leds) do

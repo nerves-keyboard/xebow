@@ -7,9 +7,16 @@ defmodule Xebow.Application do
 
   @leds Xebow.layout() |> Layout.leds()
 
-  def start(_type, _args) do
-    if Mix.target() != :host,
+  if Mix.target() == :host do
+    defp maybe_validate_firmware,
+      do: nil
+  else
+    defp maybe_validate_firmware,
       do: Nerves.Runtime.validate_firmware()
+  end
+
+  def start(_type, _args) do
+    maybe_validate_firmware()
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

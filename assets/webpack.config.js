@@ -16,7 +16,16 @@ module.exports = (env, options) => {
       ]
     },
     entry: {
-      'app': glob.sync('./vendor/**/*.js').concat(['./js/app.js'])
+      'app': glob.sync('./vendor/**/*.js')
+        .concat([
+          './node_modules/@fortawesome/fontawesome-free/webfonts/fa-solid-900.woff',
+          './node_modules/@fortawesome/fontawesome-free/webfonts/fa-solid-900.woff2',
+          './node_modules/lato-font/fonts/lato-light/lato-light.woff',
+          './node_modules/lato-font/fonts/lato-light/lato-light.woff2',
+          './node_modules/lato-font/fonts/lato-normal/lato-normal.woff',
+          './node_modules/lato-font/fonts/lato-normal/lato-normal.woff2',
+        ])
+        .concat(['./js/app.js'])
     },
     output: {
       filename: '[name].js',
@@ -39,6 +48,16 @@ module.exports = (env, options) => {
             MiniCssExtractPlugin.loader,
             'css-loader',
             'sass-loader',
+            'postcss-loader',
+          ],
+        },
+        {
+          test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
+          use: [
+            {
+              loader: 'file-loader',
+              options: { name: '[name].[ext]', outputPath: '../fonts' }
+            },
           ],
         }
       ]

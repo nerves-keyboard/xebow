@@ -1,7 +1,11 @@
 defmodule Xebow do
-  @moduledoc false
+  @moduledoc """
+  Xebow is an Elixir-based firmware for keyboards. Currently, it is working on the Raspberry Pi0
+  Keybow kit.
+  """
 
   alias Layout.{Key, LED}
+  alias RGBMatrix.{Animation, Engine}
 
   @leds [
     LED.new(:l001, 0, 0),
@@ -37,4 +41,139 @@ defmodule Xebow do
 
   @spec layout() :: Layout.t()
   def layout, do: @layout
+
+  @type animations :: [Animation.t()]
+  @type animation_params :: %{String.t() => atom | number | String.t()}
+
+  defmodule State do
+    @moduledoc false
+    defstruct [:current_index, :active_animations, :count_of_active_animations]
+  end
+
+  use GenServer
+
+  # Client Implementations:
+
+  @doc """
+  Starts the Xebow application, which manages initialization of animations, as well
+  as switching between active animations. It also maintains animation config state
+  and persists it in memory between animation changes.
+  """
+  @spec start_link([]) :: GenServer.on_start()
+  def start_link([]) do
+    GenServer.start_link(__MODULE__, Animation.types(), name: __MODULE__)
+  end
+
+  @doc """
+  Gets the animation configuration. This retrievs current values, which allows for
+  changes to be made with `update_animation_config/1`
+  """
+  @spec get_animation_config() :: {Animation.Config.t(), keyword(Animation.Config.t())}
+  def get_animation_config do
+    GenServer.call(__MODULE__, :get_animation_config)
+  end
+
+  @doc """
+  Switches to the next active animation
+  """
+  @spec next_animation() :: :ok
+  def next_animation do
+    GenServer.cast(__MODULE__, :next_animation)
+  end
+
+  @doc """
+  Switches to the previous active animation
+  """
+  @spec previous_animation() :: :ok
+  def previous_animation do
+    GenServer.cast(__MODULE__, :previous_animation)
+  end
+
+  @doc """
+  Updates the configuration for the current animation
+  """
+  @spec update_animation_config(animation_params) :: :ok
+  def update_animation_config(params) do
+    GenServer.cast(__MODULE__, {:update_animation_config, params})
+  end
+
+  # Server Implementations:
+
+  @impl GenServer
+  def init(types) do
+    count_of_active_animations = length(types)
+
+    active_animations =
+      types
+      |> Stream.map(&initialize_animation/1)
+      |> Stream.with_index()
+      |> Stream.map(fn {animation, index} -> {index, animation} end)
+      |> Enum.into(%{})
+
+    state = %State{
+      current_index: 0,
+      active_animations: active_animations,
+      count_of_active_animations: count_of_active_animations
+    }
+
+    Engine.set_animation(current_animation(state))
+
+    {:ok, state}
+  end
+
+  @impl GenServer
+  def handle_call(:get_animation_config, _from, state) do
+    config = Animation.get_config(current_animation(state))
+    {:reply, config, state}
+  end
+
+  @impl GenServer
+  def handle_cast(:next_animation, state) do
+    count_of_active_animations = state.count_of_active_animations
+
+    new_index =
+      case state.current_index + 1 do
+        i when i >= count_of_active_animations -> 0
+        i -> i
+      end
+
+    state = %State{state | current_index: new_index}
+    Engine.set_animation(current_animation(state))
+    {:noreply, state}
+  end
+
+  @impl GenServer
+  def handle_cast(:previous_animation, state) do
+    new_index =
+      case state.current_index - 1 do
+        i when i < 0 -> state.count_of_active_animations - 1
+        i -> i
+      end
+
+    state = %State{state | current_index: new_index}
+    Engine.set_animation(current_animation(state))
+    {:noreply, state}
+  end
+
+  @impl GenServer
+  def handle_cast({:update_animation_config, params}, state) do
+    updated_animation = Animation.update_config(current_animation(state), params)
+
+    state =
+      put_in(
+        state.active_animations[state.current_index],
+        updated_animation
+      )
+
+    Engine.set_animation(current_animation(state))
+    {:noreply, state}
+  end
+
+  defp current_animation(state) do
+    state.active_animations[state.current_index]
+  end
+
+  defp initialize_animation(animation_type) do
+    Animation.new(animation_type, @leds)
+  end
 end

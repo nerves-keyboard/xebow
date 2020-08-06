@@ -1,29 +1,51 @@
 defmodule ConfigTest do
   use ExUnit.Case
 
+  alias RGBMatrix.Animation.Config.FieldType.{Integer, Option}
+
+  defmodule MockConfig do
+    @fields [
+      test_integer: %Integer{
+        default: 5,
+        min: 0,
+        max: 10
+      },
+      test_option: %Option{
+        default: :a,
+        options: ~w(a b)a
+      }
+    ]
+    @before_compile RGBMatrix.Animation.Config
+  end
+
+  defp make_test_config do
+    RGBMatrix.Animation.Config.new_config(
+      MockConfig.Config,
+      MockConfig.Config.schema(),
+      %{}
+    )
+  end
+
   describe "Animation configurations" do
-    test "can be created" do
-      assert %RGBMatrix.Animation.HueWave.Config{direction: :right, speed: 4, width: 20} ==
-               RGBMatrix.Animation.Config.new_config(
-                 RGBMatrix.Animation.HueWave.Config,
-                 RGBMatrix.Animation.HueWave.Config.schema(),
-                 %{}
-               )
+    test "can be created with integer and option types" do
+      assert %MockConfig.Config{test_integer: 5, test_option: :a} == make_test_config()
     end
 
     test "can be updated" do
-      hue_wave_config =
-        RGBMatrix.Animation.Config.new_config(
-          RGBMatrix.Animation.HueWave.Config,
-          RGBMatrix.Animation.HueWave.Config.schema(),
-          %{}
-        )
+      mock_config = make_test_config()
 
-      assert %RGBMatrix.Animation.HueWave.Config{direction: :left, speed: 4, width: 20} ==
+      assert %MockConfig.Config{test_integer: 8, test_option: :a} ==
                RGBMatrix.Animation.Config.update_config(
-                 hue_wave_config,
-                 RGBMatrix.Animation.HueWave.Config.schema(),
-                 %{"direction" => "left"}
+                 mock_config,
+                 MockConfig.Config.schema(),
+                 %{"test_integer" => "8"}
+               )
+
+      assert %MockConfig.Config{test_integer: 5, test_option: :b} ==
+               RGBMatrix.Animation.Config.update_config(
+                 mock_config,
+                 MockConfig.Config.schema(),
+                 %{"test_option" => "b"}
                )
     end
   end

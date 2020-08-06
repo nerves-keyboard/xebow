@@ -3,10 +3,11 @@ defmodule RGBMatrix.Animation.Config do
   Provides a behaviour and macros for defining animation configurations.
   """
 
-  # An animation config is a struct, but we don't know ahead of time all the
-  # concrete types of struct it might be. (e.g.:
-  # RGBMatrix.Animation.HueWave.Config.t)
-
+  @typedoc """
+  An animation config is a struct, but we don't know ahead of time all the
+  concrete types of struct it might be. (e.g.:
+  RGBMatrix.Animation.HueWave.Config.t)
+  """
   @type t :: struct
   @type field_type :: [
           __MODULE__.FieldType.Integer

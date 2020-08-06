@@ -34,8 +34,8 @@ defmodule RGBMatrix.Animation do
   @doc """
   Returns a list of the available types of animations.
   """
-  @spec available_types :: [type]
-  def available_types do
+  @spec types :: [type]
+  def types do
     [
       __MODULE__.CycleAll,
       __MODULE__.HueWave,
@@ -140,13 +140,13 @@ defmodule RGBMatrix.Animation do
   end
 
   defmacro __using__(_) do
-    module = __MODULE__
+    animation_module = __MODULE__
 
     quote do
-      @behaviour unquote(module)
+      @behaviour unquote(animation_module)
 
-      import unquote(module)
-      import unquote(module).Config
+      import unquote(animation_module)
+      import unquote(animation_module).Config
 
       Module.register_attribute(__MODULE__, :fields,
         accumulate: true,
@@ -160,7 +160,7 @@ defmodule RGBMatrix.Animation do
 
       defoverridable interact: 3
 
-      @before_compile unquote(module).Config
+      @before_compile unquote(animation_module).Config
     end
   end
 end

@@ -4,31 +4,17 @@ defmodule RGBMatrix.Animation do
   """
 
   alias Layout.LED
-  alias RGBMatrix.Animation.Config
+  alias __MODULE__.Config
 
-  @type animation_state :: any
+  defstruct [:type, :config, :state]
 
   @type t :: %__MODULE__{
           type: type,
           config: Config.t(),
           state: any
         }
-  defstruct [:type, :config, :state]
-
-  @callback new(leds :: [LED.t()], config :: Config.t()) :: animation_state
-  @callback render(state :: animation_state, config :: Config.t()) ::
-              {render_in, [RGBMatrix.any_color_model()], animation_state}
-  @callback interact(state :: animation_state, config :: Config.t(), led :: LED.t()) ::
-              {render_in, animation_state}
-
-  defmacro __using__(_) do
-    quote do
-      @behaviour RGBMatrix.Animation
-    end
-  end
-
+  @type animation_state :: any
   @type render_in :: non_neg_integer() | :never | :ignore
-
   @type type ::
           __MODULE__.CycleAll
           | __MODULE__.HueWave
@@ -38,6 +24,12 @@ defmodule RGBMatrix.Animation do
           | __MODULE__.SolidColor
           | __MODULE__.Breathing
           | __MODULE__.SolidReactive
+
+  @callback new(leds :: [LED.t()], config :: Config.t()) :: animation_state
+  @callback render(state :: animation_state, config :: Config.t()) ::
+              {render_in, [RGBMatrix.any_color_model()], animation_state}
+  @callback interact(state :: animation_state, config :: Config.t(), led :: LED.t()) ::
+              {render_in, animation_state}
 
   @doc """
   Returns a list of the available types of animations.
@@ -104,14 +96,71 @@ defmodule RGBMatrix.Animation do
   end
 
   @doc """
-  Updates the configuration of an animation.
+  Updates the configuration of an animation and returns the updated animation.
   """
   @spec update_config(animation :: t, params :: map) :: t
   def update_config(animation, params) do
     %config_module{} = config = animation.config
-
     config = config_module.update(config, params)
 
     %{animation | config: config}
+  end
+
+  @doc """
+  Defines a configuration field for an animation.
+
+  Example:
+      field :speed, :integer,
+        default: 4,
+        min: 0,
+        max: 32,
+        doc: [
+          name: "Speed",
+          description: \"""
+          Controls the speed at which the wave moves across the matrix.
+          \"""
+        ]
+  """
+  defmacro field(name, type, opts \\ []) when is_list(opts) do
+    field_type =
+      Config.field_types()
+      |> Map.get(type)
+
+    opts =
+      Enum.map(opts, fn {key, value} ->
+        {key, Macro.expand(value, __CALLER__)}
+      end)
+
+    quote do
+      @fields {
+        unquote(name),
+        struct!(unquote(field_type), unquote(opts))
+      }
+    end
+  end
+
+  defmacro __using__(_) do
+    animation_module = __MODULE__
+
+    quote do
+      @behaviour unquote(animation_module)
+
+      import unquote(animation_module)
+      import unquote(animation_module).Config
+
+      Module.register_attribute(__MODULE__, :fields,
+        accumulate: true,
+        persist: false
+      )
+
+      @impl true
+      def interact(state, _config, _led) do
+        {:ignore, state}
+      end
+
+      defoverridable interact: 3
+
+      @before_compile unquote(animation_module).Config
+    end
   end
 end

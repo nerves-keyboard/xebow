@@ -3,15 +3,9 @@ defmodule RGBMatrix.Animation.SolidColor do
   All LEDs are a solid color.
   """
 
+  use RGBMatrix.Animation
+
   alias Chameleon.HSV
-  alias RGBMatrix.Animation
-
-  use Animation
-
-  defmodule Config do
-    @moduledoc false
-    use RGBMatrix.Animation.Config
-  end
 
   defmodule State do
     @moduledoc false
@@ -31,10 +25,5 @@ defmodule RGBMatrix.Animation.SolidColor do
     colors = Enum.map(led_ids, fn id -> {id, color} end)
 
     {:never, colors, state}
-  end
-
-  @impl true
-  def interact(state, _config, _led) do
-    {:ignore, state}
   end
 end

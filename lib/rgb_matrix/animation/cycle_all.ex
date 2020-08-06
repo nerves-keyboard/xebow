@@ -3,17 +3,11 @@ defmodule RGBMatrix.Animation.CycleAll do
   Cycles the hue of all LEDs at the same time.
   """
 
-  alias Chameleon.HSV
-  alias RGBMatrix.Animation
+  use RGBMatrix.Animation
 
-  use Animation
+  alias Chameleon.HSV
 
   import RGBMatrix.Utils, only: [mod: 2]
-
-  defmodule Config do
-    @moduledoc false
-    use RGBMatrix.Animation.Config
-  end
 
   defmodule State do
     @moduledoc false
@@ -39,10 +33,5 @@ defmodule RGBMatrix.Animation.CycleAll do
     colors = Enum.map(led_ids, fn id -> {id, color} end)
 
     {@delay_ms, colors, %{state | tick: tick + 1}}
-  end
-
-  @impl true
-  def interact(state, _config, _led) do
-    {:ignore, state}
   end
 end

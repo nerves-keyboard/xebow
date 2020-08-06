@@ -3,15 +3,9 @@ defmodule RGBMatrix.Animation.RandomSolid do
   A random solid color fills the entire matrix and changes every key-press.
   """
 
+  use RGBMatrix.Animation
+
   alias Chameleon.HSV
-  alias RGBMatrix.Animation
-
-  use Animation
-
-  defmodule Config do
-    @moduledoc false
-    use RGBMatrix.Animation.Config
-  end
 
   defmodule State do
     @moduledoc false

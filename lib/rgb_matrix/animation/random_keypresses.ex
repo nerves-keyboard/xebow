@@ -3,15 +3,9 @@ defmodule RGBMatrix.Animation.RandomKeypresses do
   Changes every key pressed to a random color.
   """
 
+  use RGBMatrix.Animation
+
   alias Chameleon.HSV
-  alias RGBMatrix.Animation
-
-  use Animation
-
-  defmodule Config do
-    @moduledoc false
-    use RGBMatrix.Animation.Config
-  end
 
   defmodule State do
     @moduledoc false

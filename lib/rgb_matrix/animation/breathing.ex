@@ -3,15 +3,9 @@ defmodule RGBMatrix.Animation.Breathing do
   Single hue brightness cycling.
   """
 
+  use RGBMatrix.Animation
+
   alias Chameleon.HSV
-  alias RGBMatrix.Animation
-
-  use Animation
-
-  defmodule Config do
-    @moduledoc false
-    use RGBMatrix.Animation.Config
-  end
 
   defmodule State do
     @moduledoc false
@@ -37,10 +31,5 @@ defmodule RGBMatrix.Animation.Breathing do
     colors = Enum.map(led_ids, fn id -> {id, color} end)
 
     {@delay_ms, colors, %{state | tick: tick + 1}}
-  end
-
-  @impl true
-  def interact(state, _config, _led) do
-    {:ignore, state}
   end
 end

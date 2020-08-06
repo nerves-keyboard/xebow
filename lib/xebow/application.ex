@@ -6,7 +6,6 @@ defmodule Xebow.Application do
   use Application
 
   @leds Xebow.layout() |> Layout.leds()
-  @animation_type RGBMatrix.Animation.types() |> List.first()
 
   def start(_type, _args) do
     if Mix.target() != :host,
@@ -21,7 +20,9 @@ defmodule Xebow.Application do
         # Children for all targets
         # Starts a worker by calling: Xebow.Worker.start_link(arg)
         # {Xebow.Worker, arg},
-        {RGBMatrix.Engine, {@leds, @animation_type}},
+        # Engine must be started before Xebow
+        {RGBMatrix.Engine, @leds},
+        Xebow,
         # Phoenix:
         XebowWeb.Telemetry,
         {Phoenix.PubSub, name: Xebow.PubSub},

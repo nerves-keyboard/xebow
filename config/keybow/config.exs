@@ -1,5 +1,7 @@
 import Config
 
+config :nerves, rpi_v2_ack: true
+
 # Use shoehorn to start the main application. See the shoehorn
 # docs for separating out critical OTP applications such as those
 # involved with firmware updates.

@@ -1,0 +1,32 @@
+.keypad {
+  @apply relative;
+
+  .frame {
+    @apply relative;
+    @apply border border-gray-700 border-solid;
+    border-radius: .625rem;
+    width: 250px;
+    height: 320px;
+    top: -53px;
+    left: -53px;
+  }
+}
+
+.key,
+.led {
+  display: inline-block;
+  position: absolute;
+}
+
+.key {
+  border-radius: 6px;
+  box-shadow: inset 0 -1px 0 3px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.3);
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+
+  padding-top: 6px;
+}
+
+.led {
+  border-radius: 25px;
+}

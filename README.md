@@ -7,6 +7,7 @@ keypad.
 This project is in **early development**. Features and the API may be subject
 to change.
 
+Resources:
 - Join the `#nerves-keyboard` channel on the [elixir-lang Slack](https://elixir-slackin.herokuapp.com/)
 to chat with us and keep up on the latest developments.
 - Visit the [wiki](https://github.com/ElixirSeattle/xebow/wiki) to see past
@@ -14,6 +15,7 @@ meeting notes and other content.
 - Planning meetings are open to all. Feel free to join if you would like to
 familiarize yourself with the internals of Xebow or would like to find a place
 to help out. The schedule is pinned in the Slack channel.
+- [Wireframes](https://www.figma.com/file/RMYWHeXJoDErWii1jm8C7k/Xebow) are available on Figma.
 
 # Initial Setup
 

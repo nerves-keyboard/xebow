@@ -8,6 +8,9 @@ defmodule Xebow.Application do
   @leds Xebow.layout() |> Layout.leds()
 
   def start(_type, _args) do
+    if Mix.target() != :host,
+      do: Nerves.Runtime.validate_firmware()
+
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Xebow.Supervisor]

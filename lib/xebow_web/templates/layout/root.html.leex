@@ -11,6 +11,8 @@
   </head>
   <body>
     <%= render "_nav.html", conn: @conn %>
-    <%= @inner_content %>
+    <div class="mt-8 w-full">
+      <%= @inner_content %>
+    </div>
   </body>
 </html>

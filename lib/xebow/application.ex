@@ -17,6 +17,7 @@ defmodule Xebow.Application do
 
   def start(_type, _args) do
     maybe_validate_firmware()
+    Xebow.Settings.create_dir!()
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options

@@ -1,5 +1,7 @@
 import Config
 
+config :xebow, settings_path: "priv/settings"
+
 # Phoenix config:
 # Configures the endpoint
 config :xebow, XebowWeb.Endpoint,

@@ -18,6 +18,7 @@ defmodule XebowWeb.Router do
     pipe_through :browser
 
     live "/", MatrixLive, :index
+    live "/animations", AnimationsLive, :index
   end
 
   # Other scopes may use custom stacks.

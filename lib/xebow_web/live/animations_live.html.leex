@@ -1,0 +1,15 @@
+<h2>Animations</h2>
+<div class="flex flex-wrap">
+  <%= for animation <- @animations do %>
+    <div class="w-full sm:w-1/2 md:w-1/3 xl:w-1/4 mb-4">
+      <%= checkbox(
+        :animation,
+        animation.id,
+        value: animation[:active],
+        phx_click: "toggle_animation",
+        phx_value_id: animation.id)
+      %>
+      <label class="ml-1"><%= animation.name %></label>
+    </div>
+  <% end %>
+</div>

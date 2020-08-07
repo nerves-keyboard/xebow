@@ -11,6 +11,7 @@ defmodule Xebow.MixProject do
       version: @version,
       elixir: "~> 1.10",
       archives: [nerves_bootstrap: "~> 1.8"],
+      elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:phoenix] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       build_embedded: true,
@@ -114,6 +115,10 @@ defmodule Xebow.MixProject do
        targets: :keybow}
     ]
   end
+
+  # Specifies which paths to compile per environment.
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
 
   def release do
     [

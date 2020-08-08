@@ -89,5 +89,16 @@ defmodule Xebow.SettingsTest do
 
       assert Settings.load_active_animations() == {:error, :schema_mismatch}
     end
+
+    test "load ignores invalid animations" do
+      Settings.save_active_animations!([
+        MockAnimations.Type1,
+        "bogus.animation"
+      ])
+
+      expected_animations = [MockAnimations.Type1]
+
+      assert Settings.load_active_animations() == {:ok, expected_animations}
+    end
   end
 end

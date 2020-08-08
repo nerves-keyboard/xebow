@@ -5,6 +5,8 @@ defmodule Xebow.Settings do
 
   alias RGBMatrix.Animation
 
+  require Logger
+
   @settings_path Application.compile_env!(:xebow, :settings_path)
 
   @animations_path Path.join(@settings_path, "animations.json")
@@ -48,7 +50,16 @@ defmodule Xebow.Settings do
          :ok <- validate_schema(animation_settings, @animations_version) do
       animation_types =
         animation_settings["active_animation_types"]
-        |> Enum.map(&String.to_existing_atom/1)
+        |> Enum.reduce([], fn animation_type, acc ->
+          try do
+            module = String.to_existing_atom(animation_type)
+            acc ++ [module]
+          rescue
+            ArgumentError ->
+              Logger.warn("Ignoring invalid animation setting: #{animation_type}")
+              acc
+          end
+        end)
 
       {:ok, animation_types}
     else

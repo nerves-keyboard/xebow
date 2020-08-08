@@ -7,7 +7,9 @@
     <button class="w-24" phx-click="next_animation">
       <i class="fas fa-arrow-right"></i>
     </button>
-    <%= live_component @socket, XebowWeb.AnimationConfigComponent, schema: @config_schema, config: @config %>
+    <%= if @config do %>
+      <%= live_component @socket, XebowWeb.AnimationConfigComponent, schema: @config_schema, config: @config %>
+    <% end %>
   </div>
 
   <div class="mx-auto my-24">

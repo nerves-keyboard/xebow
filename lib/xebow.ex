@@ -87,7 +87,9 @@ defmodule Xebow do
   Gets the animation configuration. This retrievs current values, which allows for
   changes to be made with `update_animation_config/1`
   """
-  @spec get_animation_config() :: {Animation.Config.t(), keyword(Animation.Config.t())}
+  @spec get_animation_config() ::
+          {Animation.Config.t(), keyword(Animation.Config.t())}
+          | nil
   def get_animation_config do
     GenServer.call(__MODULE__, :get_animation_config)
   end
@@ -156,7 +158,12 @@ defmodule Xebow do
 
   @impl GenServer
   def handle_call(:get_animation_config, _from, state) do
-    config = Animation.get_config(current_animation(state))
+    config =
+      case current_animation(state) do
+        nil -> nil
+        animation -> Animation.get_config(animation)
+      end
+
     {:reply, config, state}
   end
 

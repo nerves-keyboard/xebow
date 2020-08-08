@@ -5,6 +5,8 @@ defmodule Xebow.Application do
 
   use Application
 
+  alias Xebow.Settings
+
   @leds Xebow.layout() |> Layout.leds()
 
   if Mix.target() == :host do
@@ -17,7 +19,8 @@ defmodule Xebow.Application do
 
   def start(_type, _args) do
     maybe_validate_firmware()
-    Xebow.Settings.create_dir!()
+    Settings.create_dir!()
+    maybe_create_animation_settings()
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
@@ -62,5 +65,12 @@ defmodule Xebow.Application do
 
   def target() do
     Application.get_env(:xebow, :target)
+  end
+
+  defp maybe_create_animation_settings do
+    unless Settings.active_animations_file_exists?() && Mix.env() != :test do
+      RGBMatrix.Animation.types()
+      |> Settings.save_active_animations!()
+    end
   end
 end

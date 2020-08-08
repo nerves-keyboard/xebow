@@ -5,7 +5,7 @@
       <%= checkbox(
         :animation,
         animation.id,
-        value: animation[:active],
+        value: animation[:is_active],
         phx_click: "toggle_animation",
         phx_value_id: animation.id)
       %>

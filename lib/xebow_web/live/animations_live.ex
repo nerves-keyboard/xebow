@@ -2,23 +2,13 @@ defmodule XebowWeb.AnimationsLive do
   @moduledoc false
 
   alias RGBMatrix.Animation
-  alias Xebow.Settings
+  alias Xebow
 
   use XebowWeb, :live_view
 
-  require Logger
-
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
-    active_animation_types =
-      case Settings.load_active_animations() do
-        {:ok, active_animation_types} ->
-          active_animation_types
-
-        {:error, reason} ->
-          Logger.warn("Failed to load active animations: #{inspect(reason)}")
-          Animation.types()
-      end
+    active_animation_types = Xebow.get_active_animation_types()
 
     animations =
       animations()
@@ -49,7 +39,7 @@ defmodule XebowWeb.AnimationsLive do
     animations
     |> Enum.filter(& &1.is_active)
     |> Enum.map(& &1.module)
-    |> Settings.save_active_animations!()
+    |> Xebow.set_active_animation_types()
 
     {:noreply, assign(socket, animations: animations)}
   end

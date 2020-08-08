@@ -74,7 +74,7 @@ defmodule Xebow.Application do
   end
 
   defp maybe_create_animation_settings do
-    unless Settings.active_animations_file_exists?() && Mix.env() != :test do
+    unless Settings.active_animations_file_exists?() do
       RGBMatrix.Animation.types()
       |> Settings.save_active_animations!()
     end

@@ -29,6 +29,7 @@ defmodule Xebow.SettingsTest do
   end
 
   test "can check if the animation settings file exists" do
+    File.rm_rf(@animations_path)
     refute Settings.active_animations_file_exists?()
 
     File.write!(@animations_path, "")

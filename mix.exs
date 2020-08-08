@@ -68,7 +68,8 @@ defmodule Xebow.MixProject do
       "firmware.upload": ["firmware", "upload"],
       loadconfig: [&bootstrap/1],
       upload: "upload xebow.local",
-      setup: ["deps.get", "assets.install"]
+      setup: ["deps.get", "assets.install"],
+      test: ["cmd rm -rf priv/settings_test", "test"]
     ]
   end
 

@@ -18,7 +18,6 @@ defmodule Xebow.Application do
   end
 
   def start(_type, _args) do
-    maybe_validate_firmware()
     Settings.create_dir!()
     maybe_create_animation_settings()
 
@@ -40,7 +39,14 @@ defmodule Xebow.Application do
         XebowWeb.Endpoint
       ] ++ children(target())
 
-    Supervisor.start_link(children, opts)
+    case Supervisor.start_link(children, opts) do
+      {:ok, pid} ->
+        maybe_validate_firmware()
+        {:ok, pid}
+
+      error ->
+        error
+    end
   end
 
   # List all child processes to be supervised

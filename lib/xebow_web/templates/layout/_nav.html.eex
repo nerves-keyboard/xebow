@@ -1,7 +1,7 @@
 <div class="flex justify-between items-center w-full py-6 border-b-2 border-gray-800 border-solid">
   <h1 class="text-4xl font-light">Xebow Studio</h1>
   <div class="text-2xl ml-8 select-none">
-    <a href="/telemetry" title="Telemetry" target="_blank">
+    <a href="<%= Routes.live_dashboard_path(@conn, :home) %>" title="Telemetry" target="_blank">
       <i class="fas fa-tachometer-alt"></i>
     </a>
     <span class="dropdown">

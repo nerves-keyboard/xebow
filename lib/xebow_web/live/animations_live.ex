@@ -46,6 +46,7 @@ defmodule XebowWeb.AnimationsLive do
 
   defp animations do
     Animation.types()
+    |> Enum.sort()
     |> Enum.map(fn animation_module ->
       name = Animation.type_name(animation_module)
 
@@ -61,6 +62,5 @@ defmodule XebowWeb.AnimationsLive do
         is_active: false
       }
     end)
-    |> Enum.sort(&(&1.name < &2.name))
   end
 end

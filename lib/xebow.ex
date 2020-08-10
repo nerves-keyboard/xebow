@@ -123,17 +123,13 @@ defmodule Xebow do
   @impl GenServer
   def init(_) do
     active_animation_types =
-      if Settings.active_animations_file_exists?() do
-        case Settings.load_active_animations() do
-          {:ok, active_animation_types} ->
-            active_animation_types
+      case Settings.load_active_animations() do
+        {:ok, active_animation_types} ->
+          active_animation_types
 
-          {:error, reason} ->
-            Logger.warn("Failed to load active animations: #{inspect(reason)}")
-            Animation.types()
-        end
-      else
-        Animation.types()
+        {:error, reason} ->
+          Logger.warn("Failed to load active animations: #{inspect(reason)}")
+          Animation.types()
       end
 
     state = update_state_with_animation_types(%State{}, active_animation_types)

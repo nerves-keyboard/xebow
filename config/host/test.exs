@@ -7,4 +7,4 @@ config :xebow, XebowWeb.Endpoint,
   server: false,
   code_reloader: false
 
-config :logger, level: :error
+config :logger, level: :warn

@@ -3,6 +3,8 @@ defmodule Xebow.SettingsTest do
 
   alias Xebow.Settings
 
+  import ExUnit.CaptureLog
+
   @settings_path Application.compile_env!(:xebow, :settings_path)
 
   @animations_path Path.join(@settings_path, "animations.json")
@@ -98,7 +100,9 @@ defmodule Xebow.SettingsTest do
 
       expected_animations = [MockAnimations.Type1]
 
-      assert Settings.load_active_animations() == {:ok, expected_animations}
+      assert capture_log(fn ->
+               assert Settings.load_active_animations() == {:ok, expected_animations}
+             end) =~ "bogus.animation"
     end
   end
 end

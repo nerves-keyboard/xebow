@@ -50,16 +50,8 @@ defmodule Xebow.Settings do
          :ok <- validate_schema(animation_settings, @animations_version) do
       animation_types =
         animation_settings["active_animation_types"]
-        |> Enum.reduce([], fn animation_type, acc ->
-          try do
-            module = String.to_existing_atom(animation_type)
-            acc ++ [module]
-          rescue
-            ArgumentError ->
-              Logger.warn("Ignoring invalid animation setting: #{animation_type}")
-              acc
-          end
-        end)
+        |> Enum.map(&cast_animation_type/1)
+        |> Enum.reject(&is_nil/1)
 
       {:ok, animation_types}
     else
@@ -73,6 +65,16 @@ defmodule Xebow.Settings do
   @spec active_animations_file_exists?() :: boolean
   def active_animations_file_exists? do
     File.exists?(@animations_path)
+  end
+
+  defp cast_animation_type(animation_type) do
+    try do
+      String.to_existing_atom(animation_type)
+    rescue
+      ArgumentError ->
+        Logger.warn("Ignoring invalid animation setting: #{animation_type}")
+        nil
+    end
   end
 
   defp validate_schema(settings, expected_version) do

@@ -132,7 +132,13 @@ defmodule Xebow do
           Animation.types()
       end
 
-    state = update_state_with_animation_types(%State{}, active_animation_types)
+    state =
+      %State{
+        current_index: 0,
+        active_animations: %{},
+        count_of_active_animations: 0
+      }
+      |> update_state_with_animation_types(active_animation_types)
 
     case current_animation(state) do
       nil -> nil
@@ -232,7 +238,7 @@ defmodule Xebow do
 
     active_animations =
       animation_types
-      |> Stream.map(&initialize_animation/1)
+      |> Stream.map(&new_or_existing_animation(&1, state.active_animations))
       |> Stream.with_index()
       |> Stream.map(fn {animation, index} -> {index, animation} end)
       |> Enum.into(%{})
@@ -243,5 +249,16 @@ defmodule Xebow do
         active_animations: active_animations,
         count_of_active_animations: count_of_active_animations
     }
+  end
+
+  defp new_or_existing_animation(animation_type, active_animations) do
+    existing_animation =
+      active_animations
+      |> Map.values()
+      |> Enum.find(fn animation ->
+        animation.type == animation_type
+      end)
+
+    existing_animation || initialize_animation(animation_type)
   end
 end

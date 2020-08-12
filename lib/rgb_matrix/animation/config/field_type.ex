@@ -7,6 +7,20 @@ defmodule RGBMatrix.Animation.Config.FieldType do
           __MODULE__.Integer.t()
           | __MODULE__.Option.t()
 
-  @callback validate(t, any) :: :ok | :error
-  @callback cast(t, any) :: {:ok, any} | :error
+  @typedoc """
+  `field` is a union of all the `FieldType.<field_type>` modules
+  """
+  @type field ::
+          __MODULE__.Integer
+          | __MODULE__.Option
+
+  @typedoc """
+  `value` is a union of all valid field value types
+  """
+  @type value ::
+          __MODULE__.Integer.value()
+          | __MODULE__.Option.value()
+
+  @callback validate(t, value) :: :ok | :validation_error
+  @callback cast(t, any) :: {:ok, value} | :cast_error | :validation_error
 end

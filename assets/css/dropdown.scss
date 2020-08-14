@@ -1,0 +1,37 @@
+.dropdown {
+  @apply relative;
+
+  .button {
+    @apply cursor-pointer;
+
+    .svg-inline--fa {
+      @apply text-2xl ml-8;
+    }
+  }
+
+  .menu {
+    @apply absolute origin-top-right right-0 flex flex-col;
+    @apply bg-gray-800;
+    @apply border border-gray-700 border-solid rounded;
+
+    .item {
+      @apply block text-lg font-normal whitespace-no-wrap px-3 py-1;
+
+      .svg-inline--fa {
+        @apply text-base mr-2 ml-0 w-5;
+      }
+
+      &:hover {
+        @apply bg-blue-600;
+      }
+
+      &:first-child {
+        @apply pt-2;
+      }
+
+      &:last-child {
+        @apply pb-2;
+      }
+    }
+  }
+}

@@ -6,6 +6,9 @@ defmodule Xebow do
 
   alias Layout.{Key, LED}
   alias RGBMatrix.{Animation, Engine}
+  alias Xebow.Settings
+
+  require Logger
 
   @leds [
     LED.new(:l001, 0, 0),
@@ -59,16 +62,34 @@ defmodule Xebow do
   as switching between active animations. It also maintains animation config state
   and persists it in memory between animation changes.
   """
-  @spec start_link([]) :: GenServer.on_start()
-  def start_link([]) do
-    GenServer.start_link(__MODULE__, Animation.types(), name: __MODULE__)
+  @spec start_link(any) :: GenServer.on_start()
+  def start_link(_) do
+    GenServer.start_link(__MODULE__, nil, name: __MODULE__)
+  end
+
+  @doc """
+  Returns a list of active animation types, which can be played by the user.
+  """
+  @spec get_active_animation_types() :: [Animation.type()]
+  def get_active_animation_types do
+    GenServer.call(__MODULE__, :get_active_animation_types)
+  end
+
+  @doc """
+  Set the active animation types, which can be played by the user.
+  """
+  @spec set_active_animation_types(active_animation_types :: [Animation.type()]) :: :ok
+  def set_active_animation_types(active_animation_types) do
+    GenServer.cast(__MODULE__, {:set_active_animation_types, active_animation_types})
   end
 
   @doc """
   Gets the animation configuration. This retrievs current values, which allows for
   changes to be made with `update_animation_config/1`
   """
-  @spec get_animation_config() :: {Animation.Config.t(), keyword(Animation.Config.t())}
+  @spec get_animation_config() ::
+          {Animation.Config.t(), keyword(Animation.Config.t())}
+          | nil
   def get_animation_config do
     GenServer.call(__MODULE__, :get_animation_config)
   end
@@ -100,31 +121,66 @@ defmodule Xebow do
   # Server Implementations:
 
   @impl GenServer
-  def init(types) do
-    count_of_active_animations = length(types)
+  def init(_) do
+    active_animation_types =
+      case Settings.load_active_animations() do
+        {:ok, active_animation_types} ->
+          active_animation_types
 
-    active_animations =
-      types
-      |> Stream.map(&initialize_animation/1)
-      |> Stream.with_index()
-      |> Stream.map(fn {animation, index} -> {index, animation} end)
-      |> Enum.into(%{})
+        {:error, reason} ->
+          Logger.warn("Failed to load active animations: #{inspect(reason)}")
+          Animation.types()
+      end
 
-    state = %State{
-      current_index: 0,
-      active_animations: active_animations,
-      count_of_active_animations: count_of_active_animations
-    }
+    state =
+      %State{
+        current_index: 0,
+        active_animations: %{},
+        count_of_active_animations: 0
+      }
+      |> update_state_with_animation_types(active_animation_types)
 
-    Engine.set_animation(current_animation(state))
+    case current_animation(state) do
+      nil -> nil
+      animation -> Engine.set_animation(animation)
+    end
 
     {:ok, state}
   end
 
   @impl GenServer
+  def handle_call(:get_active_animation_types, _from, state) do
+    active_animation_types =
+      state.active_animations
+      |> Map.values()
+      |> Enum.map(& &1.type)
+
+    {:reply, active_animation_types, state}
+  end
+
+  @impl GenServer
   def handle_call(:get_animation_config, _from, state) do
-    config = Animation.get_config(current_animation(state))
+    config =
+      case current_animation(state) do
+        nil -> nil
+        animation -> Animation.get_config(animation)
+      end
+
     {:reply, config, state}
+  end
+
+  @impl GenServer
+  def handle_cast({:set_active_animation_types, active_animation_types}, state) do
+    state = update_state_with_animation_types(state, active_animation_types)
+
+    Settings.save_active_animations!(active_animation_types)
+
+    case current_animation(state) do
+      nil -> nil
+      animation -> Engine.set_animation(animation)
+    end
+
+    {:noreply, state}
   end
 
   @impl GenServer
@@ -175,5 +231,34 @@ defmodule Xebow do
 
   defp initialize_animation(animation_type) do
     Animation.new(animation_type, @leds)
+  end
+
+  defp update_state_with_animation_types(state, animation_types) do
+    count_of_active_animations = length(animation_types)
+
+    active_animations =
+      animation_types
+      |> Stream.map(&new_or_existing_animation(&1, state.active_animations))
+      |> Stream.with_index()
+      |> Stream.map(fn {animation, index} -> {index, animation} end)
+      |> Enum.into(%{})
+
+    %State{
+      state
+      | current_index: 0,
+        active_animations: active_animations,
+        count_of_active_animations: count_of_active_animations
+    }
+  end
+
+  defp new_or_existing_animation(animation_type, active_animations) do
+    existing_animation =
+      active_animations
+      |> Map.values()
+      |> Enum.find(fn animation ->
+        animation.type == animation_type
+      end)
+
+    existing_animation || initialize_animation(animation_type)
   end
 end

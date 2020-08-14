@@ -49,6 +49,19 @@ defmodule RGBMatrix.Animation do
   end
 
   @doc """
+  Returns a human-readable name for an animation type.
+  """
+  @spec type_name(animation_type :: type) :: String.t()
+  def type_name(animation_type) do
+    animation_type
+    |> to_string()
+    |> String.split(".")
+    |> List.last()
+    |> String.replace(~r/([A-Z])/, " \\1")
+    |> String.trim_leading()
+  end
+
+  @doc """
   Returns an animation's initial state.
   """
   @spec new(animation_type :: type, leds :: [LED.t()]) :: t

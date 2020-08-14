@@ -96,4 +96,6 @@ config :xebow, XebowWeb.Endpoint,
   url: [host: "xebow.local", port: 80],
   code_reloader: false
 
+config :xebow, settings_path: "/root/settings"
+
 import_config "#{Mix.env()}.exs"

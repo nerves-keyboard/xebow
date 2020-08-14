@@ -9,26 +9,40 @@ defmodule XebowWeb.MatrixLive do
 
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do
-    {config, config_schema} = Xebow.get_animation_config()
-    {paint_fn, config_fn, frame} = register_with_engine!()
-
     initial_assigns = [
-      leds: make_view_leds(frame),
-      config: config,
-      config_schema: config_schema
+      config: nil,
+      config_schema: nil,
+      leds: []
     ]
 
-    initial_assigns =
-      if connected?(socket) do
-        Keyword.merge(initial_assigns,
-          paint_fn: paint_fn,
-          config_fn: config_fn
-        )
-      else
-        initial_assigns
+    config_assigns =
+      case Xebow.get_animation_config() do
+        {config, config_schema} ->
+          [
+            config: config,
+            config_schema: config_schema
+          ]
+
+        nil ->
+          []
       end
 
-    {:ok, assign(socket, initial_assigns)}
+    engine_assigns =
+      if connected?(socket) do
+        {paint_fn, config_fn, frame} = register_with_engine!()
+
+        [
+          leds: make_view_leds(frame),
+          paint_fn: paint_fn,
+          config_fn: config_fn
+        ]
+      else
+        []
+      end
+
+    assigns = initial_assigns ++ config_assigns ++ engine_assigns
+
+    {:ok, assign(socket, assigns)}
   end
 
   @impl Phoenix.LiveView

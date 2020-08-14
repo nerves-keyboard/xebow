@@ -1,0 +1,54 @@
+.toggle {
+  @apply relative;
+
+  input[type=checkbox] {
+    @apply absolute opacity-0 cursor-pointer;
+    height: 26px;
+    width: 50px;
+    top: 6px;
+    left: 0;
+    z-index: 1;
+
+    &:checked + label {
+      /* Activated track */
+      &:before {
+        @apply bg-blue-600;
+      }
+
+      /* Activated handle */
+      &:after {
+        left: 26px;
+      }
+    }
+  }
+
+  label {
+    @apply relative;
+    padding-left: 60px;
+
+    &:before, &:after {
+      @apply absolute rounded-full;
+      transition: background-color 0.3s, left 0.3s;
+    }
+
+    /* Track */
+    &:before {
+      @apply bg-blue-800 box-border;
+      content: "";
+      height: 26px;
+      width: 50px;
+      top: -6px;
+      left: 0;
+    }
+
+    /* Handle */
+    &:after {
+      @apply bg-blue-100 rounded-full;
+      content: "";
+      height: 22px;
+      width: 22px;
+      top: -4px;
+      left: 2px;
+    }
+  }
+}

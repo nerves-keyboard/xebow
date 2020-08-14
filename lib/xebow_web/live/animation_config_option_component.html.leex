@@ -5,7 +5,7 @@
       <div class="select-wrapper w-56">
         <select name="<%= @id %>">
           <%= for option <- @schema.options do %>
-            <option value="<%= option %>">
+            <option value="<%= option %>" <%= if @value == option, do: "selected" %>>
               <%= option |> to_string() |> String.replace("_", " ") |> String.capitalize() %>
             </option>
           <% end %>

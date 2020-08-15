@@ -36,36 +36,24 @@ defmodule ConfigTest do
     [test_config: test_config, test_schema: test_schema]
   end
 
-  test "make_test_config(module) creates a valid configuration" do
-    assert make_test_config(MockConfig) ==
-             %MockConfig.Config{
-               test_integer: 5,
-               test_option: :default
-             }
-
-    assert make_test_config(MockConfig, %{test_integer: 3, test_option: :non_default}) ==
-             %MockConfig.Config{
-               test_integer: 3,
-               test_option: :non_default
-             }
-  end
-
   describe "an animation configuration created using new_config/3" do
     test "can be created with integer and option types and empty params" do
-      assert make_test_config(MockConfig) ==
+      assert make_test_config(MockConfig, %{}) ==
                %MockConfig.Config{
                  test_integer: 5,
                  test_option: :default
                }
     end
 
-    test "can be created with non-empty params" do
+    test "can be created with a non-default value for an Integer" do
       assert make_test_config(MockConfig, %{test_integer: 3}) ==
                %MockConfig.Config{
                  test_integer: 3,
                  test_option: :default
                }
+    end
 
+    test "can be created with a non-default value for an Option" do
       assert make_test_config(MockConfig, %{test_option: :non_default}) ==
                %MockConfig.Config{
                  test_integer: 5,
@@ -73,10 +61,31 @@ defmodule ConfigTest do
                }
     end
 
-    test "will ignore invalid params and use provided defaults" do
+    test "can be created with a non-default value for multiple fields" do
+      assert make_test_config(MockConfig, %{test_integer: 3, test_option: :non_default}) ==
+               %MockConfig.Config{
+                 test_integer: 3,
+                 test_option: :non_default
+               }
+    end
+
+    test "will ignore invalid values for Integer fields" do
       output =
         capture_log(fn ->
-          assert make_test_config(MockConfig, %{test_integer: "fish", test_option: :invalid}) ==
+          assert make_test_config(MockConfig, %{test_integer: "fish"}) ==
+                   %MockConfig.Config{
+                     test_integer: 5,
+                     test_option: :default
+                   }
+        end)
+
+      assert output =~ "\"fish\" is an invalid value for test_integer"
+    end
+
+    test "will ignore invalid values for Option fields" do
+      output =
+        capture_log(fn ->
+          assert make_test_config(MockConfig, %{test_option: :invalid}) ==
                    %MockConfig.Config{
                      test_integer: 5,
                      test_option: :default
@@ -85,12 +94,26 @@ defmodule ConfigTest do
 
       assert output =~ ":invalid is an invalid value for test_option"
     end
+
+    test "will ignore multiple invalid field values" do
+      output =
+        capture_log(fn ->
+          assert make_test_config(MockConfig, %{test_integer: "dog", test_option: :invalid}) ==
+                   %MockConfig.Config{
+                     test_integer: 5,
+                     test_option: :default
+                   }
+        end)
+
+      assert output =~ "\"dog\" is an invalid value for test_integer"
+      assert output =~ ":invalid is an invalid value for test_option"
+    end
   end
 
   describe "a correct animation configuration" do
     setup :test_config
 
-    test "can update integer types", context do
+    test "can update field types using string key and value", context do
       new_integer_string = "7"
       new_integer = 7
 
@@ -104,34 +127,21 @@ defmodule ConfigTest do
                context.test_schema,
                %{"test_integer" => new_integer_string}
              ) == new_integer_config
-
-      assert RGBMatrix.Animation.Config.update_config(
-               context.test_config,
-               context.test_schema,
-               %{:test_integer => new_integer}
-             ) == new_integer_config
     end
 
-    test "can update option types", context do
-      new_option_string = "non_default"
-      new_option = :non_default
+    test "can update field types using atom key and integer value", context do
+      new_integer = 7
 
-      new_option_config = %MockConfig.Config{
-        test_integer: 5,
-        test_option: new_option
+      new_integer_config = %MockConfig.Config{
+        test_integer: new_integer,
+        test_option: :default
       }
 
       assert Config.update_config(
                context.test_config,
                context.test_schema,
-               %{"test_option" => new_option_string}
-             ) == new_option_config
-
-      assert RGBMatrix.Animation.Config.update_config(
-               context.test_config,
-               context.test_schema,
-               %{:test_option => new_option_string}
-             ) == new_option_config
+               %{:test_integer => new_integer}
+             ) == new_integer_config
     end
 
     test "can update multiple fields simultaneously", context do
@@ -150,18 +160,7 @@ defmodule ConfigTest do
              ) == new_config
     end
 
-    test "will not add additional fields when using string input for update_config", context do
-      output =
-        capture_log(fn ->
-          assert RGBMatrix.Animation.Config.update_config(
-                   context.test_config,
-                   context.test_schema,
-                   %{"invalid_option" => "invalid"}
-                 ) == context.test_config
-        end)
-
-      assert output =~ "\"invalid_option\" is an invalid field identifier"
-
+    test "will not add additional fields for update_config", context do
       output =
         capture_log(fn ->
           assert Config.update_config(
@@ -181,17 +180,6 @@ defmodule ConfigTest do
           assert Config.update_config(
                    context.test_config,
                    context.test_schema,
-                   %{"test_option" => "invalid"}
-                 ) == context.test_config
-        end)
-
-      assert output =~ "\"invalid\" is an invalid value for test_option"
-
-      output =
-        capture_log(fn ->
-          assert RGBMatrix.Animation.Config.update_config(
-                   context.test_config,
-                   context.test_schema,
                    %{test_option: :invalid}
                  ) == context.test_config
         end)
@@ -203,17 +191,6 @@ defmodule ConfigTest do
       output =
         capture_log(fn ->
           assert Config.update_config(
-                   context.test_config,
-                   context.test_schema,
-                   %{"test_integer" => "-10"}
-                 ) == context.test_config
-        end)
-
-      assert output =~ "\"-10\" is an invalid value for test_integer"
-
-      output =
-        capture_log(fn ->
-          assert RGBMatrix.Animation.Config.update_config(
                    context.test_config,
                    context.test_schema,
                    %{test_integer: -10}

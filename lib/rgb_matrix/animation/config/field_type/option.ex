@@ -4,7 +4,7 @@ defmodule RGBMatrix.Animation.Config.FieldType.Option do
 
   Supports defining a list of pre-defined options as atoms.
 
-  To define an integer field in an animation, specify `:integer` as the field
+  To define an option field in an animation, specify `:option` as the field
   type.
 
   Example:

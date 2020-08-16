@@ -13,35 +13,40 @@ defmodule RGBMatrix.Animation.Config do
   }
 
   @typedoc """
-  A `Config` is a struct representing a config for a specific animation.
-  concrete types of struct it might be. (e.g.:
-  RGBMatrix.Animation.HueWave.Config.t)
+  A struct containing runtime configuration for a specific animation.
+
+  Example:
+      RGBMatrix.Animation.HueWave.Config
+      RGBMatrix.Animation.SolidReactive.Config
+
+  Configs should not be accessed or modified directly. Use the functions
+  `Xebow.get_animation_config/0` and `Xebow.update_animation_config/1` for
+  access and modification.
   """
   @type t :: struct
 
   @typedoc """
-  A `config_schema` is a keyword list containing the configuration fields for
-  an animation type.
+  A keyword list containing the configuration fields for an animation type.
 
-  It provides the defaults for each field, the available
-  parameters to configure (such as `:default`, `:min`, `:options`, and so on),
-  and can provide `:doc`, a keyword list, for documentation such as a
-  human-readable `:name` and `:description`.
+  It provides the defaults for each field, the available parameters to configure
+  (such as `:default`, `:min`, `:options`, and so on). It can provide `:doc`, a
+  keyword list, for documentation such as a human-readable `:name` and
+  `:description`.
 
-  The keys are defined by the first atom provided to an Animation's `field`
-  definition(s). The values are `Config.FieldType` types.
+  The keys are defined by the first atom, the name, provided to an Animation's
+  `field` definition(s). The values are `t:RGBMatrix.Animation.Config.FieldType.t/0`
+  types.
 
-  The documentation is not guaranteed to exist. It will be an empty list, in
-  that case.
+  The documentation is optional and will be initialized to an empty list if
+  omitted.
   """
   @type config_schema :: keyword(FieldType.t())
 
   @typedoc """
-  `creation_params` is a map used during creation of an
-  `Animation.<type>.Config`.
+  A map used during creation of an `Animation.<type>.Config`.
 
-  The keys are defined by the first atom provided to an Animation's `field`
-  definition(s) and must be one of `#{inspect(Map.keys(@field_types))}`.
+  The keys are defined by the first atom, the name, provided to an Animation's
+  `field` definition(s) and must match the field being defined.
 
   The value should be appropriate for the field.
   """
@@ -57,18 +62,17 @@ defmodule RGBMatrix.Animation.Config do
           | :validation_error
 
   @typedoc """
-  A `schema_field` is a tuple of the form `{name, %FieldType.t}`.
-
-  `name` is one of `#{inspect(Map.keys(@field_types))}`
+  A tuple of the form `{name, FieldType.t}`, where `name` is one of the
+  valid FieldType names.
   """
   @type schema_field :: {name :: atom, FieldType.t()}
 
   @typedoc """
-  `update_params` is a map used to update an `Animation.<type>.Config`.
+  A map used to update an `Animation.<type>.Config`.
 
-  The key is defined by the first atom provided to an Animation's `field`
-  definition(s) and must be one of `#{inspect(Map.keys(@field_types))}`.
-  The key may be a string or an atom.
+  The keys are defined by the first atom, the name, provided to an Animation's
+  `field` definition(s) and must match the field(s) being updated. The key may
+  be a string or an atom.
 
   The value should be appropriate for the field.
   """
@@ -81,7 +85,7 @@ defmodule RGBMatrix.Animation.Config do
   @doc """
   Returns the map of field types provided by the Config module
   """
-  @spec field_types :: %{atom => any}
+  @spec field_types :: %{atom => FieldType.field()}
   def field_types, do: @field_types
 
   defmacro __before_compile__(env) do
@@ -120,20 +124,24 @@ defmodule RGBMatrix.Animation.Config do
   end
 
   @doc """
-  Creates a new %Config{} struct belonging to the provided
+  Creates a new `%Config{}` struct belonging to the provided
   `Animation.<type>.Config` module.
 
   The provided Config must be defined through the `use Animation` and `field`
-  macros in an Animation.<type> module.
+  macros in an `Animation.<type>` module.
 
-  Returns a %Config{} struct.
+  The params provided are a map of type `t:creation_params/0`.
+
+  Returns a `%Config{}` struct.
 
   Example:
-      iex> RGBMatrix.Animation.Config.new_config(
-      ...>   RGBMatrix.Animation.HueWave.Config,
-      ...>   RGBMatrix.Animation.HueWave.Config.schema(),
-      ...>   %{})
-      %RGBMatrix.Animation.HueWave.Config{direction: :right, speed: 4, width: 20}
+      iex> module = RGBMatrix.Animation.HueWave.Config
+      iex> schema = module.schema()
+      iex> params = %{direction: :up, width: 30}
+      iex> RGBMatrix.Animation.Config.new_config(module, schema, params)
+      %RGBMatrix.Animation.HueWave.Config{direction: :up, speed: 4, width: 30}
+
+  The above example shows setting the direction and width to non-default values.
   """
   @spec new_config(
           module :: module,
@@ -148,16 +156,22 @@ defmodule RGBMatrix.Animation.Config do
   end
 
   @doc """
-  Updates the provided %Config{} struct using the provided schema and params map.
+  Updates the provided `%Config{}` struct using the provided schema and params.
 
-  Returns the updated config.
+  The params are a map of type `t:update_params/0`.
+
+  Configs must be retrieved through the use of `Xebow.get_animation_config/0`,
+  which will return both the config and the schema.
+
+  Returns the updated `%Config{}` struct.
 
   Example:
-      iex> RGBMatrix.Animation.Config.update_config(
-      ...>   hue_wave_config,
-      ...>   RGBMatrix.Animation.HueWave.Config.schema(),
-      ...>   %{"direction" => "left"})
-      %RGBMatrix.Animation.HueWave.Config{direction: :left, speed: 4, width: 20}
+      iex> {config, schema} = Xebow.get_animation_config()
+      iex> params = %{"direction" => "left", speed: 8}
+      iex> RGBMatrix.Animation.Config.update_config(config, schema, params)
+      %RGBMatrix.Animation.HueWave.Config{direction: :left, speed: 8, width: 20}
+
+  The above example shows updating the direction and speed.
   """
   @spec update_config(
           config :: t,

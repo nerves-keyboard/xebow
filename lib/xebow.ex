@@ -10,7 +10,7 @@ defmodule Xebow do
 
   require Logger
 
-  @leds [
+  @leds_keybow [
     LED.new(:l001, 0, 0),
     LED.new(:l002, 1, 0),
     LED.new(:l003, 2, 0),
@@ -25,7 +25,7 @@ defmodule Xebow do
     LED.new(:l012, 2, 3)
   ]
 
-  @keys [
+  @keys_keybow [
     Key.new(:k001, 0, 0, led: :l001),
     Key.new(:k002, 1, 0, led: :l002),
     Key.new(:k003, 2, 0, led: :l003),
@@ -40,10 +40,27 @@ defmodule Xebow do
     Key.new(:k012, 2, 3, led: :l012)
   ]
 
-  @layout Layout.new(@keys, @leds)
+  @keys_excalibur [
+    Key.new(:k001, 0, 0),
+    Key.new(:k002, 1, 0),
+    Key.new(:k003, 2, 0),
+    Key.new(:k004, 0, 1),
+    Key.new(:k005, 1, 1),
+    Key.new(:k006, 2, 1),
+    Key.new(:k007, 0, 2),
+    Key.new(:k008, 1, 2),
+    Key.new(:k009, 2, 2),
+    Key.new(:k010, 0, 3)
+  ]
 
-  @spec layout() :: Layout.t()
-  def layout, do: @layout
+  @layout_host Layout.new([])
+  @layout_keybow Layout.new(@keys_keybow, @leds_keybow)
+  @layout_excalibur Layout.new(@keys_excalibur)
+
+  @spec layout(atom) :: Layout.t()
+  def layout(:host), do: @layout_host
+  def layout(:keybow), do: @layout_keybow
+  def layout(:excalibur), do: @layout_excalibur
 
   @type animations :: [Animation.t()]
   @type animation_params :: %{String.t() => atom | number | String.t()}
@@ -238,7 +255,10 @@ defmodule Xebow do
   end
 
   defp initialize_animation(animation_type) do
-    Animation.new(animation_type, @leds)
+    target = Xebow.Application.target()
+    layout = layout(target)
+    leds = Layout.leds(layout)
+    Animation.new(animation_type, leds)
   end
 
   defp update_state_with_animation_types(state, animation_types) do

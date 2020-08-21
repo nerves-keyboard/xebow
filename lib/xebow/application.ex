@@ -7,7 +7,7 @@ defmodule Xebow.Application do
 
   alias Xebow.Settings
 
-  @leds Xebow.layout() |> Layout.leds()
+  @leds Xebow.layout(Mix.target()) |> Layout.leds()
 
   if Mix.target() == :host do
     defp maybe_validate_firmware,
@@ -31,7 +31,7 @@ defmodule Xebow.Application do
         # Starts a worker by calling: Xebow.Worker.start_link(arg)
         # {Xebow.Worker, arg},
         # Engine must be started before Xebow
-        # {RGBMatrix.Engine, @leds},
+        {RGBMatrix.Engine, @leds},
         Xebow,
         # Phoenix:
         XebowWeb.Telemetry,
@@ -58,14 +58,21 @@ defmodule Xebow.Application do
     ]
   end
 
-  def children(_target) do
+  def children(:keybow) do
     [
       # Children for all targets except host
       # Starts a worker by calling: Xebow.Worker.start_link(arg)
       # {Xebow.Worker, arg},
       Xebow.HIDGadget,
-      # Xebow.LEDs,
-      Xebow.Keyboard
+      Xebow.Keybow.LEDs,
+      Xebow.Keybow.Keyboard
+    ]
+  end
+
+  def children(:excalibur) do
+    [
+      Xebow.HIDGadget,
+      Xebow.Excalibur.Keyboard
     ]
   end
 

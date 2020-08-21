@@ -5,7 +5,7 @@ defmodule XebowWeb.MatrixLive do
 
   alias RGBMatrix.Engine
 
-  @layout Xebow.layout()
+  @layout Xebow.layout(Mix.target())
 
   @impl Phoenix.LiveView
   def mount(_params, _session, socket) do

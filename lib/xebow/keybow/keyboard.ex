@@ -1,6 +1,6 @@
 require Logger
 
-defmodule Xebow.Keyboard do
+defmodule Xebow.Keybow.Keyboard do
   @moduledoc """
   Keyboard GenServer for handling key events.
 
@@ -185,7 +185,7 @@ defmodule Xebow.Keyboard do
   end
 
   defp rgb_matrix_interact(key_id) do
-    case Layout.led_for_key(Xebow.layout(), key_id) do
+    case Layout.led_for_key(Xebow.layout(:keybow), key_id) do
       nil -> :noop
       led -> Engine.interact(led)
     end

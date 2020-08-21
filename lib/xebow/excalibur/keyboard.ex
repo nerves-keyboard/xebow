@@ -1,10 +1,10 @@
 require Logger
 
-defmodule Xebow.Matrix do
+defmodule Xebow.Excalibur.Keyboard do
   use GenServer
 
   alias Circuits.GPIO
-  alias Xebow.Utils
+  alias Xebow.Excalibur.Utils
 
   @matrix_layout [
     [:k001, :k002, :k003, :k004, :k005, :k006, :k007, :k008, :k009],
@@ -22,6 +22,26 @@ defmodule Xebow.Matrix do
 
   @debounce_window 10
 
+  # this file exists because `Xebow.HIDGadget` set it up during boot.
+  @hid_device "/dev/hidg0"
+
+  @keymap [
+    # Layer 0:
+    %{
+      k001: AFK.Keycode.Key.new(:escape),
+      k002: AFK.Keycode.Key.new(:"1"),
+      k003: AFK.Keycode.Key.new(:"2"),
+      k004: AFK.Keycode.Key.new(:"3"),
+      k005: AFK.Keycode.Key.new(:"4"),
+      k006: AFK.Keycode.Key.new(:"5"),
+      k007: AFK.Keycode.Key.new(:"6"),
+      k008: AFK.Keycode.Key.new(:"7"),
+      k009: AFK.Keycode.Key.new(:"8"),
+      k010: AFK.Keycode.Key.new(:"9"),
+      k011: AFK.Keycode.Key.new(:"0")
+    }
+  ]
+
   # Client
 
   def start_link([]) do
@@ -36,11 +56,20 @@ defmodule Xebow.Matrix do
 
   @impl true
   def init([]) do
+    {:ok, keyboard_state} =
+      AFK.State.start_link(
+        keymap: @keymap,
+        event_receiver: self(),
+        hid_report_mod: AFK.HIDReport.SixKeyRollover
+      )
+
     state = %{
       buffer: [],
       held_keys: [],
       matrix_config: init_matrix_config(),
-      timer: nil
+      timer: nil,
+      hid: File.open!(@hid_device, [:write]),
+      keyboard_state: keyboard_state
     }
 
     send(self(), :scan)
@@ -106,14 +135,13 @@ defmodule Xebow.Matrix do
     |> Enum.reverse()
     |> Utils.dedupe_events()
     |> Enum.each(fn
-      {:pressed, key} ->
-        Logger.debug(fn -> "Key pressed: #{key}" end)
+      {:pressed, key_id} ->
+        Logger.debug(fn -> "Key pressed: #{key_id}" end)
+        AFK.State.press_key(state.keyboard_state, key_id)
 
-      # KeyboardServer.key_pressed(key)
-
-      {:released, key} ->
-        Logger.debug(fn -> "Key released: #{key}" end)
-        # KeyboardServer.key_released(key)
+      {:released, key_id} ->
+        Logger.debug(fn -> "Key released: #{key_id}" end)
+        AFK.State.release_key(state.keyboard_state, key_id)
     end)
 
     {:noreply, %{state | buffer: [], timer: nil}}
@@ -139,6 +167,12 @@ defmodule Xebow.Matrix do
     Process.send_after(self(), :scan, 2)
 
     {:noreply, %{state | held_keys: keys, buffer: buffer}}
+  end
+
+  @impl GenServer
+  def handle_info({:hid_report, hid_report}, state) do
+    IO.binwrite(state.hid, hid_report)
+    {:noreply, state}
   end
 
   defp scan(matrix_config) do

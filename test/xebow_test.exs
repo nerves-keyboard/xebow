@@ -17,8 +17,12 @@ defmodule XebowTest do
     end
   end
 
-  test "has layout" do
-    assert %Layout{} = Xebow.layout()
+  test "has a layout for the keybow" do
+    assert %Layout{} = Xebow.layout(:keybow)
+  end
+
+  test "has a layout for excalibur" do
+    assert %Layout{} = Xebow.layout(:excalibur)
   end
 
   test "can get and set active animation types" do

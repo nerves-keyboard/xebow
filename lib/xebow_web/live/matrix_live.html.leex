@@ -1,0 +1,38 @@
+<div class="flex">
+  <div>
+    <div class="mb-1">Animation</div>
+    <button class="mr-4 w-24" phx-click="previous_animation">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+    <button class="w-24" phx-click="next_animation">
+      <i class="fas fa-arrow-right"></i>
+    </button>
+    <%= if @config do %>
+      <%= live_component @socket, XebowWeb.AnimationConfigComponent, schema: @config_schema, config: @config %>
+    <% end %>
+  </div>
+
+  <div class="mx-auto my-24">
+    <div class="keypad">
+      <div class="frame"></div>
+      <%= for led <- @leds do %>
+        <span
+          id="<%= led.id %>"
+          class="<%= led.class %>"
+          <%= if led.class == "key" do %>
+          phx-click="key_pressed"
+          phx-value-key-id="<%= led.id %>"
+          <% end %>
+          phx-hook="AnimationColorUpdate"
+          style="
+            left: <%= led.x %>px;
+            top: <%= led.y %>px;
+            width: <%= led.width %>px;
+            height: <%= led.height %>px;
+            background-color: #<%= led.color %>
+          "
+        ></span>
+      <% end %>
+    </div>
+  </div>
+</div>

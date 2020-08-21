@@ -1,7 +1,12 @@
 defmodule Xebow.HIDGadget do
   @moduledoc """
-  Set up the gadget devices with usb_gadget
+  Set up the gadget devices with usb_gadget.
+
+  This sets up a composite USB device with ethernet (ecm + rndis) and HID.
   """
+
+  if Mix.target() == :host,
+    do: @compile({:no_warn_undefined, USBGadget})
 
   use GenServer, restart: :temporary
 
@@ -17,16 +22,14 @@ defmodule Xebow.HIDGadget do
     # :os.cmd('mount -t configfs none /sys/kernel/config')
 
     # Set up gadget devices using configfs
-    case create_rndis_ecm_hid("hidg") do
-      :ok ->
-        # Make sure we clear out any existing gadget configuration.
-        # :os.cmd('rmmod g_cdc')
-        USBGadget.disable_device("hidg")
+    hid_device_name = "hidg"
 
-        USBGadget.enable_device("hidg")
-        setup_bond0()
-        {:ok, :ok}
-
+    with :ok <- create_ncm_rndis_hid(hid_device_name),
+         :ok <- USBGadget.disable_device(hid_device_name),
+         :ok <- USBGadget.enable_device(hid_device_name),
+         :ok <- setup_bond0() do
+      {:ok, :ok}
+    else
       error ->
         Logger.warn("Error setting up USB gadgets: #{inspect(error)}")
         {:ok, error}
@@ -41,7 +44,7 @@ defmodule Xebow.HIDGadget do
   #   GenServer.call(__MODULE__, :status)
   # end
 
-  defp create_rndis_ecm_hid(name) do
+  defp create_ncm_rndis_hid(name) do
     device_settings = %{
       "bcdUSB" => "0x0200",
       "bDeviceClass" => "0xEF",
@@ -102,25 +105,27 @@ defmodule Xebow.HIDGadget do
       "MaxPower" => "500",
       "strings" => %{
         "0x409" => %{
-          "configuration" => "RNDIS and ECM Ethernet with HID Keyboard"
+          "configuration" => "NCM and RNDIS Ethernet with HID Keyboard"
         }
       }
     }
 
-    function_list = ["rndis.usb0", "ecm.usb1", "hid.usb2"]
+    function_list = ["rndis.usb0", "ncm.usb1", "hid.usb2"]
 
     with {:create_device, :ok} <-
            {:create_device, USBGadget.create_device(name, device_settings)},
          {:create_rndis, :ok} <-
            {:create_rndis, USBGadget.create_function(name, "rndis.usb0", rndis_settings)},
-         {:create_ecm, :ok} <- {:create_ecm, USBGadget.create_function(name, "ecm.usb1", %{})},
+         {:create_ncm, :ok} <-
+           {:create_ncm, USBGadget.create_function(name, "ncm.usb1", %{})},
          {:create_hid, :ok} <-
            {:create_hid, USBGadget.create_function(name, "hid.usb2", hid_settings)},
          {:create_config, :ok} <-
            {:create_config, USBGadget.create_config(name, "c.1", config1_settings)},
          {:link_functions, :ok} <-
            {:link_functions, USBGadget.link_functions(name, "c.1", function_list)},
-         {:link_os_desc, :ok} <- {:link_os_desc, USBGadget.link_os_desc(name, "c.1")} do
+         {:link_os_desc, :ok} <-
+           {:link_os_desc, USBGadget.link_os_desc(name, "c.1")} do
       :ok
     else
       {failed_step, {:error, reason}} -> {:error, {failed_step, reason}}
@@ -129,17 +134,39 @@ defmodule Xebow.HIDGadget do
 
   defp setup_bond0 do
     # Set up the bond0 interface across usb0 and usb1.
-    # In the rndis_ecm_acm pre-defined device being used here, usb0 is the
-    # RNDIS (Windows-compatible) device and usb1 is the ECM
-    # (non-Windows-compatible) device.
-    # Since Linux supports both with ECM being more reliable, we set usb1 (ECM)
-    # as the primary, meaning that it will be used if both are available.
-    :os.cmd('ip link set bond0 down')
-    File.write("/sys/class/net/bond0/bonding/mode", "active-backup")
-    File.write("/sys/class/net/bond0/bonding/miimon", "100")
-    File.write("/sys/class/net/bond0/bonding/slaves", "+usb0")
-    File.write("/sys/class/net/bond0/bonding/slaves", "+usb1")
-    File.write("/sys/class/net/bond0/bonding/primary", "usb1")
-    :os.cmd('ip link set bond0 up')
+    # In the pre-defined device being used here, usb0 is the
+    # RNDIS (Windows-compatible) device, usb1 is the NCM (Mac OS Catalina-compatible).
+    # Since Linux supports both, with NCM being more reliable, we set
+    # usb1 (NCM) as the primary, meaning that it will be used if all are available.
+    bond0_sys_directory = "/sys/class/net/bond0/bonding"
+    exit_success = 0
+
+    with {_, ^exit_success} <- set_bond0_link_state(:down),
+         :ok <- write_file(bond0_sys_directory, "mode", "active-backup"),
+         :ok <- write_file(bond0_sys_directory, "miimon", "100"),
+         :ok <- write_file(bond0_sys_directory, "slaves", "+usb0"),
+         :ok <- write_file(bond0_sys_directory, "slaves", "+usb1"),
+         :ok <- write_file(bond0_sys_directory, "primary", "usb1"),
+         {_, ^exit_success} <- set_bond0_link_state(:up) do
+      :ok
+    else
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  defp set_bond0_link_state(state) when state in [:up, :down] do
+    state = to_string(state)
+
+    try do
+      System.cmd("ip", ["link", "set", "bond0", state])
+    rescue
+      reason -> {:error, reason}
+    end
+  end
+
+  defp write_file(base_directory, filename, data) do
+    base_directory
+    |> Path.join(filename)
+    |> File.write(data)
   end
 end

@@ -1,5 +1,6 @@
 on:
   - push
+  - pull_request
 
 jobs:
   code_formatting:
@@ -9,12 +10,58 @@ jobs:
       - name: Set up Elixir
         uses: actions/setup-elixir@v1
         with:
-          otp-version: 22.3
-          elixir-version: 1.10.2
+          otp-version: 23.0
+          elixir-version: 1.10.3
+      - name: Install Nerves bootstrap
+        run: mix archive.install --force hex nerves_bootstrap
       - name: Checkout repository
         uses: actions/checkout@v2
+      - name: Get dependencies
+        run: mix deps.get
       - name: Check code formatting
         run: mix format --check-formatted
+
+  static_analysis:
+    name: Static Analysis
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Set up Elixir
+        uses: actions/setup-elixir@v1
+        with:
+          otp-version: 23.0
+          elixir-version: 1.10.3
+      - name: Install Nerves bootstrap
+        run: mix archive.install --force hex nerves_bootstrap
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Get dependencies
+        run: mix deps.get
+      - name: Compile
+        run: mix compile
+      - name: Run credo
+        run: mix credo
+
+  unit_tests:
+    name: Unit Tests
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Set up Elixir
+        uses: actions/setup-elixir@v1
+        with:
+          otp-version: 23.0
+          elixir-version: 1.10.3
+      - name: Install Nerves bootstrap
+        run: mix archive.install --force hex nerves_bootstrap
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Get dependencies
+        run: mix deps.get
+      - name: Compile
+        run: mix compile
+        env:
+          MIX_ENV: test
+      - name: Run unit tests
+        run: mix test
 
   type_check:
     name: Type Check
@@ -25,8 +72,8 @@ jobs:
       - name: Set up Elixir
         uses: actions/setup-elixir@v1
         with:
-          otp-version: 22.3
-          elixir-version: 1.10.2
+          otp-version: 23.0
+          elixir-version: 1.10.3
       - name: Install Nerves bootstrap
         run: mix archive.install --force hex nerves_bootstrap
       - name: Restore Nerves artifacts

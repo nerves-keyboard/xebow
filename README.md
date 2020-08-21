@@ -4,9 +4,18 @@ Xebow is a [nerves-based](https://nerves-project.org/) firmware for the
 [Keybow](https://shop.pimoroni.com/products/keybow?variant=21246333190227)
 keypad.
 
-This project is still in **early development** and only functions as a basic
-keypad with the ability to cycle through a few LED animations and control sound
-volume.
+This project is in **early development**. Features and the API may be subject
+to change.
+
+Resources:
+- Join the `#nerves-keyboard` channel on the [elixir-lang Slack](https://elixir-slackin.herokuapp.com/)
+to chat with us and keep up on the latest developments.
+- Visit the [wiki](https://github.com/ElixirSeattle/xebow/wiki) to see past
+meeting notes and other content.
+- Planning meetings are open to all. Feel free to join if you would like to
+familiarize yourself with the internals of Xebow or would like to find a place
+to help out. The schedule is pinned in the Slack channel.
+- [Wireframes](https://www.figma.com/file/RMYWHeXJoDErWii1jm8C7k/Xebow) are available on Figma.
 
 # Initial Setup
 
@@ -63,6 +72,38 @@ another device.**
 Remove the MicroSD card and insert it into the keybow. Plug the keybow into the
 computer and wait for it to boot. Once booted, the keypad should begin cycling
 all keys through a rainbow of colors.
+
+## Updating the firmware
+
+The firmware can be updated while the Keybow is attached to your computer as
+long as the Xebow firmware is running on it.
+
+Build the firmware and upload it via SSH by running:
+
+    $ mix firmware.upload
+
+If you would like to perform these steps individually, use `mix firmware`
+and `mix upload`.
+
+Notes
+- The upload needs to be run on a computer with the same SSH public key that was
+  used when burning the SD card or else it won't be able to connect to the Keybow.
+- If the `xebow.local` hostname can't be resolved, try unplugging the Keybow
+  from the USB port, wait for the computer's USB disconnect notification, then
+  plug the Keybow back in and try again after it's booted back up.
+
+## Web Interface
+
+The following instructions are for running the Xebow web interface on your
+computer for a faster development cycle.
+
+If this is your first time running the web interface, set up the web app with:
+
+    $ mix setup
+
+Start the web interface, which will be available at `http://localhost:4000`:
+
+    $ mix phx.server
 
 # Keyboard Layout
 

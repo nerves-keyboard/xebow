@@ -58,7 +58,7 @@ config :mdns_lite,
   # "nerves.local" for convenience. If more than one Nerves device is on the
   # network, delete "nerves" from the list.
 
-  host: [:hostname, "excalibur"],
+  host: [:hostname, "xebow"],
   ttl: 120,
 
   # Advertise the following services over mDNS.
@@ -93,7 +93,7 @@ config :logger, backends: [RingLogger]
 # Configures the endpoint
 config :xebow, XebowWeb.Endpoint,
   http: [port: 80, ip: {0, 0, 0, 0}],
-  url: [host: "excalibur.local", port: 80],
+  url: [host: "xebow.local", port: 80],
   code_reloader: false
 
 config :xebow, settings_path: "/root/settings"

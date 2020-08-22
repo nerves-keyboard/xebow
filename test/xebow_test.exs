@@ -25,6 +25,10 @@ defmodule XebowTest do
     assert %Layout{} = Xebow.layout(:excalibur)
   end
 
+  test "has a layout for host" do
+    assert %Layout{} = Xebow.layout(:host)
+  end
+
   test "can get and set active animation types" do
     animation_types = [MockAnimations.Type1]
 

@@ -170,7 +170,7 @@ defmodule ConfigTest do
                  ) == context.test_config
         end)
 
-      assert output =~ ":invalid_option is an invalid field identifier"
+      assert output =~ ":invalid_option is an undefined field identifier"
     end
 
     test "will not update with option choices that have not been defined for that field",

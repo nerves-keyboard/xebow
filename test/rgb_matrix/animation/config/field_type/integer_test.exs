@@ -21,12 +21,13 @@ defmodule IntegerTest do
       assert Integer.validate(context.test_integer, 3) == :ok
     end
 
-    test "receives invalid step-multiple input and returns `:validation_error`", context do
-      assert Integer.validate(context.test_integer, 4) == :validation_error
+    test "receives invalid step-multiple input and returns `{:error, :invalid_value}`", context do
+      assert Integer.validate(context.test_integer, 4) == {:error, :invalid_value}
     end
 
-    test "receives invalid out-of-range input and returns `:validation_error`", context do
-      assert Integer.validate(context.test_integer, 13) == :validation_error
+    test "receives invalid out-of-range input and returns `{:error, :invalid_value}`", context do
+      assert Integer.validate(context.test_integer, 13) == {:error, :invalid_value}
+      assert Integer.validate(context.test_integer, -1) == {:error, :invalid_value}
     end
   end
 
@@ -37,31 +38,26 @@ defmodule IntegerTest do
       assert Integer.cast(context.test_integer, "7") == {:ok, 7}
     end
 
-    test "receives valid integer input and returns `{:ok, <value}`", context do
+    test "receives valid integer input and returns `{:ok, <value>}`", context do
       assert Integer.cast(context.test_integer, 7) == {:ok, 7}
     end
 
-    test "receives float string input and returns the integer part only", context do
-      assert Integer.cast(context.test_integer, "1.0") == {:ok, 1}
+    test "receives invalid input and returns `{:error, :wrong_type}`", context do
+      assert Integer.cast(context.test_integer, "2.") == {:error, :wrong_type}
+      assert Integer.cast(context.test_integer, "1.0") == {:error, :wrong_type}
+      assert Integer.cast(context.test_integer, 9.0) == {:error, :wrong_type}
+      assert Integer.cast(context.test_integer, "fish") == {:error, :wrong_type}
+      assert Integer.cast(context.test_integer, %{value: 4}) == {:error, :wrong_type}
     end
 
-    test "receives float input and returns the integer part only", context do
-      assert Integer.cast(context.test_integer, 9.0) == {:ok, 9}
-    end
-
-    test "receives invalid input and returns `:cast_error`", context do
-      assert Integer.cast(context.test_integer, "fish") == :cast_error
-      assert Integer.cast(context.test_integer, %{value: 4}) == :cast_error
-    end
-
-    test "receives integer string input that is invalid for the field definition and returns `:validation_error`",
+    test "receives integer string input that is invalid for the field definition and returns `{:error, :invalid_value}`",
          context do
-      assert Integer.cast(context.test_integer, "4") == :validation_error
+      assert Integer.cast(context.test_integer, "4") == {:error, :invalid_value}
     end
 
-    test "receives integer input that is invalid for the field definition and returns `:validation_error`",
+    test "receives integer input that is invalid for the field definition and returns `{:error, :invalid_value}`",
          context do
-      assert Integer.cast(context.test_integer, 6) == :validation_error
+      assert Integer.cast(context.test_integer, 6) == {:error, :invalid_value}
     end
   end
 end

@@ -184,6 +184,10 @@ defmodule Xebow do
   end
 
   @impl GenServer
+  def handle_cast(:next_animation, %State{count_of_active_animations: 0} = state) do
+    {:noreply, state}
+  end
+
   def handle_cast(:next_animation, state) do
     count_of_active_animations = state.count_of_active_animations
 
@@ -199,6 +203,10 @@ defmodule Xebow do
   end
 
   @impl GenServer
+  def handle_cast(:previous_animation, %State{count_of_active_animations: 0} = state) do
+    {:noreply, state}
+  end
+
   def handle_cast(:previous_animation, state) do
     new_index =
       case state.current_index - 1 do

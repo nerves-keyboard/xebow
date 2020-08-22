@@ -3,24 +3,31 @@ defmodule RGBMatrix.Animation.Config.FieldType do
   Provides a behaviour for defining animation configuration field types.
   """
 
-  @type t ::
-          __MODULE__.Integer.t()
-          | __MODULE__.Option.t()
+  @typedoc """
+  A field struct, containing all defined config information for that specific
+  field.
+  """
+  @type t :: __MODULE__.Integer.t() | __MODULE__.Option.t()
 
   @typedoc """
-  `field` is a union of all the `FieldType.<field_type>` modules
+  The possible error atoms during validation and update of configs
   """
-  @type field ::
-          __MODULE__.Integer
-          | __MODULE__.Option
+  @type error ::
+          :invalid_value
+          | :undefined_field
+          | :wrong_type
 
   @typedoc """
-  `value` is a union of all valid field value types
+  Module names for defined field types
   """
-  @type value ::
-          __MODULE__.Integer.value()
-          | __MODULE__.Option.value()
+  @type submodule :: __MODULE__.Integer | __MODULE__.Option
 
-  @callback validate(t, value) :: :ok | :validation_error
-  @callback cast(t, any) :: {:ok, value} | :cast_error | :validation_error
+  @typedoc """
+  A value which is appropriate for a defined field and does not require casting
+  to be used for config creation or update.
+  """
+  @type value :: __MODULE__.Integer.value() | __MODULE__.Option.value()
+
+  @callback validate(t, value) :: :ok | {:error, :invalid_value}
+  @callback cast(t, any) :: {:ok, value} | {:error, :wrong_type | :invalid_value}
 end

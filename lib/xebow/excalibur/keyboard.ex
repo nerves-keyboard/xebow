@@ -1,6 +1,10 @@
 require Logger
 
 defmodule Xebow.Excalibur.Keyboard do
+  @moduledoc """
+  Keyboard matrix scanning for Excalibur.
+  """
+
   use GenServer
 
   alias Circuits.GPIO
@@ -242,16 +246,20 @@ defmodule Xebow.Excalibur.Keyboard do
   end
 
   defp scan(matrix_config) do
-    Enum.reduce(matrix_config, [], fn {col_pin, rows}, acc ->
-      with_pin_high(col_pin, fn ->
-        Enum.reduce(rows, acc, fn {row_pin, key_id}, acc ->
-          case pin_high?(row_pin) do
-            true -> [key_id | acc]
-            false -> acc
-          end
-        end)
-      end)
+    Enum.reduce(matrix_config, [], &scan_col/2)
+  end
+
+  defp scan_col({col_pin, rows}, acc) do
+    with_pin_high(col_pin, fn ->
+      Enum.reduce(rows, acc, &scan_row/2)
     end)
+  end
+
+  defp scan_row({row_pin, key_id}, acc) do
+    case pin_high?(row_pin) do
+      true -> [key_id | acc]
+      false -> acc
+    end
   end
 
   defp with_pin_high(pin, fun) do

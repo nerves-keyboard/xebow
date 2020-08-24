@@ -1,4 +1,4 @@
-defmodule Xebow.LEDs do
+defmodule Xebow.Keybow.LEDs do
   @moduledoc """
   GenServer that interacts with the SPI device that controls the RGB LEDs on the
   Keybow.
@@ -25,7 +25,7 @@ defmodule Xebow.LEDs do
   @sof <<0, 0, 0, 0>>
   @eof <<255, 255, 255, 255>>
   # This is the hardware order that the LED colors need to be sent to the SPI
-  # device in. The LED IDs are the ones from `Xebow.layout/0`.
+  # device in. The LED IDs are the ones from `Xebow.layout/1` given arg :keybow.
   @spi_led_order [
     :l001,
     :l004,

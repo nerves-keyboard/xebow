@@ -3,7 +3,7 @@ defmodule Xebow.MixProject do
 
   @app :xebow
   @version "0.1.0"
-  @all_targets [:keybow]
+  @all_targets [:keybow, :excalibur]
 
   def project do
     [
@@ -23,10 +23,7 @@ defmodule Xebow.MixProject do
         run: :host,
         test: :host,
         dialyzer: :keybow,
-        docs: :keybow,
-        firmware: :keybow,
-        "firmware.upload": :keybow,
-        upload: :keybow
+        docs: :keybow
       ],
       dialyzer: [
         ignore_warnings: "dialyzer.ignore.exs",
@@ -113,7 +110,7 @@ defmodule Xebow.MixProject do
        github: "ElixirSeattle/nerves_system_keybow",
        ref: "v2.0.0-rc.0+keybow.1",
        runtime: false,
-       targets: :keybow}
+       targets: [:keybow, :excalibur]}
     ]
   end
 

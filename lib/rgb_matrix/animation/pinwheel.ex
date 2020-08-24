@@ -22,6 +22,8 @@ defmodule RGBMatrix.Animation.Pinwheel do
     %State{tick: 0, speed: 100, leds: leds, center: determine_center(leds)}
   end
 
+  defp determine_center([]), do: %{x: 0, y: 0}
+
   defp determine_center(leds) do
     {%{x: min_x}, %{x: max_x}} = Enum.min_max_by(leds, & &1.x)
     {%{y: min_y}, %{y: max_y}} = Enum.min_max_by(leds, & &1.y)

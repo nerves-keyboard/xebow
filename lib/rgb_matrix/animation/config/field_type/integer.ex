@@ -3,6 +3,21 @@ defmodule RGBMatrix.Animation.Config.FieldType.Integer do
   An integer field type for use in animation configuration.
 
   Supports defining a minimum and a maximum, as well as a step value.
+
+  To define an integer field in an animation, specify `:integer` as the field
+  type.
+
+  Example:
+      field :speed, :integer,
+        default: 4,
+        min: 0,
+        max: 32,
+        doc: [
+          name: "Speed",
+          description: \"""
+          Controls the speed at which the wave moves across the matrix.
+          \"""
+        ]
   """
 
   @behaviour RGBMatrix.Animation.Config.FieldType
@@ -17,29 +32,33 @@ defmodule RGBMatrix.Animation.Config.FieldType.Integer do
           default: integer,
           min: integer,
           max: integer,
+          step: integer,
           doc: keyword(String.t()) | []
         }
+  @type value :: integer
 
   @impl true
-  @spec validate(field_type :: t, value :: integer) :: :ok | :error
+  @spec validate(field_type :: t, value) :: :ok | {:error, :invalid_value}
   def validate(field_type, value) do
     if value >= field_type.min &&
          value <= field_type.max &&
-         mod(value, field_type.step) == 0 do
+         mod(value - field_type.min, field_type.step) == 0 do
       :ok
     else
-      :error
+      {:error, :invalid_value}
     end
   end
 
   @impl true
-  @spec cast(field_type :: t, value :: any) :: {:ok, integer} | :error
+  @spec cast(field_type :: t, any) ::
+          {:ok, value} | {:error, :wrong_type | :invalid_value}
   def cast(field_type, value) do
     with {:ok, casted_value} <- do_cast(value),
          :ok <- validate(field_type, casted_value) do
       {:ok, casted_value}
     else
-      :error -> :error
+      {:error, :invalid_value} = e -> e
+      :error -> {:error, :wrong_type}
     end
   end
 
@@ -48,12 +67,13 @@ defmodule RGBMatrix.Animation.Config.FieldType.Integer do
   end
 
   defp do_cast(value) when is_float(value) do
-    {:ok, trunc(value)}
+    :error
   end
 
   defp do_cast(value) when is_binary(value) do
     case Integer.parse(value) do
-      {parsed_value, _remaining_string} -> {:ok, parsed_value}
+      {parsed_value, ""} -> {:ok, parsed_value}
+      {_, _} -> :error
       :error -> :error
     end
   end

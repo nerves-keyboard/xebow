@@ -11,7 +11,7 @@ defmodule Xebow.Keyboard do
      press and key release events.
   2. Uses AFK to turn those physical key presses and releases into HID events.
   3. Writes the HID events to the linux HID file device that was set up by
-     `Xebow.HIDGadget`
+     `/etc/pre-run.sh`
   """
 
   if Mix.target() == :host,
@@ -38,7 +38,7 @@ defmodule Xebow.Keyboard do
     12 => :k005
   }
 
-  # this file exists because `Xebow.HIDGadget` set it up during boot.
+  # this file exists because `/etc/pre-run.sh` set it up during boot.
   @hid_device "/dev/hidg0"
 
   @keymap [

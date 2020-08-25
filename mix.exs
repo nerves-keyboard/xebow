@@ -103,15 +103,13 @@ defmodule Xebow.MixProject do
       # Dependencies for all targets except :host
       {:nerves_runtime, "~> 0.11", targets: @all_targets, override: true},
       {:nerves_pack, "~> 0.3", targets: @all_targets},
-      {:vintage_net_wizard, "~> 0.2", targets: @all_targets, only: [:dev, :prod]},
       {:circuits_gpio, "~> 0.4", targets: @all_targets},
       {:circuits_spi, "~> 0.1", targets: @all_targets},
-      {:usb_gadget, github: "nerves-project/usb_gadget", ref: "master", targets: @all_targets},
 
       # Dependencies for specific targets
       {:nerves_system_keybow,
        github: "ElixirSeattle/nerves_system_keybow",
-       ref: "v2.0.0-rc.0+keybow.1",
+       ref: "v2.0.0-rc.0+keybow.2",
        runtime: false,
        targets: :keybow}
     ]

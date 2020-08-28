@@ -21,6 +21,7 @@ defmodule LayoutKeyTest do
   test "new/4 allows setting :width or :height only" do
     assert Key.new(:l001, 1, 1, width: 1.5) ==
              %Key{id: :l001, x: 1, y: 1, width: 1.5, height: 1, led: nil}
+
     assert Key.new(:l002, 2, 3, height: 2) ==
              %Key{id: :l002, x: 2, y: 3, width: 1, height: 2, led: nil}
   end

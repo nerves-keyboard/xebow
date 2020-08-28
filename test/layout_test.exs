@@ -18,48 +18,8 @@ defmodule LayoutTest do
   #   %{id: :l2, x: 2, y: 1.5},
   #   %{id: :l3, x: 3, y: 3}
   # ]
-  test "Layout.get_and_build_keys/0 returns a list of keys built from application config" do
-    assert Layout.get_and_build_keys() ==
-             [
-               %Key{height: 1, id: :k1, led: :l1, width: 1, x: 0, y: 0},
-               %Key{height: 2, id: :k2, led: :l2, width: 1.5, x: 2, y: 1.5},
-               %Key{height: 1, id: :k3, led: nil, width: 1, x: 5, y: 0}
-             ]
-  end
-
-  test "Layout.get_and_build_leds/0 returns a list of LEDs built from application config" do
-    assert Layout.get_and_build_leds() ==
-             [
-               %LED{id: :l1, x: 0, y: 0},
-               %LED{id: :l2, x: 2, y: 1.5},
-               %LED{id: :l3, x: 3, y: 3}
-             ]
-  end
-
-  defp add_keys(_context) do
-    [keys: Layout.get_and_build_keys()]
-  end
-
-  defp add_leds(_context) do
-    [leds: Layout.get_and_build_leds()]
-  end
-
-  setup [:add_keys, :add_leds]
-
-  test "new/1 takes only a list of keys and returns a %Layout{} struct" do
-    keys = [Key.new(:k, 0, 0)]
-
-    assert Layout.new(keys) == %Layout{
-             keys: [%Key{height: 1, id: :k, led: nil, width: 1, x: 0, y: 0}],
-             keys_by_leds: %{},
-             leds: [],
-             leds_by_keys: %{}
-           }
-  end
-
-  test "new/2 takes a list of keys and a list of LEDs and returns a %Layout{} struct",
-       %{keys: keys, leds: leds} do
-    assert Layout.new(keys, leds) == %Layout{
+  test "Layout.load_from_config/0 loads the layout defined in the application config" do
+    assert Layout.load_from_config() == %Layout{
              keys: [
                %Key{height: 1, id: :k1, led: :l1, width: 1, x: 0, y: 0},
                %Key{height: 2, id: :k2, led: :l2, width: 1.5, x: 2, y: 1.5},
@@ -81,11 +41,52 @@ defmodule LayoutTest do
            }
   end
 
-  defp add_layout(context) do
-    [layout: Layout.new(context.keys, context.leds)]
+  defp add_layout(_context) do
+    [layout: Layout.load_from_config()]
   end
 
-  setup :add_layout
+  defp add_keys(%{layout: layout}) do
+    [keys: layout.keys]
+  end
+
+  defp add_leds(%{layout: layout}) do
+    [leds: layout.leds]
+  end
+
+  setup [:add_layout, :add_keys, :add_leds]
+
+  test "new/1 takes only a list of keys and returns a %Layout{} struct" do
+    keys = [Key.new(:k, 0, 0)]
+
+    assert Layout.new(keys) == %Layout{
+             keys: [%Key{height: 1, id: :k, led: nil, width: 1, x: 0, y: 0}],
+             keys_by_leds: %{},
+             leds: [],
+             leds_by_keys: %{}
+           }
+  end
+
+  test "new/2 takes a list of keys and a list of LEDs and returns a %Layout{} struct" do
+    keys = [Key.new(:k1, 0, 0), Key.new(:k2, 1, 0, led: :l2)]
+    leds = [LED.new(:l1, 0, 0), LED.new(:l2, 1, 0)]
+
+    assert Layout.new(keys, leds) == %Layout{
+             keys: [
+               %Layout.Key{height: 1, id: :k1, led: nil, width: 1, x: 0, y: 0},
+               %Layout.Key{height: 1, id: :k2, led: :l2, width: 1, x: 1, y: 0}
+             ],
+             keys_by_leds: %{
+               l2: %Layout.Key{height: 1, id: :k2, led: :l2, width: 1, x: 1, y: 0}
+             },
+             leds: [
+               %Layout.LED{id: :l1, x: 0, y: 0},
+               %Layout.LED{id: :l2, x: 1, y: 0}
+             ],
+             leds_by_keys: %{
+               k2: %Layout.LED{id: :l2, x: 1, y: 0}
+             }
+           }
+  end
 
   test "keys/1 takes a layout and returns its list of keys",
        %{keys: keys, layout: layout} do

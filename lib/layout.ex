@@ -49,17 +49,30 @@ defmodule Layout do
   def key_for_led(%__MODULE__{} = layout, led_id) when is_atom(led_id),
     do: Map.get(layout.keys_by_leds, led_id)
 
-  @spec get_and_build_leds() :: [LED.t()]
-  def get_and_build_leds() do
-    Application.get_env(:xebow, :leds, [])
+  @spec load_from_config() :: t
+  def load_from_config do
+    env_layout =
+      case Application.get_env(:xebow, :layout) do
+        nil -> raise "A layout must be defined for the application to function"
+        layout -> layout
+      end
+
+    keys = build_keys(Keyword.get(env_layout, :keys, []))
+    leds = build_leds(Keyword.get(env_layout, :leds, []))
+    new(keys, leds)
+  end
+
+  @spec build_leds([map]) :: [LED.t()]
+  defp build_leds(led_list) do
+    led_list
     |> Enum.map(fn %{id: id, x: x, y: y} ->
       LED.new(id, x, y)
     end)
   end
 
-  @spec get_and_build_keys() :: [Key.t()]
-  def get_and_build_keys() do
-    Application.get_env(:xebow, :keys, [])
+  @spec build_keys([map]) :: [Key.t()]
+  defp build_keys(key_list) do
+    key_list
     |> Enum.map(fn
       %{id: id, x: x, y: y, opts: opts} ->
         Key.new(id, x, y, opts)

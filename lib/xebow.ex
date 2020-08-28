@@ -9,9 +9,7 @@ defmodule Xebow do
 
   require Logger
 
-  @leds Layout.get_and_build_leds()
-  @keys Layout.get_and_build_keys()
-  @layout Layout.new(@keys, @leds)
+  @layout Layout.load_from_config()
 
   @spec layout() :: Layout.t()
   def layout, do: @layout
@@ -209,7 +207,8 @@ defmodule Xebow do
   end
 
   defp initialize_animation(animation_type) do
-    Animation.new(animation_type, @leds)
+    leds = Layout.leds(@layout)
+    Animation.new(animation_type, leds)
   end
 
   defp update_state_with_animation_types(state, animation_types) do

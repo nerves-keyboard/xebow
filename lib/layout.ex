@@ -48,4 +48,24 @@ defmodule Layout do
   @spec key_for_led(layout :: t, LED.id()) :: Key.t() | nil
   def key_for_led(%__MODULE__{} = layout, led_id) when is_atom(led_id),
     do: Map.get(layout.keys_by_leds, led_id)
+
+  @spec get_and_build_leds() :: [LED.t()]
+  def get_and_build_leds() do
+    Application.get_env(:xebow, :leds, [])
+    |> Enum.map(fn %{id: id, x: x, y: y} ->
+      LED.new(id, x, y)
+    end)
+  end
+
+  @spec get_and_build_keys() :: [Key.t()]
+  def get_and_build_keys() do
+    Application.get_env(:xebow, :keys, [])
+    |> Enum.map(fn
+      %{id: id, x: x, y: y, opts: opts} ->
+        Key.new(id, x, y, opts)
+
+      %{id: id, x: x, y: y} ->
+        Key.new(id, x, y)
+    end)
+  end
 end

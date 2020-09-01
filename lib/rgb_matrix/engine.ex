@@ -9,11 +9,12 @@ defmodule RGBMatrix.Engine do
   alias Layout.LED
   alias RGBMatrix.Animation
 
-  @type frame :: %{LED.t() => RGBMatrix.any_color_model()}
+  @type frame :: %{led_id => RGBMatrix.any_color_model()}
+  @type led_id :: atom
 
   defmodule State do
     @moduledoc false
-    defstruct [:leds, :animation, :paintables, :last_frame, :timer, :configurables]
+    defstruct [:animation, :paintables, :last_frame, :timer, :configurables]
   end
 
   # Client
@@ -23,13 +24,10 @@ defmodule RGBMatrix.Engine do
 
   This module registers its process globally and is expected to be started by a
   supervisor.
-
-  This function accepts the following argument:
-  - `leds` - The list of LEDs to be painted on.
   """
-  @spec start_link(leds :: [LED.t()]) :: GenServer.on_start()
-  def start_link(leds) do
-    GenServer.start_link(__MODULE__, leds, name: __MODULE__)
+  @spec start_link(any) :: GenServer.on_start()
+  def start_link(_args) do
+    GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
   @doc """
@@ -96,13 +94,9 @@ defmodule RGBMatrix.Engine do
   # Server
 
   @impl GenServer
-  def init(leds) do
-    black = Chameleon.HSV.new(0, 0, 0)
-    frame = Map.new(leds, &{&1.id, black})
-
+  def init(_args) do
     state = %State{
-      leds: leds,
-      last_frame: frame,
+      last_frame: %{},
       paintables: MapSet.new(),
       configurables: MapSet.new()
     }
@@ -177,7 +171,7 @@ defmodule RGBMatrix.Engine do
   @impl GenServer
   def handle_cast({:set_animation, animation}, state) do
     state =
-      %State{state | animation: animation}
+      %State{state | animation: animation, last_frame: %{}}
       |> schedule_next_render(0)
       |> inform_configurables()
 

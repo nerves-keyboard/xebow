@@ -1,111 +1,235 @@
 defmodule RGBMatrix.EngineTest do
-  # use ExUnit.Case
+  use ExUnit.Case
 
-  # alias RGBMatrix.{Animation, Engine, Frame}
+  alias RGBMatrix.{Animation, Engine}
 
-  # @leds Xebow.layout() |> Layout.leds()
+  @test_frame_color Chameleon.RGB.new(100, 200, 0)
 
-  # # Creates a RGBMatrix.Paintable module that emits frames to the test suite process.
-  # defp paintable(%{test: test_name}) do
-  #   process = self()
-  #   module_name = String.to_atom("#{test_name}-paintable")
+  # Frames are maps of LED ids to Chameleon colors.
+  defp make_frame(leds, color) do
+    Enum.map(leds, fn led ->
+      {led.id, color}
+    end)
+    |> Map.new()
+  end
 
-  #   Module.create(
-  #     module_name,
-  #     quote do
-  #       def get_paint_fn do
-  #         fn frame ->
-  #           send(unquote(process), {:frame, frame})
-  #         end
-  #       end
-  #     end,
-  #     Macro.Env.location(__ENV__)
-  #   )
+  # Creates a module which renders the test frame
+  # Renders are scheduled 10 ms apart.
+  # Interactions render in 10 ms.
+  defp add_animation(%{frame: frame, leds: leds}) do
+    module_name = MockAnimation
+    render_in = 5
 
-  #   %{paintable: module_name}
-  # end
+    defmodule module_name do
+      use Animation
 
-  # # Creates a single pixel, single frame animation.
-  # defp solid_animation(red \\ 255, green \\ 127, blue \\ 0) do
-  #   pixels = [{0, 0}]
-  #   color = Chameleon.RGB.new(red, green, blue)
-  #   frame = Frame.solid_color(pixels, color)
+      @frame frame
+      @render_in render_in
 
-  #   animation =
-  #     Animation.new(
-  #       type: Animation.Static,
-  #       frames: [frame],
-  #       delay_ms: 10,
-  #       loop: 1
-  #     )
+      @impl true
+      def new(_leds, _config), do: nil
 
-  #   {animation, frame}
-  # end
+      @impl true
+      def render(_state, _config), do: {@render_in, @frame, nil}
+    end
 
-  # setup [:paintable]
+    [animation: Animation.new(module_name, leds)]
+  end
 
-  # test "renders a solid animation", %{paintable: paintable} do
-  #   {animation, frame} = solid_animation()
+  defp add_frame(%{leds: leds}),
+    do: [frame: make_frame(leds, @test_frame_color)]
 
-  #   start_supervised!({Engine, {@leds, animation, [paintable]}})
+  # This InteractAnimation module is used to test Engine.interact/1
+  # The interact/3 callback sends the received data back to the test process
+  defp add_interact_animation(%{leds: leds, line: line}) do
+    module_name = :"InteractAnimation#{line}"
+    test_runner_pid = self()
 
-  #   assert_receive {:frame, ^frame}
-  # end
+    defmodule module_name do
+      use Animation
 
-  # test "renders a multi-frame, multi-pixel animation", %{paintable: paintable} do
-  #   pixels = [
-  #     {0, 0},
-  #     {0, 1},
-  #     {1, 0},
-  #     {1, 1}
-  #   ]
+      # This must be in a raw AST form to prevent compilation warnings
+      @test_pid {:pid, test_runner_pid}
 
-  #   frames = [
-  #     Frame.solid_color(pixels, Chameleon.Keyword.new("red")),
-  #     Frame.solid_color(pixels, Chameleon.Keyword.new("green")),
-  #     Frame.solid_color(pixels, Chameleon.Keyword.new("blue")),
-  #     Frame.solid_color(pixels, Chameleon.Keyword.new("white"))
-  #   ]
+      @impl true
+      def new(_leds, _config), do: nil
 
-  #   animation =
-  #     Animation.new(
-  #       type: Animation.Static,
-  #       frames: frames,
-  #       delay_ms: 10,
-  #       loop: 1
-  #     )
+      @impl true
+      def render(_leds, _config), do: {:never, %{}, nil}
 
-  #   start_supervised!({Engine, {@leds, animation, [paintable]}})
+      @impl true
+      def interact(_state, _config, led) do
+        {:pid, send_to} = @test_pid
+        send(send_to, {:interact, led})
+        {:ignore, nil}
+      end
+    end
 
-  #   Enum.each(frames, fn frame ->
-  #     assert_receive {:frame, ^frame}
-  #   end)
-  # end
+    [interact_animation: Animation.new(module_name, leds)]
+  end
 
-  # test "can play a different animation", %{paintable: paintable} do
-  #   {animation, _frame} = solid_animation()
-  #   {animation_2, frame_2} = solid_animation(127, 127, 127)
+  defp add_leds(_context),
+    do: [leds: [Layout.LED.new(:l1, 0, 0)]]
 
-  #   start_supervised!({Engine, {@leds, animation, [paintable]}})
+  # A paint_fn is necessary for regstration with the engine.
+  # This must be run as part of the setup for each test to make sure the pid
+  # is that of the test process.
+  defp add_paint_fn(_context) do
+    pid = self()
 
-  #   :ok = Engine.play_animation(animation_2)
+    paint_fn = fn frame ->
+      send(pid, {:frame, frame})
+      :ok
+    end
 
-  #   assert_receive {:frame, ^frame_2}
-  # end
+    [paint_fn: paint_fn]
+  end
 
-  # test "can register and unregister paintables", %{paintable: paintable} do
-  #   {animation, frame} = solid_animation()
-  #   {animation_2, frame_2} = solid_animation(127, 127, 127)
+  # During unregistration, there is a chance the Engine could already be
+  # performing a render, or may have multiple :render messages in its mailbox,
+  # so it may send one or more frames to the given paintable anyway. So, we
+  # to receive and discard all frames.
+  defp maybe_receive_some_frames(frame) do
+    receive do
+      {:frame, ^frame} ->
+        maybe_receive_some_frames(frame)
+    after
+      100 ->
+        true
+    end
+  end
 
-  #   start_supervised!({Engine, {@leds, animation, []}})
+  defp set_animation(%{animation: animation}),
+    do: :ok = Engine.set_animation(animation)
 
-  #   :ok = Engine.register_paintable(paintable)
+  defmacrop assert_receive_down do
+    quote do
+      assert_receive {:DOWN, _ref, :process, _object, _reason}
+    end
+  end
 
-  #   assert_receive {:frame, ^frame}
+  defmacrop refute_receive_down do
+    quote do
+      refute_receive {:DOWN, _ref, :process, _object, _reason}
+    end
+  end
 
-  #   :ok = Engine.unregister_paintable(paintable)
-  #   :ok = Engine.play_animation(animation_2)
+  # Once for the entire test suite
+  setup_all [
+    :add_leds,
+    :add_frame,
+    :add_animation
+  ]
 
-  #   refute_receive {:frame, ^frame_2}
-  # end
+  setup :add_paint_fn
+
+  describe "set_animation/1" do
+    @tag capture_log: true
+    test "crashes the engine when called with a non-animation" do
+      Process.monitor(Engine)
+
+      assert Engine.set_animation("We are") == :ok
+
+      assert_receive_down()
+    end
+
+    test "can set an animation", %{
+      animation: animation
+    } do
+      Process.monitor(Engine)
+
+      assert Engine.set_animation(animation) == :ok
+
+      refute_receive_down()
+    end
+  end
+
+  setup :set_animation
+
+  describe "register_paintable/1" do
+    @tag capture_log: true
+    test "crashes the engine when called with a non-function" do
+      Process.monitor(Engine)
+      fake_paint_fn = "the knights"
+
+      assert {:ok, ^fake_paint_fn, _frame} = Engine.register_paintable(fake_paint_fn)
+
+      assert_receive_down()
+    end
+
+    test "registers a paintable function", %{
+      paint_fn: paint_fn
+    } do
+      Process.monitor(Engine)
+
+      assert {:ok, ^paint_fn, _frame} = Engine.register_paintable(paint_fn)
+
+      refute_receive_down()
+    end
+  end
+
+  describe "renders frames" do
+    test "by calling registered paintables with the frame", %{
+      frame: frame,
+      paint_fn: paint_fn
+    } do
+      {:ok, ^paint_fn, _frame} = Engine.register_paintable(paint_fn)
+
+      assert_receive {:frame, ^frame}
+    end
+  end
+
+  describe "interact/1" do
+    setup :add_interact_animation
+
+    test "calls the current animation's interact/3 callback", %{
+      interact_animation: interact_animation,
+      leds: leds,
+      paint_fn: paint_fn
+    } do
+      Process.monitor(Engine)
+      :ok = Engine.set_animation(interact_animation)
+      {:ok, ^paint_fn, _frame} = Engine.register_paintable(paint_fn)
+
+      interaction = "who say"
+      assert Engine.interact(interaction) == :ok
+      assert_receive {:interact, ^interaction}
+
+      interaction = hd(leds)
+      assert Engine.interact(interaction) == :ok
+      assert_receive {:interact, ^interaction}
+
+      refute_receive_down()
+    end
+  end
+
+  describe "unregister_paintable/1" do
+    test "ignores input which is not a registered paintable function", %{
+      frame: frame,
+      paint_fn: paint_fn
+    } do
+      Process.monitor(Engine)
+      {:ok, ^paint_fn, _frame} = Engine.register_paintable(paint_fn)
+      fake_paint_fn = "NE!"
+
+      assert Engine.unregister_paintable(fake_paint_fn) == :ok
+      assert_receive {:frame, ^frame}
+
+      refute_receive_down()
+    end
+
+    test "unregisters paintables", %{
+      frame: frame,
+      paint_fn: paint_fn
+    } do
+      Process.monitor(Engine)
+      {:ok, ^paint_fn, _frame} = Engine.register_paintable(paint_fn)
+
+      assert Engine.unregister_paintable(paint_fn) == :ok
+      maybe_receive_some_frames(frame)
+      refute_receive {:frame, ^frame}
+
+      refute_receive_down()
+    end
+  end
 end

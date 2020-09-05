@@ -19,7 +19,7 @@ defmodule Xebow do
 
   defmodule State do
     @moduledoc false
-    defstruct [:current_index, :active_animations, :count_of_active_animations]
+    defstruct [:current_index, :active_animations, :count_of_active_animations, :configurables]
   end
 
   use GenServer
@@ -87,6 +87,29 @@ defmodule Xebow do
     GenServer.cast(__MODULE__, {:update_animation_config, params})
   end
 
+  @doc """
+  Register a config function for the engine to send animation configuration to
+  when it changes.
+
+  This function is idempotent.
+  """
+  @spec register_configurable(config_fn :: function) :: {:ok, function}
+  def register_configurable(config_fn) do
+    :ok = GenServer.call(__MODULE__, {:register_configurable, config_fn})
+    {:ok, config_fn}
+  end
+
+  @doc """
+  Unregister a config function so the engine no longer sends animation
+  configuration to it.
+
+  This function is idempotent.
+  """
+  @spec unregister_configurable(config_fn :: function) :: :ok
+  def unregister_configurable(config_fn) do
+    GenServer.call(__MODULE__, {:unregister_configurable, config_fn})
+  end
+
   # Server Implementations:
 
   @impl GenServer
@@ -105,13 +128,19 @@ defmodule Xebow do
       %State{
         current_index: 0,
         active_animations: %{},
-        count_of_active_animations: 0
+        count_of_active_animations: 0,
+        configurables: MapSet.new()
       }
       |> update_state_with_animation_types(active_animation_types)
 
     case current_animation(state) do
-      nil -> nil
-      animation -> Engine.set_animation(animation)
+      nil ->
+        nil
+
+      animation ->
+        inform_configurables(state)
+        Engine.set_animation(animation)
+        state
     end
 
     {:ok, state}
@@ -139,14 +168,31 @@ defmodule Xebow do
   end
 
   @impl GenServer
+  def handle_call({:register_configurable, config_fn}, _from, state) do
+    state = add_configurable(config_fn, state)
+    {:reply, :ok, state}
+  end
+
+  @impl GenServer
+  def handle_call({:unregister_configurable, config_fn}, _from, state) do
+    state = remove_configurable(config_fn, state)
+    {:reply, :ok, state}
+  end
+
+  @impl GenServer
   def handle_cast({:set_active_animation_types, active_animation_types}, state) do
     state = update_state_with_animation_types(state, active_animation_types)
 
     Settings.save_active_animations!(active_animation_types)
 
     case current_animation(state) do
-      nil -> nil
-      animation -> Engine.set_animation(animation)
+      nil ->
+        nil
+
+      animation ->
+        inform_configurables(state)
+        Engine.set_animation(animation)
+        state
     end
 
     {:noreply, state}
@@ -166,7 +212,7 @@ defmodule Xebow do
         i -> i
       end
 
-    state = %State{state | current_index: new_index}
+    state = %State{state | current_index: new_index} |> inform_configurables()
     Engine.set_animation(current_animation(state))
     {:noreply, state}
   end
@@ -183,7 +229,7 @@ defmodule Xebow do
         i -> i
       end
 
-    state = %State{state | current_index: new_index}
+    state = %State{state | current_index: new_index} |> inform_configurables()
     Engine.set_animation(current_animation(state))
     {:noreply, state}
   end
@@ -197,6 +243,7 @@ defmodule Xebow do
         state.active_animations[state.current_index],
         updated_animation
       )
+      |> inform_configurables()
 
     Engine.set_animation(current_animation(state))
     {:noreply, state}
@@ -238,5 +285,26 @@ defmodule Xebow do
       end)
 
     existing_animation || initialize_animation(animation_type)
+  end
+
+  defp add_configurable(config_fn, state) do
+    configurables = MapSet.put(state.configurables, config_fn)
+    %State{state | configurables: configurables}
+  end
+
+  defp remove_configurable(config_fn, state) do
+    configurables = MapSet.delete(state.configurables, config_fn)
+    %State{state | configurables: configurables}
+  end
+
+  defp inform_configurables(state) do
+    config = Animation.get_config(current_animation(state))
+
+    Enum.reduce(state.configurables, state, fn config_fn, state ->
+      case config_fn.(config) do
+        :ok -> state
+        :unregister -> remove_configurable(config_fn, state)
+      end
+    end)
   end
 end

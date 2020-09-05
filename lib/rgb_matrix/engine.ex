@@ -13,7 +13,7 @@ defmodule RGBMatrix.Engine do
 
   defmodule State do
     @moduledoc false
-    defstruct [:leds, :animation, :paintables, :last_frame, :timer]
+    defstruct [:animation, :paintables, :last_frame, :timer]
   end
 
   # Client
@@ -72,8 +72,7 @@ defmodule RGBMatrix.Engine do
   @impl GenServer
   def init(_args) do
     state = %State{
-      leds: leds,
-      last_frame: frame,
+      last_frame: %{},
       paintables: MapSet.new()
     }
 

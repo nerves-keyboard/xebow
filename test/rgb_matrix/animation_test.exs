@@ -3,6 +3,7 @@ defmodule RGBMatrix.AnimationTest do
 
   alias Layout.LED
   alias RGBMatrix.Animation
+  alias RGBMatrix.Animation.Config.FieldType.{Integer, Option}
 
   setup_all [
     :create_leds,
@@ -72,8 +73,11 @@ defmodule RGBMatrix.AnimationTest do
   defp create_leds(_context),
     do: [leds: [LED.new(:l1, 0, 0)]]
 
-  defp create_frame(_context) do
-    [frame: %{}]
+  defp create_frame(%{leds: leds}) do
+    color = Chameleon.RGB.new(1, 2, 3)
+    frame = Enum.map(leds, &{&1.id, color})
+
+    [frame: frame]
   end
 
   defp create_animation_module(%{frame: frame, leds: leds}) do
@@ -157,7 +161,7 @@ defmodule RGBMatrix.AnimationTest do
 
   defp create_schema(_context) do
     schema = [
-      test_integer: %RGBMatrix.Animation.Config.FieldType.Integer{
+      test_integer: %Integer{
         default: 0,
         min: 0,
         max: 5,
@@ -167,7 +171,7 @@ defmodule RGBMatrix.AnimationTest do
           description: "valid integer"
         ]
       },
-      test_option: %RGBMatrix.Animation.Config.FieldType.Option{
+      test_option: %Option{
         default: :a,
         options: [:a, :b],
         doc: [

@@ -9,8 +9,7 @@ defmodule RGBMatrix.Engine do
   alias Layout.LED
   alias RGBMatrix.Animation
 
-  @type frame :: %{led_id => RGBMatrix.any_color_model()}
-  @type led_id :: atom
+  @type frame :: %{LED.id() => RGBMatrix.any_color_model()}
 
   defmodule State do
     @moduledoc false

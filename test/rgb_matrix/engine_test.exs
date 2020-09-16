@@ -11,113 +11,67 @@ defmodule RGBMatrix.EngineTest do
 
   setup :create_paint_fn
 
-  describe "set_animation/1" do
-    @tag capture_log: true
-    test "crashes the engine when called with a non-animation" do
-      Process.monitor(Engine)
-
-      assert Engine.set_animation("We are") == :ok
-
-      assert_receive_down()
-    end
-
-    test "can set an animation", %{
-      animation: animation
-    } do
-      Process.monitor(Engine)
-
-      assert Engine.set_animation(animation) == :ok
-
-      refute_receive_down()
-    end
+  test "can set an animation", %{
+    animation: animation
+  } do
+    assert Engine.set_animation(animation) == :ok
   end
 
   setup :set_animation
 
-  describe "register_paintable/1" do
-    @tag capture_log: true
-    test "crashes the engine when called with a non-function" do
-      Process.monitor(Engine)
-      fake_paint_fn = "the knights"
-
-      assert {:ok, ^fake_paint_fn, _frame} = Engine.register_paintable(fake_paint_fn)
-
-      assert_receive_down()
-    end
-
-    test "registers a paintable function", %{
-      paint_fn: paint_fn
-    } do
-      Process.monitor(Engine)
-
-      assert {:ok, ^paint_fn, _frame} = Engine.register_paintable(paint_fn)
-
-      refute_receive_down()
-    end
+  test "can register a paintable function", %{
+    paint_fn: paint_fn
+  } do
+    assert {:ok, ^paint_fn, _frame} = Engine.register_paintable(paint_fn)
   end
 
-  describe "renders frames" do
-    test "by calling registered paintables with the frame", %{
-      frame: frame,
-      paint_fn: paint_fn
-    } do
-      {:ok, ^paint_fn, _frame} = Engine.register_paintable(paint_fn)
-
-      assert_receive {:frame, ^frame}
-    end
+  test "renders frames", %{
+    frame: frame,
+    paint_fn: paint_fn
+  } do
+    {:ok, ^paint_fn, _frame} = Engine.register_paintable(paint_fn)
+    assert_receive {:frame, ^frame}
   end
 
-  describe "interact/1" do
+  describe "interaction events" do
     setup :create_interact_animation
 
-    test "calls the current animation's interact/3 callback", %{
+    test "call the interact/3 Animation callback", %{
       interact_animation: interact_animation,
       leds: leds,
       paint_fn: paint_fn
     } do
-      Process.monitor(Engine)
       :ok = Engine.set_animation(interact_animation)
       {:ok, ^paint_fn, _frame} = Engine.register_paintable(paint_fn)
-
-      interaction = "who say"
-      assert Engine.interact(interaction) == :ok
-      assert_receive {:interact, ^interaction}
 
       interaction = hd(leds)
       assert Engine.interact(interaction) == :ok
       assert_receive {:interact, ^interaction}
-
-      refute_receive_down()
     end
   end
 
-  describe "unregister_paintable/1" do
-    test "ignores input which is not a registered paintable function", %{
+  describe "can unregister paintables" do
+    test "that have been registered", %{
       frame: frame,
       paint_fn: paint_fn
     } do
-      Process.monitor(Engine)
-      {:ok, ^paint_fn, _frame} = Engine.register_paintable(paint_fn)
-      fake_paint_fn = "NE!"
-
-      assert Engine.unregister_paintable(fake_paint_fn) == :ok
-      assert_receive {:frame, ^frame}
-
-      refute_receive_down()
-    end
-
-    test "unregisters paintables", %{
-      frame: frame,
-      paint_fn: paint_fn
-    } do
-      Process.monitor(Engine)
       {:ok, ^paint_fn, _frame} = Engine.register_paintable(paint_fn)
 
       assert Engine.unregister_paintable(paint_fn) == :ok
-      maybe_receive_some_frames(frame)
-      refute_receive {:frame, ^frame}
+      assert maybe_receive_some_frames(frame, 6)
+    end
 
-      refute_receive_down()
+    test "and will ignore invalid input", %{
+      frame: frame,
+      paint_fn: paint_fn
+    } do
+      {:ok, ^paint_fn, _frame} = Engine.register_paintable(paint_fn)
+      fake_paint_fn = "NE!"
+      unused_paint_fn = fn _frame -> :ok end
+
+      assert Engine.unregister_paintable(fake_paint_fn) == :ok
+      assert Engine.unregister_paintable(unused_paint_fn) == :ok
+      assert_receive {:frame, ^frame}
     end
   end
 
@@ -126,7 +80,7 @@ defmodule RGBMatrix.EngineTest do
   # Interactions render in 10 ms.
   defp create_animation(%{frame: frame, leds: leds}) do
     module_name = MockAnimation
-    render_in = 5
+    render_in = 17
 
     defmodule module_name do
       use Animation
@@ -164,7 +118,6 @@ defmodule RGBMatrix.EngineTest do
     defmodule module_name do
       use Animation
 
-      # This must be in a raw AST form to prevent compilation warnings
       @test_pid {:pid, test_runner_pid}
 
       @impl true
@@ -203,12 +156,14 @@ defmodule RGBMatrix.EngineTest do
 
   # During unregistration, there is a chance the Engine could already be
   # performing a render, or may have multiple :render messages in its mailbox,
-  # so it may send one or more frames to the given paintable anyway. So, we
-  # to receive and discard all frames.
-  defp maybe_receive_some_frames(frame) do
+  # so it may send one or more frames to the given paintable anyway. We need to
+  # receive and discard all frames.
+  defp maybe_receive_some_frames(_frame, -1), do: false
+
+  defp maybe_receive_some_frames(frame, frame_allowance) do
     receive do
       {:frame, ^frame} ->
-        maybe_receive_some_frames(frame)
+        maybe_receive_some_frames(frame, frame_allowance)
     after
       100 ->
         true
@@ -217,12 +172,4 @@ defmodule RGBMatrix.EngineTest do
 
   defp set_animation(%{animation: animation}),
     do: :ok = Engine.set_animation(animation)
-
-  defp assert_receive_down do
-    assert_receive {:DOWN, _ref, :process, _object, _reason}
-  end
-
-  defp refute_receive_down do
-    refute_receive {:DOWN, _ref, :process, _object, _reason}
-  end
 end

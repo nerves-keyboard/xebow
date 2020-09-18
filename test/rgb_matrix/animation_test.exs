@@ -14,10 +14,10 @@ defmodule RGBMatrix.AnimationTest do
     :create_schema
   ]
 
-  test "can get an animation type's human-readable name" do
-    assert Animation.type_name(MockHueWave) == "Mock Hue Wave"
-    assert Animation.type_name(MockAnimations.Mock.HueWave) == "Hue Wave"
-    assert Animation.type_name(Mock.Animations.Hue.Wave) == "Wave"
+  test "can get an animation type's human-readable name", %{
+    animation_module: animation_module
+  } do
+    assert Animation.type_name(animation_module) == "Mock Hue Wave"
   end
 
   test "can create a new animation", %{

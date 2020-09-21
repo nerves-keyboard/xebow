@@ -50,29 +50,16 @@ defmodule RGBMatrix.EngineTest do
     end
   end
 
-  describe "can unregister paintables" do
-    test "that have been registered", %{
-      frame: frame,
-      paint_fn: paint_fn
-    } do
-      {:ok, ^paint_fn, _frame} = Engine.register_paintable(paint_fn)
+  test "unregistering paintables is idempotent", %{
+    frame: frame,
+    paint_fn: paint_fn
+  } do
+    {:ok, ^paint_fn, _frame} = Engine.register_paintable(paint_fn)
 
-      assert Engine.unregister_paintable(paint_fn) == :ok
-      assert maybe_receive_some_frames(frame, 6)
-    end
-
-    test "and will ignore invalid input", %{
-      frame: frame,
-      paint_fn: paint_fn
-    } do
-      {:ok, ^paint_fn, _frame} = Engine.register_paintable(paint_fn)
-      fake_paint_fn = "NE!"
-      unused_paint_fn = fn _frame -> :ok end
-
-      assert Engine.unregister_paintable(fake_paint_fn) == :ok
-      assert Engine.unregister_paintable(unused_paint_fn) == :ok
-      assert_receive {:frame, ^frame}
-    end
+    assert Engine.unregister_paintable(paint_fn) == :ok
+    assert Engine.unregister_paintable(paint_fn) == :ok
+    assert maybe_receive_some_frames(frame, 6)
+    refute_receive {:frame, ^frame}
   end
 
   # Creates a module which renders the test frame

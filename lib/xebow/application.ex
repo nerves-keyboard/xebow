@@ -7,8 +7,6 @@ defmodule Xebow.Application do
 
   alias Xebow.Settings
 
-  @leds Xebow.layout() |> Layout.leds()
-
   if Mix.target() == :host do
     defp maybe_validate_firmware,
       do: nil
@@ -31,7 +29,7 @@ defmodule Xebow.Application do
         # Starts a worker by calling: Xebow.Worker.start_link(arg)
         # {Xebow.Worker, arg},
         # Engine must be started before Xebow
-        {RGBMatrix.Engine, @leds},
+        RGBMatrix.Engine,
         Xebow,
         # Phoenix:
         XebowWeb.Telemetry,

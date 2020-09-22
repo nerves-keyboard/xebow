@@ -80,7 +80,7 @@ defmodule RGBMatrix.Animation do
   @doc """
   Returns the next state of an animation based on its current state.
   """
-  @spec render(animation :: t) :: {render_in, [RGBMatrix.any_color_model()], t}
+  @spec render(animation :: t) :: {render_in, RGBMatrix.Engine.frame(), t}
   def render(animation) do
     {render_in, colors, animation_state} =
       animation.type.render(animation.state, animation.config)

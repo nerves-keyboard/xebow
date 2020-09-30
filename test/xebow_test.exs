@@ -4,8 +4,8 @@ defmodule XebowTest do
   alias RGBMatrix.Animation
 
   setup_all [
-    :create_mock_animations,
-    :create_single_animation,
+    :create_mock_animation_list,
+    :create_single_animation_list,
     :create_single_schema
   ]
 
@@ -15,10 +15,10 @@ defmodule XebowTest do
 
   describe "can get and set active animation types" do
     test "with a list of animation modules", %{
-      mock_animations: mock_animations
+      mock_animation_list: mock_animation_list
     } do
-      assert Xebow.set_active_animation_types(mock_animations) == :ok
-      assert Xebow.get_active_animation_types() == mock_animations
+      assert Xebow.set_active_animation_types(mock_animation_list) == :ok
+      assert Xebow.get_active_animation_types() == mock_animation_list
     end
 
     test "with an empty list" do
@@ -28,8 +28,8 @@ defmodule XebowTest do
   end
 
   describe "animations can be cycled" do
-    setup %{mock_animations: mock_animations} do
-      Xebow.set_active_animation_types(mock_animations)
+    setup %{mock_animation_list: mock_animation_list} do
+      Xebow.set_active_animation_types(mock_animation_list)
     end
 
     test "forward" do
@@ -40,10 +40,10 @@ defmodule XebowTest do
       assert Xebow.previous_animation() == :ok
     end
 
-    test "through the entire list, repeatedly", %{
-      mock_animations: mock_animations
+    test "through the list, which wraps in both directions", %{
+      mock_animation_list: mock_animation_list
     } do
-      double_count = length(mock_animations) * 2
+      double_count = length(mock_animation_list) * 2
 
       for _ <- 1..double_count do
         assert Xebow.next_animation() == :ok
@@ -55,16 +55,15 @@ defmodule XebowTest do
     end
   end
 
-  setup %{single_animation: single_animation} do
-    Xebow.set_active_animation_types(single_animation)
+  setup %{single_animation_list: single_animation_list} do
+    Xebow.set_active_animation_types(single_animation_list)
   end
 
   describe "can get the config and schema" do
     test "of the current active animation", %{
-      single_animation: single_animation,
+      single_animation_list: [animation_module],
       single_schema: single_schema
     } do
-      [animation_module] = single_animation
       config_module = Module.concat(animation_module, "Config")
 
       assert {%^config_module{}, ^single_schema} = Xebow.get_animation_config()
@@ -160,21 +159,21 @@ defmodule XebowTest do
     [config_fn: config_fn]
   end
 
-  defp create_mock_animations(_context) do
-    mock_animations = [
+  defp create_mock_animation_list(_context) do
+    mock_animation_list = [
       Type1,
       Type2,
       Type3
     ]
 
-    Enum.each(mock_animations, fn module_name ->
+    Enum.each(mock_animation_list, fn module_name ->
       Module.create(module_name, mock_animation_module(module_name), __ENV__)
     end)
 
-    [mock_animations: mock_animations]
+    [mock_animation_list: mock_animation_list]
   end
 
-  defp create_single_animation(_context), do: [single_animation: [Type1]]
+  defp create_single_animation_list(_context), do: [single_animation_list: [Type1]]
 
   defp create_single_schema(_context) do
     schema = [

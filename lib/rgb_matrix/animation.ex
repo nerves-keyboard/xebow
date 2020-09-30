@@ -100,18 +100,18 @@ defmodule RGBMatrix.Animation do
   @doc """
   Gets the current configuration and the configuration schema from an animation.
   """
-  @spec get_config(animation :: t) :: {struct, keyword(struct)}
+  @spec get_config(animation :: t) :: {Config.t(), Config.schema()}
   def get_config(animation) do
     %config_module{} = config = animation.config
-    config_schema = config_module.schema()
+    schema = config_module.schema()
 
-    {config, config_schema}
+    {config, schema}
   end
 
   @doc """
   Updates the configuration of an animation and returns the updated animation.
   """
-  @spec update_config(animation :: t, params :: map) :: t
+  @spec update_config(animation :: t, params :: Config.update_params()) :: t
   def update_config(animation, params) do
     %config_module{} = config = animation.config
     config = config_module.update(config, params)

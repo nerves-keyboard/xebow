@@ -40,7 +40,7 @@ defmodule RGBMatrix.Animation.Config do
   The documentation is optional and will be initialized to an empty list if
   omitted.
   """
-  @type config_schema :: keyword(FieldType.t())
+  @type schema :: keyword(FieldType.t())
 
   @typedoc """
   A map used during creation of an `Animation.<type>.Config`.
@@ -70,7 +70,7 @@ defmodule RGBMatrix.Animation.Config do
   """
   @type update_params :: %{(atom | String.t()) => any}
 
-  @callback schema() :: config_schema
+  @callback schema() :: schema
   @callback new(%{optional(atom) => FieldType.value()}) :: t
   @callback update(t, %{optional(atom | String.t()) => any}) :: t
 
@@ -143,7 +143,7 @@ defmodule RGBMatrix.Animation.Config do
   """
   @spec new_config(
           module :: module,
-          schema :: config_schema,
+          schema :: schema,
           params :: creation_params
         ) :: t
   def new_config(module, schema, params) do
@@ -178,7 +178,7 @@ defmodule RGBMatrix.Animation.Config do
   """
   @spec update_config(
           config :: t,
-          schema :: config_schema,
+          schema :: schema,
           params :: update_params
         ) :: t
   def update_config(config, schema, params) do
@@ -191,7 +191,7 @@ defmodule RGBMatrix.Animation.Config do
   @spec cast_and_update_field(
           param :: {atom | String.t(), any},
           config :: t,
-          schema :: config_schema
+          schema :: schema
         ) :: t
   defp cast_and_update_field({key, value} = _param, config, schema) do
     with {:ok, key} <- create_atom_key(key),
@@ -232,7 +232,7 @@ defmodule RGBMatrix.Animation.Config do
       {:error, :undefined_field}
   end
 
-  @spec fetch_type_from_schema(config_schema, atom) ::
+  @spec fetch_type_from_schema(schema, atom) ::
           {:ok, FieldType.t()} | {:error, :undefined_field}
   defp fetch_type_from_schema(schema, key) do
     case Keyword.fetch(schema, key) do

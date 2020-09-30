@@ -13,7 +13,7 @@ defmodule RGBMatrix.Engine do
 
   defmodule State do
     @moduledoc false
-    defstruct [:animation, :paintables, :last_frame, :timer, :configurables]
+    defstruct [:animation, :paintables, :last_frame, :timer]
   end
 
   # Client
@@ -67,37 +67,13 @@ defmodule RGBMatrix.Engine do
     GenServer.cast(__MODULE__, {:interact, led})
   end
 
-  @doc """
-  Register a config function for the engine to send animation configuration to
-  when it changes.
-
-  This function is idempotent.
-  """
-  @spec register_configurable(config_fn :: function) :: {:ok, function}
-  def register_configurable(config_fn) do
-    :ok = GenServer.call(__MODULE__, {:register_configurable, config_fn})
-    {:ok, config_fn}
-  end
-
-  @doc """
-  Unregister a config function so the engine no longer sends animation
-  configuration to it.
-
-  This function is idempotent.
-  """
-  @spec unregister_configurable(config_fn :: function) :: :ok
-  def unregister_configurable(config_fn) do
-    GenServer.call(__MODULE__, {:unregister_configurable, config_fn})
-  end
-
   # Server
 
   @impl GenServer
   def init(_args) do
     state = %State{
       last_frame: %{},
-      paintables: MapSet.new(),
-      configurables: MapSet.new()
+      paintables: MapSet.new()
     }
 
     {:ok, state}
@@ -172,7 +148,6 @@ defmodule RGBMatrix.Engine do
     state =
       %State{state | animation: animation, last_frame: %{}}
       |> schedule_next_render(0)
-      |> inform_configurables()
 
     {:noreply, state}
   end
@@ -198,38 +173,5 @@ defmodule RGBMatrix.Engine do
   def handle_call({:unregister_paintable, key}, _from, state) do
     state = remove_paintable(key, state)
     {:reply, :ok, state}
-  end
-
-  @impl GenServer
-  def handle_call({:register_configurable, config_fn}, _from, state) do
-    state = add_configurable(config_fn, state)
-    {:reply, :ok, state}
-  end
-
-  @impl GenServer
-  def handle_call({:unregister_configurable, config_fn}, _from, state) do
-    state = remove_configurable(config_fn, state)
-    {:reply, :ok, state}
-  end
-
-  defp add_configurable(config_fn, state) do
-    configurables = MapSet.put(state.configurables, config_fn)
-    %State{state | configurables: configurables}
-  end
-
-  defp remove_configurable(config_fn, state) do
-    configurables = MapSet.delete(state.configurables, config_fn)
-    %State{state | configurables: configurables}
-  end
-
-  defp inform_configurables(state) do
-    config = Animation.get_config(state.animation)
-
-    Enum.reduce(state.configurables, state, fn config_fn, state ->
-      case config_fn.(config) do
-        :ok -> state
-        :unregister -> remove_configurable(config_fn, state)
-      end
-    end)
   end
 end

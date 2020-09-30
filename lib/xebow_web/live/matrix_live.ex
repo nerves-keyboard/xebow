@@ -97,7 +97,7 @@ defmodule XebowWeb.MatrixLive do
   @impl Phoenix.LiveView
   def terminate(_reason, socket) do
     Engine.unregister_paintable(socket.assigns.paint_fn)
-    Engine.unregister_configurable(socket.assigns.config_fn)
+    Xebow.unregister_configurable(socket.assigns.config_fn)
   end
 
   defp register_with_engine! do
@@ -114,7 +114,7 @@ defmodule XebowWeb.MatrixLive do
       end)
 
     {:ok, config_fn} =
-      Engine.register_configurable(fn config ->
+      Xebow.register_configurable(fn config ->
         if Process.alive?(pid) do
           send(pid, {:render_config, config})
           :ok

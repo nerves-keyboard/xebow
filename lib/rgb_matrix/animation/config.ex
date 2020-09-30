@@ -19,9 +19,9 @@ defmodule RGBMatrix.Animation.Config do
       RGBMatrix.Animation.HueWave.Config
       RGBMatrix.Animation.SolidReactive.Config
 
-  Configs should not be accessed or modified directly in an Animation module.
-  Use the functions `Xebow.get_animation_config/0` and
-  `Xebow.update_animation_config/1` for access and modification.
+  Configs should not be accessed or modified directly. Use the functions
+  `Xebow.get_animation_config/0` and `Xebow.update_animation_config/1` for
+  access and modification.
   """
   @type t :: struct
 

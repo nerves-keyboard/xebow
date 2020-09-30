@@ -90,7 +90,7 @@ defmodule XebowTest do
   end
 
   describe "configurables" do
-    setup [:create_config_fn, :create_unregister_config_fn]
+    setup :create_config_fn
 
     test "can be registered, which is idempotent", %{
       config_fn: config_fn
@@ -129,10 +129,15 @@ defmodule XebowTest do
       assert_receive {:config, ^config}
     end
 
-    test "can return :unregister to unregister themselves", %{
-      unregister_config_fn: unregister_config_fn,
-      unregister_message: unregister_message
-    } do
+    test "can return :unregister to unregister themselves" do
+      pid = self()
+      unregister_message = {:config, "unregister"}
+
+      unregister_config_fn = fn _config ->
+        send(pid, unregister_message)
+        :unregister
+      end
+
       assert Xebow.register_configurable(unregister_config_fn) == {:ok, unregister_config_fn}
 
       Xebow.next_animation()
@@ -153,18 +158,6 @@ defmodule XebowTest do
     end
 
     [config_fn: config_fn]
-  end
-
-  defp create_unregister_config_fn(_context) do
-    pid = self()
-    unregister_message = {:config, "unregister"}
-
-    unregister_config_fn = fn _config ->
-      send(pid, unregister_message)
-      :unregister
-    end
-
-    [unregister_config_fn: unregister_config_fn, unregister_message: unregister_message]
   end
 
   defp create_mock_animations(_context) do

@@ -6,6 +6,9 @@
 
 set -e
 
+# Start the --pre-run-exec from the base rpi0 system image
+/usr/sbin/rngd
+
 # Enable the RPi0 USB gadget module.
 modprobe dwc2
 

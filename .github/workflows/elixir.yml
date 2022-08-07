@@ -1,0 +1,139 @@
+name: Elixir CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  # NOTE: make sure these versions match in .tool-versions
+  ELIXIR_VERSION_SPEC: "1.13.4"
+  OTP_VERSION_SPEC: "25.0.3"
+
+jobs:
+  compile:
+    name: Compiler Warnings
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1.11
+        with:
+          elixir-version: ${{ env.ELIXIR_VERSION_SPEC }}
+          otp-version: ${{ env.OTP_VERSION_SPEC }}
+      - name: Install Nerves bootstrap
+        run: mix archive.install --force hex nerves_bootstrap
+      - name: Install dependencies
+        run: mix deps.get
+      - name: Compile dependencies
+        run: mix deps.compile
+      - name: Compile
+        run: mix compile --warnings-as-errors
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+
+    env:
+      MIX_ENV: test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1.11
+        with:
+          elixir-version: ${{ env.ELIXIR_VERSION_SPEC }}
+          otp-version: ${{ env.OTP_VERSION_SPEC }}
+      - name: Install Nerves bootstrap
+        run: mix archive.install --force hex nerves_bootstrap
+      - name: Install dependencies
+        run: mix deps.get
+      - name: Compile dependencies
+        run: mix deps.compile
+      - name: Run tests
+        run: mix test
+
+  check-formatted:
+    name: Check Formatted
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1.11
+        with:
+          elixir-version: ${{ env.ELIXIR_VERSION_SPEC }}
+          otp-version: ${{ env.OTP_VERSION_SPEC }}
+      - name: Install Nerves bootstrap
+        run: mix archive.install --force hex nerves_bootstrap
+      - name: Install dependencies
+        run: mix deps.get
+      - name: Compile dependencies
+        run: mix deps.compile
+      - name: Check formatted
+        run: mix format --check-formatted
+
+  credo:
+    name: Credo
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1.11
+        with:
+          elixir-version: ${{ env.ELIXIR_VERSION_SPEC }}
+          otp-version: ${{ env.OTP_VERSION_SPEC }}
+      - name: Install Nerves bootstrap
+        run: mix archive.install --force hex nerves_bootstrap
+      - name: Install dependencies
+        run: mix deps.get
+      - name: Compile dependencies
+        run: mix deps.compile
+      - name: Run credo
+        run: mix credo
+
+  dialyzer:
+    name: Dialyzer
+    runs-on: ubuntu-latest
+
+    env:
+      MIX_TARGET: keybow
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set mix file hash
+        id: set_vars
+        run: |
+          mix_hash="${{ hashFiles(format('{0}{1}', github.workspace, '/mix.lock')) }}"
+          echo "::set-output name=mix_hash::$mix_hash"
+      - name: Cache PLT files
+        id: cache-plt
+        uses: actions/cache@v3
+        with:
+          path: |
+            _build/dev/*.plt
+            _build/dev/*.plt.hash
+          key: plt-cache-${{ steps.set_vars.outputs.mix_hash }}
+          restore-keys: |
+            plt-cache-
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1.11
+        with:
+          elixir-version: ${{ env.ELIXIR_VERSION_SPEC }}
+          otp-version: ${{ env.OTP_VERSION_SPEC }}
+      - name: Install Nerves bootstrap
+        run: mix archive.install --force hex nerves_bootstrap
+      - name: Install dependencies
+        run: mix deps.get
+      - name: Compile dependencies
+        run: mix deps.compile
+      - name: Run dialyzer
+        run: mix dialyzer

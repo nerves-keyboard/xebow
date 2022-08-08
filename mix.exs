@@ -31,17 +31,9 @@ defmodule Xebow.MixProject do
       dialyzer: [
         ignore_warnings: "dialyzer.ignore.exs",
         list_unused_filters: true,
-        plt_add_apps: [:mix],
-        plt_file: {:no_warn, plt_file_path()}
+        plt_add_apps: [:mix]
       ]
     ]
-  end
-
-  # Path to the dialyzer .plt file.
-  defp plt_file_path do
-    [Mix.Project.build_path(), "plt", "dialyxir.plt"]
-    |> Path.join()
-    |> Path.expand()
   end
 
   # Starting nerves_bootstrap adds the required aliases to Mix.Project.config()
@@ -77,16 +69,16 @@ defmodule Xebow.MixProject do
   defp deps do
     [
       # Dependencies for all targets
-      {:nerves, "~> 1.6.3", runtime: false},
-      {:shoehorn, "~> 0.6"},
-      {:ring_logger, "~> 0.8"},
-      {:toolshed, "~> 0.2"},
-      {:chameleon, "~> 2.2"},
+      {:nerves, "~> 1.8.0", runtime: false},
+      {:shoehorn, "~> 0.9.1"},
+      {:ring_logger, "~> 0.8.5"},
+      {:toolshed, "~> 0.2.26"},
+      {:chameleon, "~> 2.5"},
       {:afk, "~> 0.3"},
-      {:dialyxir, "~> 1.0.0", only: :dev, runtime: false},
-      {:ex_doc, "~> 0.22", only: :dev, runtime: false},
-      {:mox, "~> 0.5", only: :test},
-      {:credo, "~> 1.4", only: [:dev, :test], runtime: false, targets: [:host]},
+      {:dialyxir, "~> 1.2", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.28", only: :dev, runtime: false},
+      {:mox, "~> 1.0", only: :test},
+      {:credo, "~> 1.6", only: [:dev, :test], runtime: false, targets: [:host]},
 
       # phoenix + live-view:
       {:floki, ">= 0.0.0", only: :test},
@@ -101,15 +93,15 @@ defmodule Xebow.MixProject do
       {:telemetry_poller, "~> 0.5"},
 
       # Dependencies for all targets except :host
-      {:nerves_runtime, "~> 0.11", targets: @all_targets, override: true},
-      {:nerves_pack, "~> 0.3", targets: @all_targets},
-      {:circuits_gpio, "~> 0.4", targets: @all_targets},
-      {:circuits_spi, "~> 0.1", targets: @all_targets},
+      {:nerves_runtime, "~> 0.13", targets: @all_targets, override: true},
+      {:nerves_pack, "~> 0.7", targets: @all_targets},
+      {:circuits_gpio, "~> 1.0", targets: @all_targets},
+      {:circuits_spi, "~> 1.3", targets: @all_targets},
 
       # Dependencies for specific targets
       {:nerves_system_keybow,
-       github: "ElixirSeattle/nerves_system_keybow",
-       ref: "v2.0.0-rc.1+keybow.1",
+       github: "nerves-keyboard/nerves_system_keybow",
+       branch: "keybow",
        runtime: false,
        targets: :keybow}
     ]

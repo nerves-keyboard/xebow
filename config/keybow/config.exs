@@ -17,7 +17,6 @@ config :shoehorn,
 config :nerves,
   erlinit: [
     ctty: "tty1",
-    hostname_pattern: "nerves-%s",
     pre_run_exec: "/etc/pre-run.sh"
   ]
 

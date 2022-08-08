@@ -31,17 +31,9 @@ defmodule Xebow.MixProject do
       dialyzer: [
         ignore_warnings: "dialyzer.ignore.exs",
         list_unused_filters: true,
-        plt_add_apps: [:mix],
-        plt_file: {:no_warn, plt_file_path()}
+        plt_add_apps: [:mix]
       ]
     ]
-  end
-
-  # Path to the dialyzer .plt file.
-  defp plt_file_path do
-    [Mix.Project.build_path(), "plt", "dialyxir.plt"]
-    |> Path.join()
-    |> Path.expand()
   end
 
   # Starting nerves_bootstrap adds the required aliases to Mix.Project.config()
